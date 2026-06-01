@@ -562,6 +562,28 @@ const dadesTips = {
 
 let tipsUsats = [];
 
+// ===== ESTADO GLOBAL =====
+let estat = {
+  monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
+  compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
+  progres: {
+    nivellActualMapa: parseInt(localStorage.getItem('cat_nivell')) || 1,
+    encerts: parseInt(localStorage.getItem('cat_encerts')) || 0
+  },
+  energia: parseInt(localStorage.getItem('cat_energia')) || 100,
+  ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
+  introVist: false
+};
+
+let EMOJIS_BASE = [];
+let PACKS_BOTIGA = [];
+let TOTS_EMOJIS = [];
+let FRASES_MINIJOC = [];
+let FRASE_ACTUAL = null;
+let EMOJIS_TRIATS = [];
+let CATEGORIES_TOTS = {};
+let CATEGORIES_DESBLOQUEJADES = {};
+
 // ===== LANG =====
 const LANG = {
   no_prou_monedes: "No tens prou monedes!",
@@ -614,25 +636,42 @@ function mostrarSubTab(sub) {
   if (sub === 'minijoc') novaFrase();
 }
 
+// ===== UTILS =====
+function quitarSkinTone(emoji) {
+  return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
+}
+
+function construirCategories() {
+  CATEGORIES_TOTS = {};
+  TOTS_EMOJIS.forEach(e => {
+    if (!CATEGORIES_TOTS[e.categoria]) CATEGORIES_TOTS[e.categoria] = [];
+    CATEGORIES_TOTS[e.categoria].push(e);
+  });
+  CATEGORIES_DESBLOQUEJADES = {};
+  Object.keys(CATEGORIES_TOTS).forEach(cat => {
+    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat].map(e => e.emoji);
+  });
+}
+
 // ===== CARREGAR DADES =====
 async function carregarDades() {
   try {
-    const res = await fetch('./data/biblioteca_emojis.json');
+    const res = await fetch('/data/biblioteca_emojis.json');
     EMOJIS_BASE = await res.json();
     console.log('Biblioteca cargada:', EMOJIS_BASE.length);
   } catch(e) { console.error('Error biblioteca:', e); }
 
   try {
-    const res = await fetch('./data/botiga_emojis.json');
+    const res = await fetch('/data/botiga_emojis.json');
     PACKS_BOTIGA = await res.json();
     console.log('Botiga cargada:', PACKS_BOTIGA.length, 'packs');
-  } catch(e) { 
+  } catch(e) {
     console.error('Error botiga:', e);
-    PACKS_BOTIGA = []; // fallback vacío para que no rompa
+    PACKS_BOTIGA = [];
   }
 
   try {
-    const res = await fetch('./data/minijoc_frases.json');
+    const res = await fetch('/data/minijoc_frases.json');
     const data = await res.json();
     FRASES_MINIJOC = data.frases || [];
     console.log('Frases cargadas:', FRASES_MINIJOC.length);
@@ -644,7 +683,7 @@ async function carregarDades() {
     a.findIndex(t => quitarSkinTone(t.emoji) === quitarSkinTone(v.emoji)) === i
   );
   construirCategories();
-}
+} // <- ESTE CIERRE TE FALTABA
 
 // ===== MAPA =====
 function renderMapa() {
@@ -661,23 +700,18 @@ function renderMapa() {
 }
 
 function jugarNivell(n) {
-  alert(`Nivell ${n} - Aquí anirà el joc de nivells`);
-}
-
-function mapaNivellALletra(n) {
-  if (n <= 25) return 'A1';
-  if (n <= 50) return 'A2';
-  if (n <= 75) return 'B1';
-  return 'B1';
+  if (n > estat.progres.nivellActualMapa) return;
+  mostrarTab('gremi');
+  mostrarSubTab('minijoc');
 }
 
 // ===== MISSIÓ =====
 function renderMissio() {
   const cont = document.getElementById('missio-contenidor');
-  const missio1 = estat.progres.encerts >= 5 ? '✅' : '🔒';
-  const missio2 = estat.compres.length > 0 ? '✅' : '🔒';
-  const missio3 = estat.progres.nivellActualMapa >= 10 ? '✅' : '🔒';
-  
+  const missio1 = estat.progres.encerts >= 5? '✅' : '🔒';
+  const missio2 = estat.compres.length > 0? '✅' : '🔒';
+  const missio3 = estat.progres.nivellActualMapa >= 10? '✅' : '🔒';
+
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
     <div class="missio-item" onclick="mostrarTab('gremi'); mostrarSubTab('minijoc');" style="cursor:pointer;">
@@ -698,35 +732,35 @@ function novaFrase() {
     document.getElementById('minijoc-frase').textContent = 'Carregant...';
     return;
   }
-  
+
   FRASE_ACTUAL = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
   EMOJIS_TRIATS = [];
-  
+
   document.getElementById('minijoc-frase').textContent = FRASE_ACTUAL.frase;
   document.getElementById('minijoc-seleccionats').innerHTML = '';
   document.getElementById('minijoc-feedback').innerHTML = '';
-  
+
   generarOpcions();
 }
 
 function generarOpcions() {
   const grid = document.getElementById('minijoc-emojis');
   const correctos = FRASE_ACTUAL.solucio;
-  
+
   const getEmojiData = (emojiChar) => {
     return TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiChar));
   };
-  
+
   const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
-   .sort(() => 0.5 - Math.random()).slice(0, 10);
-  
+  .sort(() => 0.5 - Math.random()).slice(0, 10);
+
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
-  
+
   grid.innerHTML = '';
   opcions.forEach(emojiChar => {
     const data = getEmojiData(emojiChar);
     const nom = data? data.nom_cat : '';
-    
+
     const div = document.createElement('div');
     div.className = 'emoji-item';
     div.innerHTML = `
@@ -740,13 +774,13 @@ function generarOpcions() {
 
 function triarEmoji(emoji) {
   if (EMOJIS_TRIATS.length >= FRASE_ACTUAL.solucio.length) return;
-  
+
   EMOJIS_TRIATS.push(emoji);
   const cont = document.getElementById('minijoc-seleccionats');
   const span = document.createElement('span');
   span.textContent = emoji;
   cont.appendChild(span);
-  
+
   if (EMOJIS_TRIATS.length === FRASE_ACTUAL.solucio.length) {
     setTimeout(comprovarMinijoc, 300);
   }
@@ -755,12 +789,12 @@ function triarEmoji(emoji) {
 function comprovarMinijoc() {
   const feedback = document.getElementById('minijoc-feedback');
   const correcte = FRASE_ACTUAL.solucio.join('') === EMOJIS_TRIATS.join('');
-  
+
   if (correcte) {
     feedback.innerHTML = `<p style="color:#4CAF50; font-weight:bold;">Correcte! +5 🪙</p>`;
     estat.monedes += 5;
     estat.progres.encerts++;
-    
+
     if (estat.progres.encerts >= 25) {
       if (estat.progres.nivellActualMapa < 100) {
         estat.progres.nivellActualMapa++;
@@ -768,7 +802,7 @@ function comprovarMinijoc() {
       }
       estat.progres.encerts = 0;
     }
-    
+
     guardarEstat();
     actualitzarUI();
     setTimeout(() => novaFrase(), 1500);
@@ -804,166 +838,18 @@ function renderDiccionari() {
   cont.innerHTML = html;
 }
 
-// ===== LECTURA =====
-function tickEnergia() {
-  const ara = Date.now();
-  const diffMin = Math.floor((ara - estat.ultimaRecargaEnergia) / 60000);
-  if (diffMin > 0) {
-    estat.energia = Math.min(100, estat.energia + diffMin);
-    estat.ultimaRecargaEnergia = ara;
-    guardarEstat();
-  }
-}
-
-function recargarConMonedes() {
-  if (estat.monedes < 50) {
-    mostrarModal(LANG.no_prou_monedes);
-    return;
-  }
-  vibrar();
-  estat.monedes -= 50;
-  estat.energia = 100;
-  estat.ultimaRecargaEnergia = Date.now();
-  guardarEstat();
-  actualitzarUI();
-  generarLectura();
-}
-
-function generarLectura() {
-  tickEnergia();
-  const cont = document.getElementById('lectura-contenidor');
-  if(!cont) return;
-
-  const num = estat.progres.nivellActualMapa;
-  const nivell = mapaNivellALletra(num).toLowerCase();
-  const dadesNivell = BANCO_VOCAB[nivell];
-  if (!dadesNivell) {
-    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha lectures d’aquest nivell.</div>`;
-    return;
-  }
-
-  const blocs = Object.keys(dadesNivell).filter(k => k!== "plantillas");
-  if (blocs.length === 0) {
-    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">No hi ha temes disponibles per aquest nivell.</div>`;
-    return;
-  }
-
-  const temaKey = blocs[Math.floor(Math.random() * blocs.length)];
-  const minutsPerSeguent = estat.energia >= 100? 0 : 5 - Math.floor((Date.now() - estat.ultimaRecargaEnergia) / 60000) % 5;
-  const COST_LECTURA = 10;
-
-  cont.innerHTML = `
-    <div style="text-align:center; padding:20px; opacity:0.9;">
-      <div style="font-size:48px; margin-bottom:10px;">📖</div>
-      <div style="font-size:16px; margin-bottom:10px;">Nivell ${nivell.toUpperCase()} - ${temaKey.replace(/_/g, ' ').replace(/^la |^el /, '')}</div>
-      <div style="font-size:14px; opacity:0.7; margin-bottom:10px;">Energia: ${estat.energia}/100</div>
-      ${estat.energia < 100? `<div style="font-size:12px; opacity:0.6; margin-bottom:10px;">Següent punt en ${minutsPerSeguent} min</div>` : ''}
-      <div style="font-size:14px; opacity:0.7; margin:15px 0;">Generar Lectura costa ${COST_LECTURA} energia</div>
-      <button class="btn btn-prim" onclick="mostrarLectura()" ${estat.energia < COST_LECTURA? 'disabled' : ''} style="width:100%; margin:10px 0;">
-        ${estat.energia >= COST_LECTURA? 'Generar Lectura' : 'No tens prou energia'}
-      </button>
-      ${estat.energia < 100 && estat.monedes >= 50? `<button class="btn btn-sec" onclick="recargarConMonedes()" style="width:100%; margin-top:10px;">⚡ Recarregar a 100 per 50 🪙</button>` : ''}
-    </div>
-  `;
-}
-
-function mostrarLectura() {
-  if (estat.energia < 10) {
-    mostrarModal(LANG.energy_low);
-    return;
-  }
-  vibrar();
-  estat.energia -= 10;
-
-  const nivell = mapaNivellALletra(estat.progres.nivellActualMapa).toLowerCase();
-  const dadesNivell = BANCO_VOCAB[nivell];
-  if (!dadesNivell) {
-    mostrarModal("Error: no hi ha dades d'aquest nivell");
-    return;
-  }
-
-  const blocs = Object.keys(dadesNivell).filter(k => k!== "plantillas");
-  const temaKey = blocs[Math.floor(Math.random() * blocs.length)];
-  const h = dadesNivell[temaKey];
-  const get = arr => arr && arr.length? arr[Math.floor(Math.random() * arr.length)] : "";
-  const plantilla = get(dadesNivell.plantillas);
-  if (!plantilla ||!plantilla.seq ||!plantilla.pregunta) {
-    mostrarModal("Error generant lectura");
-    return;
-  }
-
-  const ctx = {};
-  ctx.protagonista = get(h.persones);
-  ctx.tema = temaKey.replace(/_/g, " ").replace(/^la |^el /, "");
-
-  for (let key in h) {
-    if (key!== "persones" && key!== "plantillas") {
-      ctx[key] = get(h[key]);
-    }
-  }
-
-  let compilar = str => str.replace(/\$\{(\w+)\}/g, (_, k) => ctx[k] || "");
-  let texto = compilar(plantilla.seq.join(" "));
-  texto = texto.charAt(0).toUpperCase() + texto.slice(1);
-  let pregunta = compilar(plantilla.pregunta);
-
-  let vocabUsado = [ctx.lloc, ctx.cosa1, ctx.cosa2, ctx.menjar, ctx.beguda, ctx.accio_prota].filter(Boolean);
-  vocabUsado = [...new Set(vocabUsado)].slice(0, 8);
-
-  vocabUsado.forEach(v => {
-    const esc = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`\\b${esc}\\b`, 'gi');
-    texto = texto.replace(regex, `<span style="color:#4ade80; font-weight:600;">${v}</span>`);
-  });
-
-  let htmlVocab = `
-    <div style="background:#1a1a1a; padding:15px; border-radius:8px; margin:20px 0;">
-      <div style="color:#4ade80; font-weight:bold; margin-bottom:12px;">Vocabulari del tema: ${ctx.tema}</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:15px;">
-  `;
-  vocabUsado.forEach(v => {
-    htmlVocab += `<div style="color:#4ade80;">${v}</div><div style="text-align:right;">${v}</div>`;
-  });
-  htmlVocab += `</div></div>`;
-
-  let htmlNota = `
-    <div style="background:#0f2a1f; border-left:3px solid #4ade80; padding:12px; border-radius:6px; margin-bottom:15px; font-size:14px;">
-      Nota: En català posem l'article abans del nom: <i>la casa, el llibre</i>
-    </div>
-  `;
-
-  document.getElementById('lectura-contenidor').innerHTML = `
-    <div style="padding:20px; text-align:left;">
-      <div style="font-size:12px; opacity:0.7; margin-bottom:8px;">Nivell ${nivell.toUpperCase()} - ${temaKey.replace(/_/g, " ").replace(/^la |^el /, "")}</div>
-      <div style="font-size:16px; line-height:1.7; margin-bottom:20px;">${texto}</div>
-      ${htmlVocab}
-      ${htmlNota}
-      <div style="background:#1a1a1a; padding:15px; border-radius:8px; margin-bottom:15px;">
-        <div style="font-weight:bold; margin-bottom:8px;">Pregunta:</div>
-        <div>${pregunta}</div>
-      </div>
-      <button class="btn btn-prim" onclick="mostrarLectura()" style="width:100%; margin-bottom:10px;">Generar Lectura Nova</button>
-      <button class="btn btn-sec" onclick="generarLectura()" style="width:100%;">Tornar</button>
-    </div>
-  `;
-
-  guardarEstat();
-  actualitzarUI();
-}
-
-// ===== TIPS - CON VALIDACIÓN =====
+// ===== TIPS =====
 function carregarTips() {
   const cont = document.getElementById('tips-contenidor');
   if(!cont) return;
 
-  // Si no pegaste tips o está vacío, usa estos de fallback
   const tipsFallback = [
     {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata", nivell: "a1"},
     {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates", nivell: "a1"},
     {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"}
   ];
-  
-  const tipsActius = (totsElsTips && totsElsTips.length > 0) ? totsElsTips : tipsFallback;
+
+  const tipsActius = (typeof totsElsTips!== 'undefined' && totsElsTips.length > 0)? totsElsTips : tipsFallback;
 
   if(tipsUsats.length === tipsActius.length) {
     tipsUsats = [];
@@ -971,7 +857,7 @@ function carregarTips() {
 
   let tipsDisponibles = tipsActius.filter(t =>!tipsUsats.includes(t.truc));
   if (tipsDisponibles.length === 0) tipsDisponibles = tipsActius;
-  
+
   const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
   tipsUsats.push(tip.truc);
 
@@ -988,14 +874,14 @@ function carregarTips() {
   `;
 }
 
-// ===== BOTIGA - CON VALIDACIÓN =====
+// ===== BOTIGA =====
 function renderBotiga() {
   const cont = document.getElementById('botiga-contenidor');
   if (!PACKS_BOTIGA || PACKS_BOTIGA.length === 0) {
     cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha packs a la botiga.</div>`;
-    return;
+    return; // <- ESTE RETURN TE FALTABA
   }
-  
+
   cont.innerHTML = '';
   PACKS_BOTIGA.forEach(pack => {
     const comprat = estat.compres.includes(pack.id);
