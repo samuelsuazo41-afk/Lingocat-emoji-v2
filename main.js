@@ -619,17 +619,23 @@ async function carregarDades() {
   try {
     const res = await fetch('./data/biblioteca_emojis.json');
     EMOJIS_BASE = await res.json();
+    console.log('Biblioteca cargada:', EMOJIS_BASE.length);
   } catch(e) { console.error('Error biblioteca:', e); }
 
   try {
     const res = await fetch('./data/botiga_emojis.json');
     PACKS_BOTIGA = await res.json();
-  } catch(e) { console.error('Error botiga:', e); }
+    console.log('Botiga cargada:', PACKS_BOTIGA.length, 'packs');
+  } catch(e) { 
+    console.error('Error botiga:', e);
+    PACKS_BOTIGA = []; // fallback vacío para que no rompa
+  }
 
   try {
     const res = await fetch('./data/minijoc_frases.json');
     const data = await res.json();
     FRASES_MINIJOC = data.frases || [];
+    console.log('Frases cargadas:', FRASES_MINIJOC.length);
   } catch(e) { console.error('Error frases:', e); }
 
   TOTS_EMOJIS = [...EMOJIS_BASE];
@@ -638,34 +644,6 @@ async function carregarDades() {
     a.findIndex(t => quitarSkinTone(t.emoji) === quitarSkinTone(v.emoji)) === i
   );
   construirCategories();
-}
-
-function quitarSkinTone(emoji) {
-  return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/u, '');
-}
-
-function construirCategories() {
-  CATEGORIES_TOTS = {};
-  CATEGORIES_DESBLOQUEJADES = {};
-  TOTS_EMOJIS.forEach(e => {
-    const cat = e.categoria;
-    if (!CATEGORIES_TOTS[cat]) CATEGORIES_TOTS[cat] = [];
-    if (!CATEGORIES_TOTS[cat].find(x => quitarSkinTone(x.emoji) === quitarSkinTone(e.emoji))) {
-      CATEGORIES_TOTS[cat].push(e);
-    }
-  });
-  const emojisDesbloquejats = [...PACK_INICIAL];
-  estat.compres.forEach(idPack => {
-    const pack = PACKS_BOTIGA.find(p => p.id === idPack);
-    if (pack) pack.emojis.forEach(e => emojisDesbloquejats.push(e.emoji));
-  });
-  TOTS_EMOJIS.forEach(e => {
-    const cat = e.categoria;
-    if (!CATEGORIES_DESBLOQUEJADES[cat]) CATEGORIES_DESBLOQUEJADES[cat] = [];
-    if (emojisDesbloquejats.includes(e.emoji)) {
-      CATEGORIES_DESBLOQUEJADES[cat].push(e.emoji);
-    }
-  });
 }
 
 // ===== MAPA =====
@@ -696,20 +674,45 @@ function mapaNivellALletra(n) {
 // ===== MISSIÓ =====
 function renderMissio() {
   const cont = document.getElementById('missio-contenidor');
+  const missio1 = estat.progres.encerts >= 5 ? '✅' : '🔒';
+  const missio2 = estat.compres.length > 0 ? '✅' : '🔒';
+  const missio3 = estat.progres.nivellActualMapa >= 10 ? '✅' : '🔒';
+  
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
-    <div class="missio-item">✅ Juga al Minijoc 5 vegades</div>
-    <div class="missio-item">🔒 Desbloqueja 1 pack a la Botiga</div>
-    <div class="missio-item">🔒 Arriba al nivell 10</div>
+    <div class="missio-item" onclick="mostrarTab('gremi'); mostrarSubTab('minijoc');" style="cursor:pointer;">
+      ${missio1} Juga al Minijoc 5 vegades
+    </div>
+    <div class="missio-item" onclick="mostrarTab('botiga');" style="cursor:pointer;">
+      ${missio2} Desbloqueja 1 pack a la Botiga
+    </div>
+    <div class="missio-item" onclick="mostrarTab('mapa');" style="cursor:pointer;">
+      ${missio3} Arriba al nivell 10
+    </div>
   `;
 }
 
-// ===== MINIJOC - MODIFICADO PARA MOSTRAR NOMBRE =====
+// ===== MINIJOC =====
+function novaFrase() {
+  if (FRASES_MINIJOC.length === 0) {
+    document.getElementById('minijoc-frase').textContent = 'Carregant...';
+    return;
+  }
+  
+  FRASE_ACTUAL = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
+  EMOJIS_TRIATS = [];
+  
+  document.getElementById('minijoc-frase').textContent = FRASE_ACTUAL.frase;
+  document.getElementById('minijoc-seleccionats').innerHTML = '';
+  document.getElementById('minijoc-feedback').innerHTML = '';
+  
+  generarOpcions();
+}
+
 function generarOpcions() {
   const grid = document.getElementById('minijoc-emojis');
   const correctos = FRASE_ACTUAL.solucio;
   
-  // Busca el objeto completo del emoji para sacar nom_cat
   const getEmojiData = (emojiChar) => {
     return TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiChar));
   };
@@ -736,24 +739,36 @@ function generarOpcions() {
 }
 
 function triarEmoji(emoji) {
-  if (EMOJIS_TRIATS.length < FRASE_ACTUAL.solucio.length) {
-    EMOJIS_TRIATS.push(emoji);
-    document.getElementById('minijoc-triats').textContent = EMOJIS_TRIATS.join(' ');
+  if (EMOJIS_TRIATS.length >= FRASE_ACTUAL.solucio.length) return;
+  
+  EMOJIS_TRIATS.push(emoji);
+  const cont = document.getElementById('minijoc-seleccionats');
+  const span = document.createElement('span');
+  span.textContent = emoji;
+  cont.appendChild(span);
+  
+  if (EMOJIS_TRIATS.length === FRASE_ACTUAL.solucio.length) {
+    setTimeout(comprovarMinijoc, 300);
   }
 }
 
 function comprovarMinijoc() {
   const feedback = document.getElementById('minijoc-feedback');
   const correcte = FRASE_ACTUAL.solucio.join('') === EMOJIS_TRIATS.join('');
+  
   if (correcte) {
     feedback.innerHTML = `<p style="color:#4CAF50; font-weight:bold;">Correcte! +5 🪙</p>`;
     estat.monedes += 5;
     estat.progres.encerts++;
+    
     if (estat.progres.encerts >= 25) {
-      estat.progres.nivellActualMapa++;
+      if (estat.progres.nivellActualMapa < 100) {
+        estat.progres.nivellActualMapa++;
+        alert(`🔓 Nou nivell desbloquejat! Ara ets nivell ${estat.progres.nivellActualMapa}`);
+      }
       estat.progres.encerts = 0;
-      alert(`Puja de nivell! Ara ets nivell ${estat.progres.nivellActualMapa}`);
     }
+    
     guardarEstat();
     actualitzarUI();
     setTimeout(() => novaFrase(), 1500);
@@ -941,17 +956,21 @@ function carregarTips() {
   const cont = document.getElementById('tips-contenidor');
   if(!cont) return;
 
-  if (!totsElsTips || totsElsTips.length === 0) {
-    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha tips carregats.</div>`;
-    return;
-  }
+  // Si no pegaste tips o está vacío, usa estos de fallback
+  const tipsFallback = [
+    {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata", nivell: "a1"},
+    {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates", nivell: "a1"},
+    {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"}
+  ];
+  
+  const tipsActius = (totsElsTips && totsElsTips.length > 0) ? totsElsTips : tipsFallback;
 
-  if(tipsUsats.length === totsElsTips.length) {
+  if(tipsUsats.length === tipsActius.length) {
     tipsUsats = [];
   }
 
-  let tipsDisponibles = totsElsTips.filter(t =>!tipsUsats.includes(t.truc));
-  if (tipsDisponibles.length === 0) tipsDisponibles = totsElsTips;
+  let tipsDisponibles = tipsActius.filter(t =>!tipsUsats.includes(t.truc));
+  if (tipsDisponibles.length === 0) tipsDisponibles = tipsActius;
   
   const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
   tipsUsats.push(tip.truc);
