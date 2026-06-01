@@ -704,47 +704,33 @@ function renderMissio() {
   `;
 }
 
-// ===== MINIJOC =====
-function novaFrase() {
-  if (FRASES_MINIJOC.length === 0) {
-    document.getElementById('minijoc-frase').textContent = "No hi ha frases carregades";
-    return;
-  }
-  const plantilla = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
-  const solucio = [];
-  let text = plantilla.text;
-  plantilla.categories.forEach(cat => {
-    const catReal = MAP_CATEGORIES[cat];
-    const opcions = CATEGORIES_TOTS[catReal];
-    if (!opcions || opcions.length === 0) return;
-    const elegido = opcions[Math.floor(Math.random() * opcions.length)];
-    text = text.replace(`{${cat}}`, elegido.nom_cat);
-    solucio.push(elegido.emoji);
-  });
-  FRASE_ACTUAL = { text, solucio };
-  EMOJIS_TRIATS = [];
-  mostrarFrase();
-  generarOpcions();
-}
-
-function mostrarFrase() {
-  document.getElementById('minijoc-frase').textContent = FRASE_ACTUAL.text;
-  document.getElementById('minijoc-triats').textContent = '';
-  document.getElementById('minijoc-feedback').innerHTML = '';
-}
-
+// ===== MINIJOC - MODIFICADO PARA MOSTRAR NOMBRE =====
 function generarOpcions() {
   const grid = document.getElementById('minijoc-emojis');
   const correctos = FRASE_ACTUAL.solucio;
+  
+  // Busca el objeto completo del emoji para sacar nom_cat
+  const getEmojiData = (emojiChar) => {
+    return TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiChar));
+  };
+  
   const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
    .sort(() => 0.5 - Math.random()).slice(0, 10);
+  
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
+  
   grid.innerHTML = '';
-  opcions.forEach(emoji => {
+  opcions.forEach(emojiChar => {
+    const data = getEmojiData(emojiChar);
+    const nom = data? data.nom_cat : '';
+    
     const div = document.createElement('div');
     div.className = 'emoji-item';
-    div.innerHTML = `<div class="emoji-large">${emoji}</div>`;
-    div.onclick = () => triarEmoji(emoji);
+    div.innerHTML = `
+      <div class="emoji-large">${emojiChar}</div>
+      <div class="emoji-name">${nom}</div>
+    `;
+    div.onclick = () => triarEmoji(emojiChar);
     grid.appendChild(div);
   });
 }
@@ -950,16 +936,23 @@ function mostrarLectura() {
   actualitzarUI();
 }
 
-// ===== TIPS =====
+// ===== TIPS - CON VALIDACIÓN =====
 function carregarTips() {
   const cont = document.getElementById('tips-contenidor');
   if(!cont) return;
+
+  if (!totsElsTips || totsElsTips.length === 0) {
+    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha tips carregats.</div>`;
+    return;
+  }
 
   if(tipsUsats.length === totsElsTips.length) {
     tipsUsats = [];
   }
 
   let tipsDisponibles = totsElsTips.filter(t =>!tipsUsats.includes(t.truc));
+  if (tipsDisponibles.length === 0) tipsDisponibles = totsElsTips;
+  
   const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
   tipsUsats.push(tip.truc);
 
@@ -976,9 +969,14 @@ function carregarTips() {
   `;
 }
 
-// ===== BOTIGA =====
+// ===== BOTIGA - CON VALIDACIÓN =====
 function renderBotiga() {
   const cont = document.getElementById('botiga-contenidor');
+  if (!PACKS_BOTIGA || PACKS_BOTIGA.length === 0) {
+    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha packs a la botiga.</div>`;
+    return;
+  }
+  
   cont.innerHTML = '';
   PACKS_BOTIGA.forEach(pack => {
     const comprat = estat.compres.includes(pack.id);
