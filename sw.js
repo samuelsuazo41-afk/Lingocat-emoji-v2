@@ -1,57 +1,62 @@
-const CACHE_NAME = 'lingocat-v65';
+const CACHE_NAME = 'lingocat-v47';
 const URLS_TO_CACHE = [
   './',
   './index.html',
   './main.js',
-  './sw.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
-  './data/minijoc_frases.json',
+  './data/minijoc_frases.json'
 ];
 
+// Instal·lació: cachejar només lo que existeix
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('Cacheando v50...');
-      return cache.addAll(URLS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(URLS_TO_CACHE))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
+// Activació: esborrar caches velles
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Borrando cache vieja:', cacheName);
-            return caches.delete(cacheName);
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
-      );
-    })
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch: sirve desde cache primero, luego red
+// Fetch: cache first per JSON, network first per HTML/JS
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  
+  // JSON de dades: cache first
+  if (url.pathname.includes('/data/')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(resp => resp || fetch(event.request))
+    );
+    return;
+  }
+
+  // Resto: network first
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request).then(res => {
-        // Guarda en cache para próxima vez
+    fetch(event.request)
+      .then(res => {
         return caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, res.clone());
           return res;
         });
-      });
-    }).catch(() => {
-      // Si falla todo, devuelve index.html para PWA
-      return caches.match('./index.html');
-    })
+      })
+      .catch(() => caches.match('./index.html'))
   );
 });
