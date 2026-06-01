@@ -1,4 +1,4 @@
-// main.js - lingocat emoji v2 UNIFICADO
+// main.js - Lingocat-emoji-v2 UNIFICADO
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
