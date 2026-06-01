@@ -10,18 +10,18 @@ let estat = {
     encerts: parseInt(localStorage.getItem('cat_encerts')) || 0
   },
   energia: parseInt(localStorage.getItem('cat_energia')) || 100,
-  ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now()
+  ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
+  desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {} // aquí van los emojis desbloqueados por categoría
 };
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
 
 // ===== DATOS =====
-let CATEGORIES_TOTS = {};           // categories_emoji.json
-let CATEGORIES_DESBLOQUEJADES = {}; // calculado según PACK_INICIAL + compres
-let PACKS_BOTIGA = [];              // botiga_emoji.json
-let FRASES_MINIJOC = [];            // minijoc_frases.json
-let LECTURES_DATA = [];             // lectures.json
-let TOTS_EMOJIS = [];               // aplanado de CATEGORIES_TOTS para minijoc
+let CATEGORIES_TOTS = {}; // categories_emoji.json
+let PACKS_BOTIGA = []; // botiga_emoji.json
+let FRASES_MINIJOC = []; // minijoc_frases.json
+let LECTURES_DATA = []; // lectures.json
+let TOTS_EMOJIS = []; // aplanado de CATEGORIES_TOTS para minijoc
 
 // ===== MINIJOC =====
 let FRASE_ACTUAL = null;
@@ -677,12 +677,28 @@ async function carregarDades() {
     LECTURES_DATA = [];
   }
 
-  // Construye TOTS_EMOJIS plano para el minijoc
+  // Inicialitza desbloquejats si està buit
+  if (!estat.desbloquejats || Object.keys(estat.desbloquejats).length === 0) {
+    estat.desbloquejats = {};
+    Object.keys(CATEGORIES_TOTS).forEach(cat => {
+      estat.desbloquejats[cat] = [];
+    });
+  }
+  CATEGORIES_DESBLOQUEJADES = estat.desbloquejats;
+
+  // Construeix TOTS_EMOJIS pla per al minijoc amb nom i categoria
   TOTS_EMOJIS = [];
-  Object.values(CATEGORIES_TOTS).flat().forEach(emoji => {
-    if (!TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji))) {
-      TOTS_EMOJIS.push({emoji: emoji, nom_cat: '', categoria: ''});
-    }
+  Object.entries(CATEGORIES_TOTS).forEach(([cat, emojis]) => {
+    emojis.forEach(emoji => {
+      const emojiNet = quitarSkinTone(emoji);
+      if (!TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === emojiNet)) {
+        TOTS_EMOJIS.push({
+          emoji: emoji,
+          nom_cat: emojiNet,
+          categoria: cat
+        });
+      }
+    });
   });
 
   construirCategories();
@@ -731,19 +747,23 @@ function renderMissio() {
 }
 
 // ===== MINIJOC =====
+let FRASES_MINIJOC = [];
+let FRASE_ACTUAL = null;
+let EMOJIS_TRIATS = [];
+
 function novaFrase() {
   const fraseEl = document.getElementById('minijoc-frase');
   const gridEl = document.getElementById('minijoc-emojis');
 
-  if (FRASES_MINIJOC.length === 0) {
+  if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) {
     fraseEl.textContent = 'Error: no hi ha frases carregades. Revisa minijoc_frases.json';
     gridEl.innerHTML = '';
     return;
   }
 
-  const nivell = estat.progres.nivellActualMapa <= 25? 'a1' : estat.progres.nivellActualMapa <= 50? 'a2' : 'b1';
-  const frasesNivell = FRASES_MINIJOC.filter(f =>!f.nivell || f.nivell === nivell);
-  const pool = frasesNivell.length > 0? frasesNivell : FRASES_MINIJOC;
+  const nivell = estat.progres.nivellActualMapa <= 25 ? 'a1' : estat.progres.nivellActualMapa <= 50 ? 'a2' : 'b1';
+  const frasesNivell = FRASES_MINIJOC.filter(f => !f.nivell || f.nivell === nivell);
+  const pool = frasesNivell.length > 0 ? frasesNivell : FRASES_MINIJOC;
 
   FRASE_ACTUAL = pool[Math.floor(Math.random() * pool.length)];
   EMOJIS_TRIATS = [];
@@ -763,15 +783,16 @@ function generarOpcions() {
   };
 
   const falsos = TOTS_EMOJIS
-.filter(e =>!correctos.includes(e.emoji))
-.sort(() => 0.5 - Math.random()).slice(0, 10);
+    .filter(e => !correctos.includes(e.emoji))
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 10);
 
-  const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
+  const opcions = [...correctos, ...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
   grid.innerHTML = '';
   opcions.forEach(emojiChar => {
     const data = getEmojiData(emojiChar);
-    const nom = data? data.nom_cat : '';
+    const nom = data ? data.nom_cat : '';
     const div = document.createElement('div');
     div.className = 'emoji-item';
     div.innerHTML = `<div class="emoji-large">${emojiChar}</div><div class="emoji-name">${nom}</div>`;
@@ -817,6 +838,7 @@ function comprovarMinijoc() {
     setTimeout(() => novaFrase(), 2000);
   }
 }
+
 
 // ===== DICCIONARI =====
 function renderDiccionari() {
