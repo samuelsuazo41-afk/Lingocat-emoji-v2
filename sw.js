@@ -1,4 +1,3 @@
-// sw.js - Service Worker Lingocat emoji v2
 const CACHE_NAME = 'lingocat-v63';
 const URLS_TO_CACHE = [
   './',
@@ -14,7 +13,6 @@ const URLS_TO_CACHE = [
   './data/minijoc_frases.json',
 ];
 
-// Install: guarda todo en cache
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -25,7 +23,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate: borra caches viejas
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
