@@ -1214,47 +1214,47 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
 }
 
-// ===== INTRO ONBOARDING - surt cada cop =====
+// ===== INTRO ONBOARDING =====
 const INTRO_SLIDES = [
   {emoji:"🙀", titol:"Cat Lingo Emoji", text:"Aprèn català jugant amb emojis. Tria emojis per formar frases i puja de nivell!"},
-
   {emoji:"🎯", titol:"Mapa i Gremi", text:"Mapa: 100 nivells. Gremi > Minijocs: arma la frase tocant els emojis correctes. 25 encerts = pujes de nivell!"},
-
   {emoji:"📖", titol:"Lectura", text:"Lectura: genera textos curts A1-B1. Gastes 10 d’energia i et surt vocabulari + pregunta de comprensió."},
-
   {emoji:"💡", titol:"Tips", text:"Tips: consells ràpids de gramàtica i vocabulari. Toca 'Següent Tip' per veure’n un de nou cada cop."},
-
   {emoji:"🪙⚡", titol:"Monedes i Energia", text:"Guanya monedes amb el minijoc. Usa energia per lectures i recarrega amb monedes. Compra packs d’emoji a la Botiga."},
-
   {emoji:"🚀", titol:"Ja estàs!", text:"Tens Missió per guiar-te, Botiga per desbloquejar, i tot el que cal per començar. Som-hi!"}
 ];
 let introIndex = 0;
 
 function mostrarIntro() {
+  if(estat.introVist) return; // solo sale 1 vez
   document.getElementById('intro').classList.remove('hidden');
   pintarSlide();
 }
 
 function pintarSlide() {
   const s = INTRO_SLIDES[introIndex];
-  document.getElementById('intro-slide').innerHTML = `
-    <div style="font-size:60px; margin-bottom:20px;">${s.emoji}</div>
-    <h2 style="margin-bottom:15px;">${s.titol}</h2>
-    <p style="color:#aaa; line-height:1.6;">${s.text}</p>
-  `;
-  document.getElementById('intro-next').textContent = introIndex === INTRO_SLIDES.length-1? 'Entrar' : 'Següent';
+  document.getElementById('intro-emoji').textContent = s.emoji;
+  document.getElementById('intro-titol').textContent = s.titol;
+  document.getElementById('intro-text').textContent = s.text;
+  document.getElementById('intro-dots').textContent = INTRO_SLIDES.map((_,i) => i===introIndex? '●' : '○').join(' ');
+  document.getElementById('intro-btn').textContent = introIndex === INTRO_SLIDES.length-1? 'Entrar' : 'Següent';
 }
 
 function seguentSlide() {
+  vibrar();
   introIndex++;
-  if(introIndex >= INTRO_SLIDES.length) tancarIntro();
-  else pintarSlide();
+  if(introIndex >= INTRO_SLIDES.length) {
+    tancarIntro();
+  } else {
+    pintarSlide();
+  }
 }
 
 function tancarIntro() {
   document.getElementById('intro').classList.add('hidden');
-  introIndex = 0;
+  estat.introVist = true;
+  guardarEstat();
 }
 
-// Mostrar intro cada cop que carrega l'app
+// Mostrar intro al cargar
 window.addEventListener('load', () => setTimeout(mostrarIntro, 300));
