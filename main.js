@@ -1,4 +1,4 @@
-// main.js - Lingocat emoji v2 completo - sin lectures.json
+// main.js - Lingocat emoji v2 - BLOQUE 1 CORREGIDO
 
 // ===== ESTADO GLOBAL =====
 let estat = {
@@ -17,11 +17,13 @@ let estat = {
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
 
 // ===== DATOS =====
-let CATEGORIES_TOTS = {}; // categories_emoji.json
+let CATEGORIES_TOTS = {}; // categories_emoji.json - solo para agrupar desbloqueos
+let BIBLIOTECA_PLA = []; // biblioteca_emojis.json - array plano con nombre/descripcion
+let BIBLIOTECA_POR_CAT = {}; // agrupado por categoria para pintar
 let PACKS_BOTIGA = []; // botiga_emoji.json
 let FRASES_MINIJOC = []; // minijoc_frases.json
-let TOTS_EMOJIS = []; // aplanado de CATEGORIES_TOTS para minijoc
-let CATEGORIES_DESBLOQUEJADES = {}; // para el diccionario
+let TOTS_EMOJIS = []; // aplanado de BIBLIOTECA_PLA para minijoc
+let CATEGORIES_DESBLOQUEJADES = {}; // diccionario: {categoria: [emoji1, emoji2]}
 
 // ===== MINIJOC =====
 let FRASE_ACTUAL = null;
@@ -69,25 +71,39 @@ function vibrar() {
 // ===== CARREGAR DADES =====
 async function carregarDades() {
   try {
-    const [catRes, botRes, frasesRes] = await Promise.all([
+    const [catRes, bibRes, botRes, frasesRes] = await Promise.all([
       fetch('./data/categories_emoji.json'),
+      fetch('./data/biblioteca_emojis.json'),
       fetch('./data/botiga_emoji.json'),
       fetch('./data/minijoc_frases.json')
     ]);
 
     CATEGORIES_TOTS = await catRes.json();
+    BIBLIOTECA_PLA = await bibRes.json();
     PACKS_BOTIGA = await botRes.json();
-    FRASES_MINIJOC = await frasesRes.json();
+
+    const frasesData = await frasesRes.json();
+    FRASES_MINIJOC = Array.isArray(frasesData)? frasesData : (frasesData.frases || []);
+    console.log('Frases cargadas:', FRASES_MINIJOC.length);
 
   } catch(e) {
     console.error('Error carregant dades:', e);
-    alert('Error carregant dades. Revisa que existixin els fitxers JSON a /data/');
+    alert('Error carregant dades. Revisa /data/');
   }
 
+  agruparBibliotecaPorCategoria();
   construirCategories();
   construirTotsEmojis();
   actualitzarUI();
   novaFrase();
+}
+
+function agruparBibliotecaPorCategoria() {
+  BIBLIOTECA_POR_CAT = {};
+  BIBLIOTECA_PLA.forEach(e => {
+    if (!BIBLIOTECA_POR_CAT[e.categoria]) BIBLIOTECA_POR_CAT[e.categoria] = [];
+    BIBLIOTECA_POR_CAT[e.categoria].push(e);
+  });
 }
 
 function construirCategories() {
@@ -111,15 +127,7 @@ function construirCategories() {
 }
 
 function construirTotsEmojis() {
-  TOTS_EMOJIS = [];
-  Object.entries(CATEGORIES_TOTS).forEach(([cat, emojis]) => {
-    emojis.forEach(emoji => {
-      const emojiNet = quitarSkinTone(emoji);
-      if (!TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === emojiNet)) {
-        TOTS_EMOJIS.push({emoji: emoji, nom_cat: emojiNet, categoria: cat});
-      }
-    });
-  });
+  TOTS_EMOJIS = BIBLIOTECA_PLA.map(e => ({...e}));
 }
 
 // ===== LECTURA =====  
@@ -864,23 +872,55 @@ function renderDiccionari() {
   let html = `<h3 style="text-align:center; margin-bottom:10px;">Biblioteca</h3>`;
   html += `<p style="text-align:center; color:#888; margin-bottom:20px; font-size:14px;">Tots els emojis disponibles. Compra packs a la Botiga per desbloquejar-los.</p>`;
 
-  for (const [cat, emojis] of Object.entries(CATEGORIES_TOTS)) {
+  for (const [cat, emojis] of Object.entries(BIBLIOTECA_POR_CAT)) {
     html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
     emojis.forEach(e => {
-      const desbloquejat = CATEGORIES_DESBLOQUEJADES[cat]?.includes(e);
+      const emojiNet = quitarSkinTone(e.emoji);
+      const desbloquejat = CATEGORIES_DESBLOQUEJADES[cat]?.includes(emojiNet);
       const opacitat = desbloquejat? '1' : '0.12';
       const filtre = desbloquejat? '' : 'grayscale(1) brightness(0.4)';
       const cursor = desbloquejat? 'pointer' : 'not-allowed';
       const colorTexto = desbloquejat? '#fff' : '#444';
 
       html += `<div class="emoji-item" style="opacity:${opacitat}; filter:${filtre}; cursor:${cursor};">
-        <div class="emoji-large">${e}</div>
-        <div class="emoji-name" style="color:${colorTexto}; font-weight:600;">${quitarSkinTone(e)}</div>
+        <div class="emoji-large">${e.emoji}</div>
+        <div class="emoji-name" style="color:${colorTexto}; font-weight:600;">${e.nom_cat}</div>
+        ${e.para_frases? `<div style="font-size:10px; color:#aaa; margin-top:4px;">${e.para_frases.slice(0,3).join(', ')}</div>` : ''}
       </div>`;
     });
     html += `</div>`;
   }
   cont.innerHTML = html;
+}
+
+function comprarPack(id, preu) {
+  if (estat.monedes < preu) {
+    alert(LANG.no_prou_monedes);
+    return;
+  }
+  estat.monedes -= preu;
+  estat.compres.push(id);
+
+  const pack = PACKS_BOTIGA.find(p => p.id === id);
+  if (pack && pack.emojis) {
+    pack.emojis.forEach(e => {
+      const emojiNet = quitarSkinTone(e.emoji);
+      const cat = e.categoria;
+      if (cat) {
+        if (!estat.desbloquejats[cat]) estat.desbloquejats[cat] = [];
+        if (!estat.desbloquejats[cat].includes(emojiNet)) {
+          estat.desbloquejats[cat].push(emojiNet);
+        }
+      }
+    });
+  }
+
+  guardarEstat();
+  actualitzarUI();
+  construirCategories();
+  renderBotiga();
+  renderDiccionari();
+  alert('Pack desbloquejat a la biblioteca!');
 }
 
 // ===== TIPS =====
