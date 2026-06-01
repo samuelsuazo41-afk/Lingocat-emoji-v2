@@ -1,5 +1,6 @@
-// main.js - Lingocat v3 completo
+// main.js - Lingocat v3 completo - ordenado para deploy
 
+// ===== ESTADO GLOBAL =====
 let estat = {
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
   compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
@@ -29,27 +30,18 @@ const MAP_CATEGORIES = {
   roba: 'roba', emocio: 'emocio', objecte: 'objecte', natura: 'natura', clima: 'natura'
 };
 
-// ===== BANCO VOCAB LECTURA =====
-const BANCO_VOCAB = {...pega aquí tu BANCO_VOCAB completo...};
+// ===== BANCOS DE DATOS - PEGA AQUÍ =====
+const BANCO_VOCAB = {
+  // PEGA AQUÍ TU BANCO DE LECTURA COMPLETO
+};
 
-// ===== BANCO TIPS =====
 const totsElsTips = [
-  {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata", nivell: "a1"},
-  {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates", nivell: "a1"},
-  {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"},
-  {truc: "Bon dia per saludar al matí", exemple: "Bon dia! Com estàs?", nivell: "a1"},
-  {truc: "Bona nit per acomiadar-se", exemple: "Bona nit!", nivell: "a1"},
-  {truc: "NY es pronuncia com ñ d'espanyol", exemple: "Any = Añ, Seny = Señ", nivell: "a2"},
-  {truc: "Futur pròxim: anar a + infinitiu", exemple: "Vaig a estudiar", nivell: "a2"},
-  {truc: "Negació: no + verb", exemple: "No parlo", nivell: "a2"},
-  {truc: "Apòstrof L' D' N' S' davant vocal", exemple: "L'home, D'aigua", nivell: "b1"},
-  {truc: "Subjuntiu present: que + verb", exemple: "Vull que vinguis", nivell: "b1"},
-  {truc: "Per = causa/motiu, Per a = finalitat", exemple: "Ho faig per tu / És per a tu", nivell: "b1"},
-  {truc: "Em, et, el/la, ens, us, els/les", exemple: "Em veig, Et veig", nivell: "a2"}
+  // PEGA AQUÍ TU BANCO DE TIPS COMPLETO
 ];
 
 let tipsUsats = [];
 
+// ===== LANG =====
 const LANG = {
   no_prou_monedes: "No tens prou monedes!",
   energy_low: "No tens prou energia!",
@@ -69,6 +61,7 @@ const INTRO_SLIDES = [
 
 let slideActual = 0;
 
+// ===== INICI =====
 document.addEventListener('DOMContentLoaded', async () => {
   await carregarDades();
   actualitzarUI();
@@ -76,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setTimeout(mostrarIntro, 500);
 });
 
-// ===== NAVEGACIÓ TABS =====
+// ===== NAVEGACIÓ =====
 function mostrarTab(tab) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -89,6 +82,15 @@ function mostrarTab(tab) {
   if (tab === 'lectura') generarLectura();
   if (tab === 'tips') carregarTips();
   if (tab === 'botiga') renderBotiga();
+}
+
+function mostrarSubTab(sub) {
+  document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('gremi-' + sub).style.display = 'block';
+  document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`).classList.add('active');
+  if (sub === 'biblioteca') renderDiccionari();
+  if (sub === 'minijoc') novaFrase();
 }
 
 // ===== CARREGAR DADES =====
@@ -181,28 +183,104 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI =====
-function mostrarSubTab(sub) {
-  document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('gremi-' + sub).style.display = 'block';
-  document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`).classList.add('active');
-  if (sub === 'biblioteca') renderDiccionari();
-  if (sub === 'minijoc') novaFrase();
+// ===== MINIJOC =====
+function novaFrase() {
+  if (FRASES_MINIJOC.length === 0) {
+    document.getElementById('minijoc-frase').textContent = "No hi ha frases carregades";
+    return;
+  }
+  const plantilla = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
+  const solucio = [];
+  let text = plantilla.text;
+  plantilla.categories.forEach(cat => {
+    const catReal = MAP_CATEGORIES[cat];
+    const opcions = CATEGORIES_TOTS[catReal];
+    if (!opcions || opcions.length === 0) return;
+    const elegido = opcions[Math.floor(Math.random() * opcions.length)];
+    text = text.replace(`{${cat}}`, elegido.nom_cat);
+    solucio.push(elegido.emoji);
+  });
+  FRASE_ACTUAL = { text, solucio };
+  EMOJIS_TRIATS = [];
+  mostrarFrase();
+  generarOpcions();
 }
 
-// MINIJOC
-function novaFrase() { /* tu función anterior */ }
-function mostrarFrase() { /*... */ }
-function generarOpcions() { /*... */ }
-function triarEmoji(emoji) { /*... */ }
-function comprovarMinijoc() { /*... */ }
+function mostrarFrase() {
+  document.getElementById('minijoc-frase').textContent = FRASE_ACTUAL.text;
+  document.getElementById('minijoc-triats').textContent = '';
+  document.getElementById('minijoc-feedback').innerHTML = '';
+}
 
-// DICCIONARI
-function renderDiccionari() { /* tu función anterior */ }
+function generarOpcions() {
+  const grid = document.getElementById('minijoc-emojis');
+  const correctos = FRASE_ACTUAL.solucio;
+  const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
+   .sort(() => 0.5 - Math.random()).slice(0, 10);
+  const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
+  grid.innerHTML = '';
+  opcions.forEach(emoji => {
+    const div = document.createElement('div');
+    div.className = 'emoji-item';
+    div.innerHTML = `<div class="emoji-large">${emoji}</div>`;
+    div.onclick = () => triarEmoji(emoji);
+    grid.appendChild(div);
+  });
+}
 
+function triarEmoji(emoji) {
+  if (EMOJIS_TRIATS.length < FRASE_ACTUAL.solucio.length) {
+    EMOJIS_TRIATS.push(emoji);
+    document.getElementById('minijoc-triats').textContent = EMOJIS_TRIATS.join(' ');
+  }
+}
 
+function comprovarMinijoc() {
+  const feedback = document.getElementById('minijoc-feedback');
+  const correcte = FRASE_ACTUAL.solucio.join('') === EMOJIS_TRIATS.join('');
+  if (correcte) {
+    feedback.innerHTML = `<p style="color:#4CAF50; font-weight:bold;">Correcte! +5 🪙</p>`;
+    estat.monedes += 5;
+    estat.progres.encerts++;
+    if (estat.progres.encerts >= 25) {
+      estat.progres.nivellActualMapa++;
+      estat.progres.encerts = 0;
+      alert(`Puja de nivell! Ara ets nivell ${estat.progres.nivellActualMapa}`);
+    }
+    guardarEstat();
+    actualitzarUI();
+    setTimeout(() => novaFrase(), 1500);
+  } else {
+    feedback.innerHTML = `<p style="color:#f44336;">No és així. Era: ${FRASE_ACTUAL.solucio.join(' ')}</p>`;
+    setTimeout(() => novaFrase(), 2000);
+  }
+}
 
+// ===== DICCIONARI =====
+function renderDiccionari() {
+  const cont = document.getElementById('gremi-biblioteca');
+  let html = `<h3 style="text-align:center; margin-bottom:10px;">Biblioteca</h3>`;
+  html += `<p style="text-align:center; color:#888; margin-bottom:20px; font-size:14px;">Tots els emojis disponibles. Compra packs a la Botiga per desbloquejar-los.</p>`;
+  for (const [cat, emojis] of Object.entries(CATEGORIES_TOTS)) {
+    html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
+    emojis.forEach(e => {
+      const desbloquejat = CATEGORIES_DESBLOQUEJADES[cat]?.includes(e.emoji);
+      const opacitat = desbloquejat? '1' : '0.12';
+      const filtre = desbloquejat? '' : 'grayscale(1) brightness(0.4)';
+      const cursor = desbloquejat? 'pointer' : 'not-allowed';
+      const colorTexto = desbloquejat? '#fff' : '#444';
+      const paraules = e.para_frases? e.para_frases.join(', ') : '';
+      html += `
+        <div class="emoji-item" style="opacity:${opacitat}; filter:${filtre}; cursor:${cursor};">
+          <div class="emoji-large">${e.emoji}</div>
+          <div class="emoji-name" style="color:${colorTexto}; font-weight:600;">${e.nom_cat}</div>
+          <div style="font-size:10px; color:#aaa; margin-top:4px;">${paraules}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  cont.innerHTML = html;
+}
 
 // ===== LECTURA =====
 function tickEnergia() {
@@ -357,7 +435,7 @@ function carregarTips() {
   if(!cont) return;
 
   if(tipsUsats.length === totsElsTips.length) {
-    tipsUsats = []; // Reset quan s'acaben
+    tipsUsats = [];
   }
 
   let tipsDisponibles = totsElsTips.filter(t =>!tipsUsats.includes(t.truc));
@@ -378,10 +456,43 @@ function carregarTips() {
 }
 
 // ===== BOTIGA =====
-function renderBotiga() { /* tu función anterior */ }
-function comprarPack(id, preu) { /* tu función anterior */ }
+function renderBotiga() {
+  const cont = document.getElementById('botiga-contenidor');
+  cont.innerHTML = '';
+  PACKS_BOTIGA.forEach(pack => {
+    const comprat = estat.compres.includes(pack.id);
+    const card = document.createElement('div');
+    card.className = 'capitol-card';
+    card.innerHTML = `
+      <div class="capitol-icona">🎁</div>
+      <h3>${pack.nom}</h3>
+      <p style="color:#aaa; margin:8px 0;">${pack.descripcio}</p>
+      <p style="font-size:24px;">${pack.emojis.slice(0,6).map(e => e.emoji).join(' ')}${pack.emojis.length > 6? '...' : ''}</p>
+      <button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu})" ${comprat? 'disabled' : ''}>
+        ${comprat? 'Desbloquejat' : `🪙 ${pack.preu}`}
+      </button>
+    `;
+    cont.appendChild(card);
+  });
+}
 
-// ===== INTRO + SERVICE WORKER =====
+function comprarPack(id, preu) {
+  if (estat.monedes < preu) {
+    mostrarModal(LANG.no_prou_monedes);
+    return;
+  }
+  estat.monedes -= preu;
+  estat.compres.push(id);
+  guardarEstat();
+  actualitzarUI();
+  carregarDades().then(() => {
+    renderBotiga();
+    renderDiccionari();
+    alert('Pack desbloquejat a la biblioteca!');
+  });
+}
+
+// ===== INTRO =====
 function mostrarIntro() {
   if(estat.introVist) {
     document.getElementById('intro').classList.add('hidden');
@@ -418,14 +529,7 @@ function tancarIntro() {
   document.getElementById('intro').classList.add('hidden');
 }
 
-// Service Worker per PWA
-if('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-  });
-}
-
-// ===== UI + UTILS =====
+// ===== UTILS =====
 function actualitzarUI() {
   document.getElementById('monedes').textContent = estat.monedes;
   document.getElementById('nivell').textContent = estat.progres.nivellActualMapa;
@@ -447,4 +551,11 @@ function vibrar() {
 
 function mostrarModal(msg) {
   alert(msg);
+}
+
+// ===== SERVICE WORKER =====
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+  });
 }
