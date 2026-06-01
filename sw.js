@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lingocat-v5';
+const CACHE_NAME = 'lingocat-v2';
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -24,26 +24,22 @@ self.addEventListener('install', event => {
 // Activació: esborrar caches velles
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(name => {
-          if (name !== CACHE_NAME) {
-            return caches.delete(name);
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
-      );
-    }).then(() => self.clients.claim())
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch: serveix des de cache, si no hi és va a xarxa
+// Fetch: servir des de cache, sinó xarxa
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      })
+      .then(resp => resp || fetch(event.request))
   );
 });
-
-
