@@ -12,7 +12,6 @@ const URLS_TO_CACHE = [
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
   './data/minijoc_frases.json',
-  './data/lectures.json'
 ];
 
 // Install: guarda todo en cache
