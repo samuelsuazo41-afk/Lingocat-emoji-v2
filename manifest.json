@@ -1,1 +1,30 @@
+{
+  "name": "Lingocat Emoji v2",
+  "short_name": "Lingo cat",
+  "description": "Aprèn català amb RPG d'emojis",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFD700",
+  "theme_color": "#C60C30",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
+
 
