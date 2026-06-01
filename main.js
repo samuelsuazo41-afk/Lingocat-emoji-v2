@@ -993,7 +993,28 @@ function renderDiccionari() {
   cont.innerHTML = html;
 }
 
+// ===== DADES TIPS =====
+const dadesTips = {
+  conjugacio: [
+    {truc: "El present regular acaba en -o, -es, -a", exemple: "jo parlo, tu parles, ell parla"},
+    {truc: "El passat s'forma amb -va-", exemple: "jo parlava, tu parlaves"},
+    {truc: "El futur porta -r-", exemple: "jo parlaré, tu parlaràs"}
+  ],
+  pronunciacio: [
+    {truc: "La 'e' oberta sona com en 'porta'", exemple: "porta, terra, escola"},
+    {truc: "La 'e' tancada sona com en 'peix'", exemple: "peix, teva, bé"},
+    {truc: "La 'o' oberta sona com en 'porta'", exemple: "porta, cotxe"}
+  ],
+  vocabulari: [
+    {truc: "Els adjectius van després del nom", exemple: "casa gran, no gran casa"},
+    {truc: "El plural s'forma amb -s", exemple: "gat → gats, casa → cases"}
+  ]
+};
+
 // ===== TIPS =====
+let totsElsTips = [];
+let tipsUsats = [];
+
 function carregarTips() {
   if (totsElsTips.length === 0) {
     totsElsTips = [];
