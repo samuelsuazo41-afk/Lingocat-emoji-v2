@@ -15,18 +15,24 @@ let estat = {
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
 
-let EMOJIS_BASE = [];
-let PACKS_BOTIGA = [];
-let FRASES_MINIJOC = [];
-let TOTS_EMOJIS = [];
-let CATEGORIES_TOTS = {};
-let CATEGORIES_DESBLOQUEJADES = {};
+// ===== DATOS =====
+let CATEGORIES_TOTS = {};           // categories_emoji.json
+let CATEGORIES_DESBLOQUEJADES = {}; // calculado según PACK_INICIAL + compres
+let PACKS_BOTIGA = [];              // botiga_emoji.json
+let FRASES_MINIJOC = [];            // minijoc_frases.json
+let LECTURES_DATA = [];             // lectures.json
+let TOTS_EMOJIS = [];               // aplanado de CATEGORIES_TOTS para minijoc
+
+// ===== MINIJOC =====
 let FRASE_ACTUAL = null;
 let EMOJIS_TRIATS = [];
+
+// ===== TIPS =====
 let totsElsTips = [];
 let tipsUsats = [];
+
+// ===== INTRO =====
 let slideActual = 0;
-let LECTURES_DATA = [];
 
 const MAP_CATEGORIES = {
   persona: 'persona', animal: 'animal', menjar: 'menjar', lloc: 'lloc',
@@ -621,13 +627,8 @@ function quitarSkinTone(emoji) {
 }
 
 function construirCategories() {
-  CATEGORIES_TOTS = {};
-  TOTS_EMOJIS.forEach(e => {
-    if (!CATEGORIES_TOTS[e.categoria]) CATEGORIES_TOTS[e.categoria] = [];
-    CATEGORIES_TOTS[e.categoria].push(e);
-  });
-
   const desbloquejats = new Set(PACK_INICIAL.map(e => quitarSkinTone(e)));
+
   estat.compres.forEach(idPack => {
     const pack = PACKS_BOTIGA.find(p => p.id === idPack);
     if (pack && pack.emojis) {
@@ -637,24 +638,22 @@ function construirCategories() {
 
   CATEGORIES_DESBLOQUEJADES = {};
   Object.keys(CATEGORIES_TOTS).forEach(cat => {
-    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat]
-  .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
-  .map(e => e.emoji);
+    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat].filter(e => desbloquejats.has(quitarSkinTone(e)));
   });
 }
 
 // ===== CARREGAR DADES =====
 async function carregarDades() {
   try {
-    const res = await fetch('./data/biblioteca_emojis.json');
-    EMOJIS_BASE = await res.json();
+    const res = await fetch('./data/categories_emoji.json');
+    CATEGORIES_TOTS = await res.json();
   } catch(e) {
-    console.error('Error biblioteca:', e);
-    EMOJIS_BASE = [];
+    console.error('Error categories:', e);
+    CATEGORIES_TOTS = {};
   }
 
   try {
-    const res = await fetch('./data/botiga_emojis.json');
+    const res = await fetch('./data/botiga_emoji.json');
     PACKS_BOTIGA = await res.json();
   } catch(e) {
     console.error('Error botiga:', e);
@@ -678,16 +677,17 @@ async function carregarDades() {
     LECTURES_DATA = [];
   }
 
-  TOTS_EMOJIS = [...EMOJIS_BASE];
-  PACKS_BOTIGA.forEach(pack => {
-    if (pack.emojis) TOTS_EMOJIS.push(...pack.emojis);
+  // Construye TOTS_EMOJIS plano para el minijoc
+  TOTS_EMOJIS = [];
+  Object.values(CATEGORIES_TOTS).flat().forEach(emoji => {
+    if (!TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji))) {
+      TOTS_EMOJIS.push({emoji: emoji, nom_cat: '', categoria: ''});
+    }
   });
 
-  TOTS_EMOJIS = TOTS_EMOJIS.filter((v,i,a) =>
-    a.findIndex(t => quitarSkinTone(t.emoji) === quitarSkinTone(v.emoji)) === i
-  );
   construirCategories();
 }
+
 
 // ===== MAPA =====
 function renderMapa() {
