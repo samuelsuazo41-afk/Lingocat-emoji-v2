@@ -564,7 +564,6 @@ const dadesTips = {
   ]
 };
 
-
 // ===== LANG =====
 const LANG = {
   no_prou_monedes: "No tens prou monedes!",
@@ -626,22 +625,36 @@ function construirCategories() {
     if (!CATEGORIES_TOTS[e.categoria]) CATEGORIES_TOTS[e.categoria] = [];
     CATEGORIES_TOTS[e.categoria].push(e);
   });
+
+  const desbloquejats = new Set(PACK_INICIAL.map(e => quitarSkinTone(e)));
+  estat.compres.forEach(idPack => {
+    const pack = PACKS_BOTIGA.find(p => p.id === idPack);
+    if (pack && pack.emojis) {
+      pack.emojis.forEach(e => desbloquejats.add(quitarSkinTone(e.emoji)));
+    }
+  });
+
   CATEGORIES_DESBLOQUEJADES = {};
   Object.keys(CATEGORIES_TOTS).forEach(cat => {
-    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat].map(e => e.emoji);
+    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat]
+   .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
+   .map(e => e.emoji);
   });
 }
 
 // ===== CARREGAR DADES =====
 async function carregarDades() {
   try {
-    const res = await fetch('/data/biblioteca_emojis.json');
+    const res = await fetch('./data/biblioteca_emojis.json');
     EMOJIS_BASE = await res.json();
     console.log('Biblioteca cargada:', EMOJIS_BASE.length);
-  } catch(e) { console.error('Error biblioteca:', e); }
+  } catch(e) {
+    console.error('Error biblioteca:', e);
+    EMOJIS_BASE = [];
+  }
 
   try {
-    const res = await fetch('/data/botiga_emojis.json');
+    const res = await fetch('./data/botiga_emojis.json');
     PACKS_BOTIGA = await res.json();
     console.log('Botiga cargada:', PACKS_BOTIGA.length, 'packs');
   } catch(e) {
@@ -650,14 +663,20 @@ async function carregarDades() {
   }
 
   try {
-    const res = await fetch('/data/minijoc_frases.json');
+    const res = await fetch('./data/minijoc_frases.json');
     const data = await res.json();
     FRASES_MINIJOC = data.frases || [];
     console.log('Frases cargadas:', FRASES_MINIJOC.length);
-  } catch(e) { console.error('Error frases:', e); }
+  } catch(e) {
+    console.error('Error frases:', e);
+    FRASES_MINIJOC = [];
+  }
 
   TOTS_EMOJIS = [...EMOJIS_BASE];
-  PACKS_BOTIGA.forEach(pack => TOTS_EMOJIS.push(...pack.emojis));
+  PACKS_BOTIGA.forEach(pack => {
+    if (pack.emojis) TOTS_EMOJIS.push(...pack.emojis);
+  });
+
   TOTS_EMOJIS = TOTS_EMOJIS.filter((v,i,a) =>
     a.findIndex(t => quitarSkinTone(t.emoji) === quitarSkinTone(v.emoji)) === i
   );
@@ -731,7 +750,7 @@ function generarOpcions() {
   };
 
   const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
-.sort(() => 0.5 - Math.random()).slice(0, 10);
+ .sort(() => 0.5 - Math.random()).slice(0, 10);
 
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
@@ -796,6 +815,7 @@ function renderDiccionari() {
   const cont = document.getElementById('gremi-biblioteca');
   let html = `<h3 style="text-align:center; margin-bottom:10px;">Biblioteca</h3>`;
   html += `<p style="text-align:center; color:#888; margin-bottom:20px; font-size:14px;">Tots els emojis disponibles. Compra packs a la Botiga per desbloquejar-los.</p>`;
+
   for (const [cat, emojis] of Object.entries(CATEGORIES_TOTS)) {
     html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
     emojis.forEach(e => {
@@ -804,12 +824,13 @@ function renderDiccionari() {
       const filtre = desbloquejat? '' : 'grayscale(1) brightness(0.4)';
       const cursor = desbloquejat? 'pointer' : 'not-allowed';
       const colorTexto = desbloquejat? '#fff' : '#444';
-      const paraules = e.para_frases? e.para_frases.join(', ') : '';
+      const desc = e.descripcio || e.para_frases?.join(', ') || '';
+
       html += `
         <div class="emoji-item" style="opacity:${opacitat}; filter:${filtre}; cursor:${cursor};">
           <div class="emoji-large">${e.emoji}</div>
           <div class="emoji-name" style="color:${colorTexto}; font-weight:600;">${e.nom_cat}</div>
-          <div style="font-size:10px; color:#aaa; margin-top:4px;">${paraules}</div>
+          <div style="font-size:10px; color:#aaa; margin-top:4px;">${desc}</div>
         </div>`;
     });
     html += `</div>`;
