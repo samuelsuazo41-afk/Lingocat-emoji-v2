@@ -18,7 +18,7 @@ const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","�
 
 // ===== DATOS =====
 let CATEGORIES_TOTS = {}; // categories_emoji.json - solo para agrupar desbloqueos
-let BIBLIOTECA_PLA = []; // biblioteca_emojis.json - array plano con nom_cat, descripcio
+let BIBLIOTECA_PLA = []; // biblioteca_emoji.json - array plano con nom_cat, descripcio
 let BIBLIOTECA_POR_CAT = {}; // agrupado por categoria para pintar
 let PACKS_BOTIGA = []; // botiga_emoji.json
 let FRASES_MINIJOC = []; // minijoc_frases.json
@@ -77,7 +77,7 @@ async function carregarDades() {
   try {
     const [catRes, bibRes, botRes, frasesRes] = await Promise.all([
       fetch('./data/categories_emoji.json'),
-      fetch('./data/biblioteca_emojis.json'),
+      fetch('./data/biblioteca_emoji.json'),
       fetch('./data/botiga_emoji.json'),
       fetch('./data/minijoc_frases.json')
     ]);
