@@ -1,5 +1,4 @@
 // main.js - Lingocat emoji v2 completo - ordenado para deploy
-
 // ===== ESTADO GLOBAL =====
 let estat = {
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
@@ -52,14 +51,17 @@ const MAP_CATEGORIES = {
 };
 
 // ===== BANCO VOCAB - CORREGIDO =====
-const BANCO_VOCAB = {  // <-- añadido const
+const BANCO_VOCAB = { // <-- añadido const
   a1: {
     plantillas: [
-      { titol: `Un dia a ${tema}`, seq: [ // <-- backticks ` en vez de "
-        `${temp_inici}, ${protagonista} va anar a ${lloc}.`,
-        `${protagonista} va veure ${cosa1} i ${cosa2}.`,
-        `${companys} van ${accio_grup} mentre ${protagonista} ${accio_prota}.`
-      ]}
+      {
+        titol: `Un dia a ${tema}`, // <-- backticks ` en vez de "
+        seq: [
+          `${temp_inici}, ${protagonista} va anar a ${lloc}.`,
+          `${protagonista} va veure ${cosa1} i ${cosa2}.`,
+          `${companys} van ${accio_grup} mentre ${protagonista} ${accio_prota}.`
+        ]
+      }
     ]
   }
 };
@@ -124,6 +126,7 @@ async function carregarDades() {
 // ===== UTILS EXTRA =====
 function construirCategories() {
   const desbloquejats = new Set(PACK_INICIAL.map(e => quitarSkinTone(e)));
+  
   estat.compres.forEach(idPack => {
     const pack = PACKS_BOTIGA.find(p => p.id === idPack);
     if (pack && pack.emojis) {
@@ -138,7 +141,6 @@ function construirCategories() {
     );
   });
 }
-
 
 // ===== LECTURA =====  
  BANCO_VOCAB = {
@@ -690,10 +692,20 @@ const INTRO_SLIDES = [
 
 // ===== INICI =====
 document.addEventListener('DOMContentLoaded', async () => {
+  // 1. UI base instantánea - 0ms: usuario ve algo YA
+  carregarEstat();
+  mostrarTab('mapa'); // activa tab mapa
+  renderMapa(); // pinta 100 cuadraditos grises YA
+  
+  // 2. Carga datos en background 200-800ms
   await carregarDades();
   actualitzarUI();
-  mostrarTab('mapa');
-  setTimeout(mostrarIntro, 500);
+  
+  // 3. Repinta mapa con datos reales: colores verdes/bloqueados
+  renderMapa();
+  
+  // 4. Intro encima al final
+  mostrarIntro();
 });
 
 // ===== NAVEGACIÓ =====
@@ -726,21 +738,42 @@ function renderMapa() {
   const cont = document.getElementById('mapa-contenidor');
   if (!cont) return;
   
-  let html = `<h3 style="text-align:center; margin-bottom:20px;">Mapa de Nivells</h3><div class="nivells-grid">`;
-  for (let i = 1; i <= 100; i++) {
-    const desbloquejat = i <= estat.progres.nivellActualMapa;
-    const opacitat = desbloquejat ? '1' : '0.3';
-    const cursor = desbloquejat ? 'pointer' : 'not-allowed';
-    html += `<div class="nivell-card" style="opacity:${opacitat}; cursor:${cursor};" onclick="${desbloquejat ? `jugarNivell(${i})` : ''}">${i}</div>`;
+  // Si aún no hay datos, pinta placeholder gris para evitar pantalla negra
+  if (!CATEGORIES_TOTS || Object.keys(CATEGORIES_TOTS).length === 0) {
+    let html = '<h3 style="text-align:center; margin-bottom:20px;">Carregant mapa...</h3><div class="nivells-grid">';
+    for (let i = 1; i <= 100; i++) {
+      html += `<div class="nivell-card" style="background:#222; border-color:#333; color:#555; opacity:0.5">${i}</div>`;
+    }
+    cont.innerHTML = html + '</div>';
+    return;
   }
-  html += `</div>`;
+  
+  // Si ya hay datos, pinta mapa real
+  let html = '<h3 style="text-align:center; margin-bottom:20px;">Mapa de Nivells</h3><div class="nivells-grid">';
+  for (let i = 1; i <= 100; i++) {
+    const completat = estat.progres.nivellsCompletats.includes(i);
+    const desbloquejat = i <= estat.progres.nivellActualMapa;
+    const color = completat ? '#4ade80' : desbloquejat ? '#22c55e' : '#333';
+    const opacitat = desbloquejat ? '1' : '0.4';
+    const cursor = desbloquejat ? 'pointer' : 'not-allowed';
+    const onclick = desbloquejat ? `iniciarNivell(${i})` : '';
+    
+    html += `<div class="nivell-card" style="border-color:${color}; opacity:${opacitat}; cursor:${cursor}" onclick="${onclick}">${i}</div>`;
+  }
+  html += '</div>';
   cont.innerHTML = html;
 }
 
-function jugarNivell(n) {
+function iniciarNivell(n) {
   if (n > estat.progres.nivellActualMapa) return;
+  
+  // Guardar nivell actual i anar al minijoc
+  estat.progres.nivellActual = n;
   mostrarTab('gremi');
   mostrarSubTab('minijoc');
+  
+  // Generar frase del minijoc
+  setTimeout(() => generarFraseMinijoc(), 100);
 }
 
 // ===== MISSIÓ =====
