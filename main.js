@@ -1,4 +1,4 @@
-// main.js - Lingocat emoji v2 
+// main.js - Lingocat emoji v2
 
 // ===== ESTADO GLOBAL =====
 let estat = {
@@ -88,7 +88,7 @@ async function carregarDades() {
 
     const frasesData = await frasesRes.json();
     FRASES_MINIJOC = Array.isArray(frasesData)? frasesData : (frasesData.frases || []);
-    console.log('Frases cargades:', FRASES_MINIJOC.length);
+    console.log('Frases carregades:', FRASES_MINIJOC.length);
 
   } catch(e) {
     console.error('Error carregant dades:', e);
@@ -135,7 +135,7 @@ function construirTotsEmojis() {
 
 
 // ===== LECTURA =====  
- BANCO_VOCAB = {
+ let BANCO_VOCAB = {
   a1: {
     plantillas: [
       {
@@ -676,12 +676,10 @@ const INTRO_SLIDES = [
 
 // ===== INICIALITZACIÓ =====
 document.addEventListener('DOMContentLoaded', async () => {
-  mostrarTab('mapa');
-  renderMapa();
-  await carregarDades();
-  actualitzarUI();
-  renderMapa();
-  mostrarIntro();
+  mostrarIntro(); // 1. Intro primero si toca
+  await carregarDades(); // 2. Carga datos
+  actualitzarUI(); // 3. Pinta UI
+  mostrarTab('mapa'); // 4. Activa menú y pinta mapa
 });
 
 // ===== NAVEGACIÓ PRINCIPAL =====
@@ -720,14 +718,11 @@ function carregarLectures() {
   lecturesData = BANCO_VOCAB;
   console.log('Lectures carregades:', Object.keys(lecturesData).length);
 }
- e);
-    lecturesData = [];
-  }
-}
 
 function generarLectura() {
   const nivell = estat.progres.nivellActualMapa <= 33? 1 : estat.progres.nivellActualMapa <= 66? 2 : 3;
-  const lecturesNivell = lecturesData.filter(l => l.nivell === nivell);
+  const nivellKey = nivell === 1? 'a1' : nivell === 2? 'a2' : 'b1';
+  const lecturesNivell = lecturesData[nivellKey]?.plantillas || [];
 
   const cont = document.getElementById('lectura-contingut');
   if (!cont) return;
@@ -999,7 +994,6 @@ function renderDiccionari() {
 }
 
 // ===== TIPS =====
-
 function carregarTips() {
   if (totsElsTips.length === 0) {
     totsElsTips = [];
@@ -1083,7 +1077,6 @@ function mostrarIntro() {
 
   if (estat.introVist) {
     introEl.style.display = 'none';
-    mostrarTab('mapa');
     return;
   }
 
