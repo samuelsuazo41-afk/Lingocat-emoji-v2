@@ -262,18 +262,19 @@ nav {
     <button class="sub-tab-btn active" onclick="mostrarSubTab('biblioteca')">📚 Biblioteca</button>
     <button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">🎮 Minijoc</button>
   </div>
-  
-  <div id="gremi-biblioteca" class="sub-tab-content"></div>
+
+  <div id="gremi-biblioteca" class="sub-tab-content"></div>  <!-- aquí pinta el Diccionari -->
   
   <div id="gremi-minijoc" class="sub-tab-content" style="display:none;">
-  <p id="minijoc-frase">Carregant...</p>
-  <div id="minijoc-emojis" class="emoji-grid"></div>
-  <div id="minijoc-seleccionats"></div>
-  <div id="minijoc-feedback"></div>
-  <div style="text-align:center; margin-top:20px;">
-    <button class="btn" onclick="novaFrase()">Següent frase</button>
+    <p id="minijoc-frase">Carregant...</p>
+    <div id="minijoc-emojis" class="emoji-grid"></div>
+    <div id="minijoc-seleccionats"></div>
+    <div id="minijoc-feedback"></div>
+    <div style="text-align:center; margin-top:20px;">
+      <button class="btn" onclick="novaFrase()">Següent frase</button>
+    </div>
   </div>
-</div>
+</div> 
 
 <div id="tab-lectura" class="tab-content">
   <div id="lectura-contenidor"></div>
