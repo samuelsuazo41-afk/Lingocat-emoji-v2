@@ -1,4 +1,4 @@
-// main.js - Lingocat v3 completo - ordenado para deploy
+// main.js - Lingocat emoji v2 completo - ordenado para deploy
 
 // ===== ESTADO GLOBAL =====
 let estat = {
