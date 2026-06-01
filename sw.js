@@ -1,45 +1,62 @@
-const CACHE_NAME = 'lingocat-v63';  
+// sw.js - Service Worker Lingocat emoji v2
+const CACHE_NAME = 'lingocat-v63';
 const URLS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json',
+  './style.css',
   './main.js',
-  './sw.js', // <-- AÑADIDO: el propio SW
+  './sw.js',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
   './data/minijoc_frases.json',
-  './data/lectures.json', // <-- AÑADIDO: lo usa generarLectura()
-  './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png'
+  './data/lectures.json'
 ];
 
-// Instal·lació: cachejar tot
+// Install: guarda todo en cache
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(URLS_TO_CACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('Cacheando v50...');
+      return cache.addAll(URLS_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
-// Activació: esborrar caches velles
+// Activate: borra caches viejas
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(key => {
-        if (key !== CACHE_NAME) {
-          return caches.delete(key);
-        }
-      })
-    )).then(() => self.clients.claim())
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Borrando cache vieja:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
+  self.clients.claim();
 });
 
-// Fetch: servir des de cache, sinó xarxa
+// Fetch: sirve desde cache primero, luego red
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(resp => resp || fetch(event.request))
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request).then(res => {
+        // Guarda en cache para próxima vez
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, res.clone());
+          return res;
+        });
+      });
+    }).catch(() => {
+      // Si falla todo, devuelve index.html para PWA
+      return caches.match('./index.html');
+    })
   );
 });
