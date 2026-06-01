@@ -23,6 +23,8 @@ let CATEGORIES_TOTS = {};
 let CATEGORIES_DESBLOQUEJADES = {};
 let FRASE_ACTUAL = null;
 let EMOJIS_TRIATS = [];
+let totsElsTips = [];
+let tipsUsats = [];
 
 const MAP_CATEGORIES = {
   persona: 'persona', animal: 'animal', menjar: 'menjar', lloc: 'lloc',
@@ -560,7 +562,6 @@ const dadesTips = {
   ]
 };
 
-let tipsUsats = [];
 
 // ===== ESTADO GLOBAL =====
 let estat = {
@@ -849,13 +850,14 @@ function carregarTips() {
     {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"}
   ];
 
-  const tipsActius = (typeof totsElsTips!== 'undefined' && totsElsTips.length > 0)? totsElsTips : tipsFallback;
+  // Usa tipsFallback si totsElsTips no existe o está vacío
+  const tipsActius = (typeof totsElsTips !== 'undefined' && Array.isArray(totsElsTips) && totsElsTips.length > 0) ? totsElsTips : tipsFallback;
 
   if(tipsUsats.length === tipsActius.length) {
     tipsUsats = [];
   }
 
-  let tipsDisponibles = tipsActius.filter(t =>!tipsUsats.includes(t.truc));
+  let tipsDisponibles = tipsActius.filter(t => !tipsUsats.includes(t.truc));
   if (tipsDisponibles.length === 0) tipsDisponibles = tipsActius;
 
   const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
