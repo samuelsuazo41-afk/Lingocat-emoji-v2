@@ -1274,35 +1274,67 @@ const dadesTips = {
   ]
 };
 
+// ===== BOTIGA =", exemple: "Any = Añ, Seny = Señ", nivell: "a2"},
+  {truc: "Futur pròxim: anar a + infinitiu", exemple: "Vaig a estudiar", nivell: "a2"},
+  {truc: "Negació: no + verb", exemple: "No parlo", nivell: "a2"},
+  {truc: "Apòstrof L' D' N' S' davant vocal", exemple: "L'home, D'aigua", nivell: "b1"},
+  {truc: "Subjuntiu present: que + verb", exemple: "Vull que vinguis", nivell: "b1"},
+  {truc: "Per = causa/motiu, Per a = finalitat", exemple: "Ho faig per tu / És per a tu", nivell: "b1"},
+  {truc: "Em, et, el/la, ens, us, els/les", exemple: "Em veig, Et veig", nivell: "a2"}
+];
+
+// Unim tots els tips en un sol array per mostrar-los aleatòriament
+const totsElsTips = [...dadesTips.a1,...dadesTips.a2,...dadesTips.b1];
+let tipsUsats = [];
+
+function carregarTips() {
+  const cont = document.getElementById('tips-contenidor');
+
+  if (totsElsTips.length === 0) {
+    cont.innerHTML = `<div style="text-align:center; opacity:0.6; padding:40px;">No hi ha tips carregats</div>`;
+    return;
+  }
+
+  // Si ja hem mostrat tots, resetejem
+  if (tipsUsats.length >= totsElsTips.length) {
+    tipsUsats = [];
+  }
+
+  // Agafem un índex que no s'hagi usat
+  let indexDisponibles = totsElsTips.map((_, i) => i).filter(i =>!tipsUsats.includes(i));
+  let indexAleatori = indexDisponibles[Math.floor(Math.random() * indexDisponibles.length)];
+  tipsUsats.push(indexAleatori);
+
+  let tip = totsElsTips[indexAleatori];
+
+  cont.innerHTML = `
+    <div style="background:#1a1a1a; padding:20px; border-radius:12px; margin-bottom:15px;">
+      <div style="font-size:18px; margin-bottom:10px;">💡 ${tip.truc}</div>
+      <div style="opacity:0.7; font-size:14px;">Exemple: ${tip.exemple}</div>
+    </div>
+    <button class="btn" onclick="carregarTips()" style="width:100%;">Següent Tip</button>
+  `;
+}
+
+
 // ===== BOTIGA =====
 async function carregarBotiga() {
   const cont = document.getElementById('botiga-contenidor');
-  if(!cont) return;
-
   try {
     const res = await fetch('./data/botiga_emojis.json');
     if(res.ok) {
       const data = await res.json();
       estat.packs_botiga = data;
       renderitzarBotiga();
-    } else {
-      cont.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#f44336; padding:40px;">Error carregant la botiga</div>`;
     }
   } catch(e) {
-    cont.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#f44336; padding:40px;">Error: ${e.message}</div>`;
+    cont.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#f44336;">Error: ${e.message}</div>`;
   }
 }
 
 function renderitzarBotiga() {
   const cont = document.getElementById('botiga-contenidor');
-  if(!cont) return;
   cont.innerHTML = '';
-
-  if(!estat.packs_botiga || estat.packs_botiga.length === 0) {
-    cont.innerHTML = `<div style="grid-column:1/-1; text-align:center; opacity:0.6; padding:40px;">No hi ha packs disponibles</div>`;
-    return;
-  }
-
   estat.packs_botiga.forEach(pack => {
     const comprat = estat.compres.includes(pack.id);
     const card = document.createElement('div');
@@ -1311,7 +1343,7 @@ function renderitzarBotiga() {
       <div class="capitol-icona">🎁</div>
       <h3>${pack.nom}</h3>
       <p style="color:var(--text-sec); margin:8px 0;">${pack.descripcio}</p>
-      <p style="font-size:24px; margin:10px 0;">${pack.emojis.map(e => e.emoji).join(' ')}</p>
+      <p style="font-size:24px;">${pack.emojis.map(e => e.emoji).join(' ')}</p>
       <button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu}, event)" ${comprat? 'disabled' : ''}>
         ${comprat? LANG.comprat : `🪙 ${pack.preu}`}
       </button>
@@ -1322,130 +1354,69 @@ function renderitzarBotiga() {
 
 async function comprarPack(id, preu, event) {
   if (event) event.stopPropagation();
-
-  if (estat.monedes < preu) {
-    mostrarModal(LANG.no_prou_monedes);
-    return;
-  }
-
+  if (estat.monedes < preu) { mostrarModal(LANG.no_prou_monedes); return; }
   vibrar();
   estat.monedes -= preu;
   estat.compres.push(id);
-
   const pack = estat.packs_botiga.find(p => p.id === id);
   if (pack) {
     pack.emojis.forEach(e => {
-      if (!estat.emojisDesbloquejats.includes(e.emoji)) {
-        estat.emojisDesbloquejats.push(e.emoji);
-      }
+      if (!estat.emojisDesbloquejats.includes(e.emoji)) estat.emojisDesbloquejats.push(e.emoji);
     });
-    await carregarDades(); // Recarrega EMOJIS_JUGABLES amb els nous
+    await carregarDades();
   }
-
   guardarEstat();
   actualitzarUI();
   renderitzarBotiga();
   mostrarModal("Pack desbloquejat!");
 }
 
-// ===== TIPS COMPLETO - reemplaza la versió temporal del bloque 3 =====
-const totsElsTips = [
-  {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata", nivell: "a1"},
-  {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates", nivell: "a1"},
-  {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"},
-  {truc: "Bon dia per saludar al matí", exemple: "Bon dia! Com estàs?", nivell: "a1"},
-  {truc: "Bona nit per acomiadar-se", exemple: "Bona nit!", nivell: "a1"},
-  {truc: "NY es pronuncia com ñ d'espanyol", exemple: "Any = Añ, Seny = Señ", nivell: "a2"},
-  {truc: "Futur pròxim: anar a + infinitiu", exemple: "Vaig a estudiar", nivell: "a2"},
-  {truc: "Negació: no + verb", exemple: "No parlo", nivell: "a2"},
-  {truc: "Apòstrof L' D' N' S' davant vocal", exemple: "L'home, D'aigua", nivell: "b1"},
-  {truc: "Subjuntiu present: que + verb", exemple: "Vull que vinguis", nivell: "b1"},
-  {truc: "Per = causa/motiu, Per a = finalitat", exemple: "Ho faig per tu / És per a tu", nivell: "b1"},
-  {truc: "Em, et, el/la, ens, us, els/les", exemple: "Em veig, Et veig", nivell: "a2"}
-];
-
-let tipsUsats = [];
-
-function carregarTips() {
-  const cont = document.getElementById('tips-contenidor');
-  if(!cont) return;
-
-  if(tipsUsats.length === totsElsTips.length) {
-    tipsUsats = []; // Reset quan s'acaben
-  }
-
-  let tipsDisponibles = totsElsTips.filter(t => !tipsUsats.includes(t.truc));
-  const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
-  tipsUsats.push(tip.truc);
-
-  cont.innerHTML = `
-    <div style="text-align:center; padding:30px;">
-      <h3 style="margin-bottom:20px;">${LANG.tips_titol}</h3>
-      <div style="background:linear-gradient(135deg, var(--accent), var(--accent2)); padding:25px; border-radius:15px; margin-bottom:20px;">
-        <div style="font-size:18px; font-weight:bold; margin-bottom:15px;">💡 ${tip.truc}</div>
-        <div style="font-size:14px; opacity:0.9;">Ex: ${tip.exemple}</div>
-        <div style="font-size:12px; opacity:0.7; margin-top:10px;">Nivell: ${tip.nivell.toUpperCase()}</div>
-      </div>
-      <button class="btn" onclick="carregarTips()">${LANG.tips_btn}</button>
-    </div>
-  `;
+// REGISTRAR SERVICE WORKER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
 }
 
-// ===== INTRO + SERVICE WORKER =====
+// ===== INTRO ONBOARDING - surt cada cop =====
 const INTRO_SLIDES = [
-  {emoji: "👋", titol: "Benvingut a Cat Lingo Emoji", text: "Aprèn català jugant amb emojis"},
-  {emoji: "🎯", titol: "Missió diària", text: "Completa 25 frases per pujar de nivell"},
-  {emoji: "📖", titol: "Lectura intel·ligent", text: "Genera textos segons el teu nivell A1-B1"},
-  {emoji: "🎁", titol: "Desbloqueja emojis", text: "Compra packs a la botiga i amplia vocabulari"},
-  {emoji: "🚀", titol: "Comencem!", text: "Prem Saltar per jugar"}
-];
+  {emoji:"🙀", titol:"Cat Lingo Emoji", text:"Aprèn català jugant amb emojis. Tria emojis per formar frases i puja de nivell!"},
 
-let slideActual = 0;
+  {emoji:"🎯", titol:"Mapa i Gremi", text:"Mapa: 100 nivells. Gremi > Minijocs: arma la frase tocant els emojis correctes. 25 encerts = pujes de nivell!"},
+
+  {emoji:"📖", titol:"Lectura", text:"Lectura: genera textos curts A1-B1. Gastes 10 d’energia i et surt vocabulari + pregunta de comprensió."},
+
+  {emoji:"💡", titol:"Tips", text:"Tips: consells ràpids de gramàtica i vocabulari. Toca 'Següent Tip' per veure’n un de nou cada cop."},
+
+  {emoji:"🪙⚡", titol:"Monedes i Energia", text:"Guanya monedes amb el minijoc. Usa energia per lectures i recarrega amb monedes. Compra packs d’emoji a la Botiga."},
+
+  {emoji:"🚀", titol:"Ja estàs!", text:"Tens Missió per guiar-te, Botiga per desbloquejar, i tot el que cal per començar. Som-hi!"}
+];
+let introIndex = 0;
 
 function mostrarIntro() {
-  if(estat.introVist) {
-    document.getElementById('intro').classList.add('hidden');
-    return;
-  }
   document.getElementById('intro').classList.remove('hidden');
   pintarSlide();
 }
 
 function pintarSlide() {
-  const slide = INTRO_SLIDES[slideActual];
-  document.getElementById('intro-emoji').textContent = slide.emoji;
-  document.getElementById('intro-titol').textContent = slide.titol;
-  document.getElementById('intro-text').textContent = slide.text;
-  document.getElementById('intro-dots').innerHTML = INTRO_SLIDES.map((_, i) => 
-    `<span style="opacity:${i===slideActual?1:0.3}">●</span>`
-  ).join(' ');
-  document.getElementById('intro-btn').textContent = slideActual === INTRO_SLIDES.length - 1? 'Començar' : 'Següent';
+  const s = INTRO_SLIDES[introIndex];
+  document.getElementById('intro-slide').innerHTML = `
+    <div style="font-size:60px; margin-bottom:20px;">${s.emoji}</div>
+    <h2 style="margin-bottom:15px;">${s.titol}</h2>
+    <p style="color:#aaa; line-height:1.6;">${s.text}</p>
+  `;
+  document.getElementById('intro-next').textContent = introIndex === INTRO_SLIDES.length-1? 'Entrar' : 'Següent';
 }
 
 function seguentSlide() {
-  vibrar();
-  if(slideActual < INTRO_SLIDES.length - 1) {
-    slideActual++;
-    pintarSlide();
-  } else {
-    tancarIntro();
-  }
+  introIndex++;
+  if(introIndex >= INTRO_SLIDES.length) tancarIntro();
+  else pintarSlide();
 }
 
 function tancarIntro() {
-  estat.introVist = true;
-  guardarEstat();
   document.getElementById('intro').classList.add('hidden');
+  introIndex = 0;
 }
 
-// Service Worker per PWA
-if('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-  });
-}
-
-// Mostrar intro al carregar si no s'ha vist
-window.addEventListener('load', () => {
-  setTimeout(mostrarIntro, 500);
-});
+// Mostrar intro cada cop que carrega l'app
+window.addEventListener('load', () => setTimeout(mostrarIntro, 300));
