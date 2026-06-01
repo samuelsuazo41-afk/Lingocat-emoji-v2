@@ -1,4 +1,4 @@
-// main.js - Lingocat emoji v2 - BLOQUE 1 CORREGIDO
+// main.js - Lingocat emoji v2 
 
 // ===== ESTADO GLOBAL =====
 let estat = {
@@ -18,12 +18,12 @@ const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","�
 
 // ===== DATOS =====
 let CATEGORIES_TOTS = {}; // categories_emoji.json - solo para agrupar desbloqueos
-let BIBLIOTECA_PLA = []; // biblioteca_emojis.json - array plano con nombre/descripcion
+let BIBLIOTECA_PLA = []; // biblioteca_emojis.json - array plano con nom_cat, descripcio
 let BIBLIOTECA_POR_CAT = {}; // agrupado por categoria para pintar
 let PACKS_BOTIGA = []; // botiga_emoji.json
 let FRASES_MINIJOC = []; // minijoc_frases.json
 let TOTS_EMOJIS = []; // aplanado de BIBLIOTECA_PLA para minijoc
-let CATEGORIES_DESBLOQUEJADES = {}; // diccionario: {categoria: [emoji1, emoji2]}
+let CATEGORIES_DESBLOQUEJADES = {}; // {categoria: [emoji1, emoji2]}
 
 // ===== MINIJOC =====
 let FRASE_ACTUAL = null;
@@ -36,6 +36,7 @@ let tipsUsats = [];
 // ===== INTRO =====
 let slideActual = 0;
 
+// Mapeo por si tu JSON usa "clima" en vez de "natura"
 const MAP_CATEGORIES = {
   persona: 'persona', animal: 'animal', menjar: 'menjar', lloc: 'lloc',
   transport: 'transport', esport: 'esport', musica: 'musica', professio: 'professio',
@@ -48,9 +49,12 @@ function quitarSkinTone(emoji) {
 }
 
 function actualitzarUI() {
-  document.getElementById('monedes').textContent = estat.monedes;
-  document.getElementById('nivell').textContent = estat.progres.nivellActualMapa;
-  document.getElementById('energia').textContent = estat.energia;
+  const monedesEl = document.getElementById('monedes');
+  const nivellEl = document.getElementById('nivell');
+  const energiaEl = document.getElementById('energia');
+  if (monedesEl) monedesEl.textContent = estat.monedes;
+  if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
+  if (energiaEl) energiaEl.textContent = estat.energia;
 }
 
 function guardarEstat() {
@@ -84,11 +88,11 @@ async function carregarDades() {
 
     const frasesData = await frasesRes.json();
     FRASES_MINIJOC = Array.isArray(frasesData)? frasesData : (frasesData.frases || []);
-    console.log('Frases cargadas:', FRASES_MINIJOC.length);
+    console.log('Frases cargades:', FRASES_MINIJOC.length);
 
   } catch(e) {
     console.error('Error carregant dades:', e);
-    alert('Error carregant dades. Revisa /data/');
+    alert('Error carregant dades. Revisa que els fitxers /data/ existeixin');
   }
 
   agruparBibliotecaPorCategoria();
@@ -129,6 +133,7 @@ function construirCategories() {
 function construirTotsEmojis() {
   TOTS_EMOJIS = BIBLIOTECA_PLA.map(e => ({...e}));
 }
+
 
 // ===== LECTURA =====  
  BANCO_VOCAB = {
@@ -660,24 +665,17 @@ const dadesTips = {
   ]
 };
 
-// ===== LANG =====
-const LANG = {
-  no_prou_monedes: "No tens prou monedes!",
-  energy_low: "No tens prou energia!",
-  comprat: "Comprat",
-  tips_titol: "Tip del dia",
-  tips_btn: "Següent Tip"
-};
 
-// ===== INTRO SLIDES =====
+// ===== CONSTANTS =====
 const INTRO_SLIDES = [
   {emoji: "👋", titol: "Benvingut a Cat Lingo Emoji", text: "Aprèn català jugant amb emojis"},
   {emoji: "🎯", titol: "Missió diària", text: "Completa 25 frases per pujar de nivell"},
   {emoji: "🎁", titol: "Desbloqueja emojis", text: "Compra packs a la botiga i amplia vocabulari"},
+  {emoji: "📖", titol: "Generador de lectura", text: "Practica amb textos adaptats al teu nivell"},
   {emoji: "🚀", titol: "Comencem!", text: "Prem Saltar per jugar"}
 ];
 
-// ===== INICI =====
+// ===== INICIALITZACIÓ =====
 document.addEventListener('DOMContentLoaded', async () => {
   mostrarTab('mapa');
   renderMapa();
@@ -687,7 +685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   mostrarIntro();
 });
 
-// ===== NAVEGACIÓ =====
+// ===== NAVEGACIÓ PRINCIPAL =====
 function mostrarTab(tab) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -697,9 +695,11 @@ function mostrarTab(tab) {
   if (tab === 'mapa') renderMapa();
   if (tab === 'missio') renderMissio();
   if (tab === 'gremi') mostrarSubTab('biblioteca');
+  if (tab === 'lectura') {
+    carregarLectures().then(() => generarLectura());
+  }
   if (tab === 'tips') carregarTips();
   if (tab === 'botiga') renderBotiga();
-  // Lectura eliminada
 }
 
 function mostrarSubTab(sub) {
@@ -709,10 +709,75 @@ function mostrarSubTab(sub) {
   document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`).classList.add('active');
 
   if (sub === 'biblioteca') renderDiccionari();
-  if (sub === 'minijoc') novaFrase();
+  if (sub === 'minijoc') setTimeout(() => novaFrase(), 50);
 }
 
-// ===== MAPA =====
+// ===== GENERADOR DE LECTURA =====
+let lecturesData = [];
+let lecturaActual = null;
+
+async function carregarLectures() {
+  if (lecturesData.length > 0) return;
+  try {
+    const res = await fetch('./data/banco_lectura.json');
+    const data = await res.json();
+    lecturesData = data.lectures || data;
+    console.log('Lectures carregades:', lecturesData.length);
+  } catch(e) {
+    console.error('Error carregant lectures:', e);
+    lecturesData = [];
+  }
+}
+
+function generarLectura() {
+  const nivell = estat.progres.nivellActualMapa <= 33? 1 : estat.progres.nivellActualMapa <= 66? 2 : 3;
+  const lecturesNivell = lecturesData.filter(l => l.nivell === nivell);
+
+  const cont = document.getElementById('lectura-contingut');
+  if (!cont) return;
+
+  if (lecturesNivell.length === 0) {
+    cont.innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
+    return;
+  }
+
+  lecturaActual = lecturesNivell[Math.floor(Math.random() * lecturesNivell.length)];
+
+  let html = `<div class="lectura-card">`;
+  html += `<h3>${lecturaActual.titol || 'Lectura'}</h3>`;
+  html += `<p class="lectura-text">${lecturaActual.text}</p>`;
+
+  if (lecturaActual.preguntes && lecturaActual.preguntes.length > 0) {
+    html += `<div class="lectura-preguntes">`;
+    lecturaActual.preguntes.forEach((p, i) => {
+      html += `<div class="pregunta-item">`;
+      html += `<p><strong>${i+1}.</strong> ${p.pregunta}</p>`;
+      html += `<button class="btn-check" onclick="comprovarLectura(${i}, '${p.resposta}')">Comprovar</button>`;
+      html += `<div id="feedback-lectura-${i}" class="feedback"></div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `<button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button>`;
+  html += `</div>`;
+  cont.innerHTML = html;
+}
+
+function comprovarLectura(idx, resposta) {
+  const feedback = document.getElementById(`feedback-lectura-${idx}`);
+  const input = prompt('Escriu la teva resposta:');
+  if (input && input.toLowerCase().trim() === resposta.toLowerCase().trim()) {
+    feedback.innerHTML = '<p style="color:#4CAF50;">Correcte! +3 🪙</p>';
+    estat.monedes += 3;
+    guardarEstat();
+    actualitzarUI();
+  } else {
+    feedback.innerHTML = `<p style="color:#f44336;">No és així. Resposta: ${resposta}</p>`;
+  }
+}
+
+// ===== MAPA DE NIVELLS =====
 function renderMapa() {
   const cont = document.getElementById('mapa-contenidor');
   if (!cont) return;
@@ -747,7 +812,7 @@ function jugarNivell(n) {
   setTimeout(() => novaFrase(), 100);
 }
 
-// ===== MISSIÓ =====
+// ===== MISSIONS =====
 function renderMissio() {
   const cont = document.getElementById('missio-contenidor');
   if (!cont) return;
@@ -770,54 +835,96 @@ function renderMissio() {
   `;
 }
 
-// ===== MINIJOC =====
+// ===== MINIJOC - ESCALAT PER NIVELL =====
 function novaFrase() {
   const fraseEl = document.getElementById('minijoc-frase');
   const gridEl = document.getElementById('minijoc-emojis');
   if (!fraseEl ||!gridEl) return;
 
-  if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) {
-    fraseEl.textContent = 'Error: no hi ha frases carregades. Revisa minijoc_frases.json';
+  if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0 ||!BIBLIOTECA_PLA.length) {
+    fraseEl.textContent = 'Error: dades no carregades';
     gridEl.innerHTML = '';
     return;
   }
 
-  const nivell = estat.progres.nivellActualMapa <= 25? 'a1' : estat.progres.nivellActualMapa <= 50? 'a2' : 'b1';
-  const frasesNivell = FRASES_MINIJOC.filter(f =>!f.nivell || f.nivell === nivell);
-  const pool = frasesNivell.length > 0? frasesNivell : FRASES_MINIJOC;
+  const nivell = estat.progres.nivellActualMapa;
+  let dificultatMin, dificultatMax, emojisMin, emojisMax;
 
-  FRASE_ACTUAL = pool[Math.floor(Math.random() * pool.length)];
+  if (nivell <= 33) {
+    dificultatMin = 1; dificultatMax = 1;
+    emojisMin = 2; emojisMax = 3;
+  } else if (nivell <= 66) {
+    dificultatMin = 2; dificultatMax = 3;
+    emojisMin = 4; emojisMax = 5;
+  } else {
+    dificultatMin = 3; dificultatMax = 5;
+    emojisMin = 5; emojisMax = 7;
+  }
+
+  const frasesFiltrades = FRASES_MINIJOC.filter(f =>
+    f.dificultat >= dificultatMin && f.dificultat <= dificultatMax
+  );
+  const pool = frasesFiltrades.length > 0? frasesFiltrades : FRASES_MINIJOC;
+
+  const plantilla = pool[Math.floor(Math.random() * pool.length)];
+
+  const placeholders = [...plantilla.text.matchAll(/\{(\w+)\}/g)].map(m => m[1]);
+  const numEmojis = Math.min(
+    placeholders.length,
+    Math.floor(Math.random() * (emojisMax - emojisMin + 1)) + emojisMin
+  );
+  const placeholdersUsats = placeholders.slice(0, numEmojis);
+
+  const solucio = [];
+  let fraseAmbEmojis = plantilla.text;
+
+  placeholdersUsats.forEach(cat => {
+    const emojisCat = BIBLIOTECA_PLA.filter(e => e.categoria === cat);
+    if (emojisCat.length === 0) return;
+    const emojiElegit = emojisCat[Math.floor(Math.random() * emojisCat.length)];
+    solucio.push(emojiElegit.emoji);
+    fraseAmbEmojis = fraseAmbEmojis.replace(`{${cat}}`, emojiElegit.emoji);
+  });
+
+  fraseAmbEmojis = fraseAmbEmojis.replace(/\{(\w+)\}/g, (match, cat) => cat);
+
+  FRASE_ACTUAL = { frase: fraseAmbEmojis, solucio };
   EMOJIS_TRIATS = [];
-  fraseEl.textContent = FRASE_ACTUAL.frase;
+
+  const fraseMostrada = plantilla.text.replace(/\{(\w+)\}/g, (match, cat) => {
+    return placeholdersUsats.includes(cat)? '___' : cat;
+  });
+
+  fraseEl.textContent = fraseMostrada;
   document.getElementById('minijoc-seleccionats').innerHTML = '';
   document.getElementById('minijoc-feedback').innerHTML = '';
-  generarOpcions();
+
+  generarOpcions(solucio);
 }
 
-function generarOpcions() {
+function generarOpcions(solucio) {
   const grid = document.getElementById('minijoc-emojis');
-  if (!grid ||!FRASE_ACTUAL) return;
+  if (!grid) return;
 
-  const correctos = FRASE_ACTUAL.solucio;
-  const getEmojiData = (emojiChar) => {
-    return TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiChar));
-  };
+  const numOpcions = solucio.length <= 3? 16 : 20;
+  const numFalsos = numOpcions - solucio.length;
 
-  const falsos = TOTS_EMOJIS
-.filter(e =>!correctos.includes(e.emoji))
-.sort(() => 0.5 - Math.random())
-.slice(0, 10);
+  const falsos = BIBLIOTECA_PLA
+   .filter(e =>!solucio.includes(e.emoji))
+   .sort(() => 0.5 - Math.random())
+   .slice(0, numFalsos);
 
-  const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
+  const opcions = [
+   ...solucio.map(emoji => BIBLIOTECA_PLA.find(e => e.emoji === emoji)).filter(Boolean),
+   ...falsos
+  ].sort(() => 0.5 - Math.random());
+
   grid.innerHTML = '';
-
-  opcions.forEach(emojiChar => {
-    const data = getEmojiData(emojiChar);
-    const nom = data? data.nom_cat : '';
+  opcions.forEach(e => {
     const div = document.createElement('div');
     div.className = 'emoji-item';
-    div.innerHTML = `<div class="emoji-large">${emojiChar}</div><div class="emoji-name">${nom}</div>`;
-    div.onclick = () => triarEmoji(emojiChar);
+    div.innerHTML = `<div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div>`;
+    div.onclick = () => triarEmoji(e.emoji);
     grid.appendChild(div);
   });
 }
@@ -829,6 +936,8 @@ function triarEmoji(emoji) {
   const cont = document.getElementById('minijoc-seleccionats');
   const span = document.createElement('span');
   span.textContent = emoji;
+  span.style.fontSize = '32px';
+  span.style.margin = '0 4px';
   cont.appendChild(span);
 
   if (EMOJIS_TRIATS.length === FRASE_ACTUAL.solucio.length) {
@@ -864,7 +973,7 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== DICCIONARI =====
+// ===== BIBLIOTECA =====
 function renderDiccionari() {
   const cont = document.getElementById('gremi-biblioteca');
   if (!cont) return;
@@ -893,11 +1002,63 @@ function renderDiccionari() {
   cont.innerHTML = html;
 }
 
-function comprarPack(id, preu) {
-  if (estat.monedes < preu) {
-    alert(LANG.no_prou_monedes);
+// ===== TIPS =====
+let totsElsTips = [];
+let tipsUsats = [];
+
+async function carregarTips() {
+  if (totsElsTips.length === 0) {
+    try {
+      const res = await fetch('./data/tips_catala.json');
+      totsElsTips = await res.json();
+    } catch(e) {
+      totsElsTips = [];
+    }
+  }
+  mostrarTipRandom();
+}
+
+function mostrarTipRandom() {
+  if (totsElsTips.length === 0) return;
+  if (tipsUsats.length === totsElsTips.length) tipsUsats = [];
+
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * totsElsTips.length);
+  } while (tipsUsats.includes(idx));
+
+  tipsUsats.push(idx);
+  const tip = totsElsTips[idx];
+  document.getElementById('tip-text').textContent = tip.text;
+  document.getElementById('tip-exemple').textContent = tip.exemple || '';
+}
+
+// ===== BOTIGA =====
+function renderBotiga() {
+  const cont = document.getElementById('botiga-contenidor');
+  if (!cont) return;
+
+  if (!PACKS_BOTIGA || PACKS_BOTIGA.length === 0) {
+    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha packs a la botiga.</div>`;
     return;
   }
+
+  cont.innerHTML = '';
+  PACKS_BOTIGA.forEach(pack => {
+    const comprat = estat.compres.includes(pack.id);
+    const card = document.createElement('div');
+    card.className = 'capitol-card';
+    card.innerHTML = `<div class="capitol-icona">🎁</div><h3>${pack.nom}</h3><p style="color:#aaa; margin:8px 0;">${pack.descripcio}</p><p style="font-size:24px;">${pack.emojis.slice(0,6).map(e => e.emoji).join(' ')}${pack.emojis.length > 6? '...' : ''}</p><button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu})" ${comprat? 'disabled' : ''}>${comprat? 'Desbloquejat' : `🪙 ${pack.preu}`}</button>`;
+    cont.appendChild(card);
+  });
+}
+
+function comprarPack(id, preu) {
+  if (estat.monedes < preu) {
+    alert('No tens prou monedes');
+    return;
+  }
+
   estat.monedes -= preu;
   estat.compres.push(id);
 
@@ -923,83 +1084,7 @@ function comprarPack(id, preu) {
   alert('Pack desbloquejat a la biblioteca!');
 }
 
-// ===== TIPS =====
-function carregarTips() {
-  const cont = document.getElementById('tips-contenidor');
-  if (!cont) return;
-
-  const nivell = estat.progres.nivellActualMapa <= 25? 'a1' : estat.progres.nivellActualMapa <= 50? 'a2' : 'b1';
-  const tipsActius = dadesTips[nivell] || dadesTips['a1'];
-
-  if (tipsUsats.length === tipsActius.length) tipsUsats = [];
-  let tipsDisponibles = tipsActius.filter(t =>!tipsUsats.includes(t.truc));
-  if (tipsDisponibles.length === 0) tipsDisponibles = tipsActius;
-
-  const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
-  tipsUsats.push(tip.truc);
-
-  cont.innerHTML = `<div style="text-align:center; padding:30px;">
-    <h3 style="margin-bottom:20px;">${LANG.tips_titol}</h3>
-    <div style="background:linear-gradient(135deg, #4ade80, #22c55e); padding:25px; border-radius:15px; margin-bottom:20px;">
-      <div style="font-size:18px; font-weight:bold; margin-bottom:15px;">💡 ${tip.truc}</div>
-      <div style="font-size:14px; opacity:0.9;">Ex: ${tip.exemple}</div>
-      <div style="font-size:12px; opacity:0.7; margin-top:10px;">Nivell: ${tip.nivell.toUpperCase()}</div>
-    </div>
-    <button class="btn" onclick="carregarTips()">${LANG.tips_btn}</button>
-  </div>`;
-}
-
-// ===== BOTIGA =====
-function renderBotiga() {
-  const cont = document.getElementById('botiga-contenidor');
-  if (!cont) return;
-
-  if (!PACKS_BOTIGA || PACKS_BOTIGA.length === 0) {
-    cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha packs a la botiga.</div>`;
-    return;
-  }
-
-  cont.innerHTML = '';
-  PACKS_BOTIGA.forEach(pack => {
-    const comprat = estat.compres.includes(pack.id);
-    const card = document.createElement('div');
-    card.className = 'capitol-card';
-    card.innerHTML = `<div class="capitol-icona">🎁</div><h3>${pack.nom}</h3><p style="color:#aaa; margin:8px 0;">${pack.descripcio}</p><p style="font-size:24px;">${pack.emojis.slice(0,6).map(e => e.emoji).join(' ')}${pack.emojis.length > 6? '...' : ''}</p><button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu})" ${comprat? 'disabled' : ''}>${comprat? 'Desbloquejat' : `🪙 ${pack.preu}`}</button>`;
-    cont.appendChild(card);
-  });
-}
-
-function comprarPack(id, preu) {
-  if (estat.monedes < preu) {
-    alert(LANG.no_prou_monedes);
-    return;
-  }
-
-  estat.monedes -= preu;
-  estat.compres.push(id);
-
-  const pack = PACKS_BOTIGA.find(p => p.id === id);
-  if (pack && pack.emojis) {
-    pack.emojis.forEach(e => {
-      const emojiNet = quitarSkinTone(e.emoji);
-      const cat = Object.keys(CATEGORIES_TOTS).find(c =>
-        CATEGORIES_TOTS[c].some(em => quitarSkinTone(em) === emojiNet)
-      );
-      if (cat &&!estat.desbloquejats[cat].includes(emojiNet)) {
-        estat.desbloquejats[cat].push(emojiNet);
-      }
-    });
-  }
-
-  guardarEstat();
-  actualitzarUI();
-  construirCategories();
-  renderBotiga();
-  renderDiccionari();
-  alert('Pack desbloquejat a la biblioteca!');
-}
-
-// ===== INTRO =====
+// ===== INTRO TUTORIAL =====
 function mostrarIntro() {
   const introEl = document.getElementById('intro');
   if (!introEl) return;
