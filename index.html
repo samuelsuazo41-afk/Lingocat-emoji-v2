@@ -179,14 +179,12 @@ nav {
 }
 .nav-btn.active { color: var(--accent); }
 .nav-btn svg { width: 24px; height: 24px; }
-
-/* AJUSTE 1: Intro usa style.display, mantenemos .hidden por si acaso */
 #intro {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.95);
   z-index: 100;
-  display: none; /* <-- AJUSTE: empieza oculto por style */
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -197,7 +195,6 @@ nav {
 #intro-titol { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-align: center; }
 #intro-text { font-size: 16px; color: var(--text-dim); text-align: center; margin-bottom: 30px; }
 #intro-dots { font-size: 24px; margin-bottom: 30px; letter-spacing: 8px; }
-
 @media (max-width: 400px) {
   .emoji-grid { grid-template-columns: repeat(3, 1fr); }
   .nivells-grid { grid-template-columns: repeat(4, 1fr); }
@@ -227,7 +224,6 @@ nav {
     <button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">🎮 Minijoc</button>
   </div>
   
-  <!-- AJUSTE 2: sub-tab-content con display inicial controlado -->
   <div id="gremi-biblioteca" class="sub-tab-content" style="display:block;"></div>
   <div id="gremi-minijoc" class="sub-tab-content" style="display:none;">
     <p id="minijoc-frase">Carregant...</p>
@@ -235,18 +231,20 @@ nav {
     <div id="minijoc-seleccionats"></div>
     <div id="minijoc-feedback"></div>
     <div style="text-align:center; margin-top:20px;">
-      <!-- AJUSTE 3: Botón con ID por si lo necesitas para debug -->
       <button class="btn" id="btn-seguent-frase" onclick="novaFrase()">Següent frase</button>
     </div>
   </div>
 </div>
 
 <div id="tab-lectura" class="tab-content">
-  <div id="lectura-contenidor"></div>
+  <div id="lectura-contingut"></div>
 </div>
 
 <div id="tab-tips" class="tab-content">
-  <div id="tips-contenidor"></div>
+  <div class="capitol-card">
+    <p id="tip-text"></p>
+    <p id="tip-exemple" style="color:var(--text-dim); font-size:14px; margin-top:8px;"></p>
+  </div>
 </div>
 
 <div id="tab-botiga" class="tab-content">
