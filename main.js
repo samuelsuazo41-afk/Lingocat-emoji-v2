@@ -26,6 +26,7 @@ let EMOJIS_TRIATS = [];
 let totsElsTips = [];
 let tipsUsats = [];
 let slideActual = 0;
+let LECTURES_DATA = [];
 
 const MAP_CATEGORIES = {
   persona: 'persona', animal: 'animal', menjar: 'menjar', lloc: 'lloc',
