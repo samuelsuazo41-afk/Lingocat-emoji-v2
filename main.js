@@ -1088,7 +1088,8 @@ const dadesTips = {
     {truc: "Que = que", exemple: "Crec que sí"},
     {truc: "Quan = cuando", exemple: "Quan arribis"},
     {truc: "Si = si", exemple: "Si vols"},
-    {truc: "Com = como", exemple: "Com estàs?"}
+    {truc: "Com = como", exemple: "Com estàs?"},
+    {truc: "Em, et, el/la, ens, us, els/les", exemple: "Em veig, Et veig"}
   ],
   b1: [
     {truc: "Apòstrof L' D' N' S' davant vocal", exemple: "L'home, D'aigua, N'hi ha, S'obre"},
@@ -1108,18 +1109,10 @@ const dadesTips = {
     {truc: "Gerundi = -ant/-ent", exemple: "Cantant, Bevent"},
     {truc: "Participi = -at/-it/-ut", exemple: "Parlat, Begut"},
     {truc: "Relatius: que, qui, el qual", exemple: "El llibre que llegeixo"},
-    {truc: "Comparatiu: més/menys... que", exemple: "Més gran que tu"}
+    {truc: "Comparatiu: més/menys... que", exemple: "Més gran que tu"},
+    {truc: "Per = causa/motiu, Per a = finalitat", exemple: "Ho faig per tu / És per a tu"}
   ]
 };
-
-// ===== BOTIGA =", exemple: "Any = Añ, Seny = Señ", nivell: "a2"},
-  {truc: "Futur pròxim: anar a + infinitiu", exemple: "Vaig a estudiar", nivell: "a2"},
-  {truc: "Negació: no + verb", exemple: "No parlo", nivell: "a2"},
-  {truc: "Apòstrof L' D' N' S' davant vocal", exemple: "L'home, D'aigua", nivell: "b1"},
-  {truc: "Subjuntiu present: que + verb", exemple: "Vull que vinguis", nivell: "b1"},
-  {truc: "Per = causa/motiu, Per a = finalitat", exemple: "Ho faig per tu / És per a tu", nivell: "b1"},
-  {truc: "Em, et, el/la, ens, us, els/les", exemple: "Em veig, Et veig", nivell: "a2"}
-];
 
 // Unim tots els tips en un sol array per mostrar-los aleatòriament
 const totsElsTips = [...dadesTips.a1,...dadesTips.a2,...dadesTips.b1];
@@ -1133,12 +1126,10 @@ function carregarTips() {
     return;
   }
 
-  // Si ja hem mostrat tots, resetejem
   if (tipsUsats.length >= totsElsTips.length) {
     tipsUsats = [];
   }
 
-  // Agafem un índex que no s'hagi usat
   let indexDisponibles = totsElsTips.map((_, i) => i).filter(i =>!tipsUsats.includes(i));
   let indexAleatori = indexDisponibles[Math.floor(Math.random() * indexDisponibles.length)];
   tipsUsats.push(indexAleatori);
@@ -1153,7 +1144,6 @@ function carregarTips() {
     <button class="btn" onclick="carregarTips()" style="width:100%;">Següent Tip</button>
   `;
 }
-
 
 // ===== BOTIGA =====
 async function carregarBotiga() {
@@ -1226,7 +1216,7 @@ const INTRO_SLIDES = [
 let introIndex = 0;
 
 function mostrarIntro() {
-  if(estat.introVist) return; // solo sale 1 vez
+  if(estat.introVist) return;
   document.getElementById('intro').classList.remove('hidden');
   pintarSlide();
 }
@@ -1256,5 +1246,4 @@ function tancarIntro() {
   guardarEstat();
 }
 
-// Mostrar intro al cargar
 window.addEventListener('load', () => setTimeout(mostrarIntro, 300));
