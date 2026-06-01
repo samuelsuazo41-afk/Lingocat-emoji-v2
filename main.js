@@ -25,12 +25,14 @@ let FRASE_ACTUAL = null;
 let EMOJIS_TRIATS = [];
 let totsElsTips = [];
 let tipsUsats = [];
+let slideActual = 0;
 
 const MAP_CATEGORIES = {
   persona: 'persona', animal: 'animal', menjar: 'menjar', lloc: 'lloc',
   transport: 'transport', esport: 'esport', musica: 'musica', professio: 'professio',
   roba: 'roba', emocio: 'emocio', objecte: 'objecte', natura: 'natura', clima: 'natura'
 };
+
 
 // ===== LECTURA =====  
  BANCO_VOCAB = {
@@ -563,21 +565,6 @@ const dadesTips = {
 };
 
 
-// ===== ESTADO GLOBAL =====
-let estat = {
-  monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
-  compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
-  progres: {
-    nivellActualMapa: parseInt(localStorage.getItem('cat_nivell')) || 1,
-    encerts: parseInt(localStorage.getItem('cat_encerts')) || 0
-  },
-  energia: parseInt(localStorage.getItem('cat_energia')) || 100,
-  ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
-  introVist: JSON.parse(localStorage.getItem('cat_intro')) || false
-};
-
-let slideActual = 0;
-
 // ===== LANG =====
 const LANG = {
   no_prou_monedes: "No tens prou monedes!",
@@ -744,7 +731,7 @@ function generarOpcions() {
   };
 
   const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
- .sort(() => 0.5 - Math.random()).slice(0, 10);
+.sort(() => 0.5 - Math.random()).slice(0, 10);
 
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
@@ -828,6 +815,22 @@ function renderDiccionari() {
     html += `</div>`;
   }
   cont.innerHTML = html;
+}
+
+// ===== LECTURA =====
+function generarLectura() {
+  const cont = document.getElementById('lectura-contenidor');
+  cont.innerHTML = `
+    <div style="text-align:center; padding:40px;">
+      <h3 style="margin-bottom:15px;">📖 Lectura intel·ligent</h3>
+      <p style="color:var(--text-dim); margin-bottom:20px;">
+        Aquí generaràs textos segons el teu nivell A1-B1
+      </p>
+      <button class="btn" onclick="alert('Funció pendent de implementar')">
+        Generar text
+      </button>
+    </div>
+  `;
 }
 
 // ===== TIPS =====
