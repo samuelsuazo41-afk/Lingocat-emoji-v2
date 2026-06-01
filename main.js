@@ -692,9 +692,7 @@ function mostrarTab(tab) {
   if (tab === 'mapa') renderMapa();
   if (tab === 'missio') renderMissio();
   if (tab === 'gremi') mostrarSubTab('biblioteca');
-  if (tab === 'lectura') {
-    carregarLectures().then(() => generarLectura());
-  }
+  if (tab === 'lectura') generarLectura(); // direct, sense carregarLectures
   if (tab === 'tips') carregarTips();
   if (tab === 'botiga') renderBotiga();
 }
@@ -708,6 +706,46 @@ function mostrarSubTab(sub) {
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFrase(), 50);
 }
+
+// ===== TIPS - SEPARAT DE GREMI I LECTURA =====
+let totsElsTips = [];
+let tipsUsats = [];
+
+function carregarTips() {
+  // Agafa el nivell actual del mapa per filtrar tips A1/A2/B1
+  const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
+
+  if (totsElsTips.length === 0) {
+    totsElsTips = dadesTips[nivell] || [];
+  }
+
+  // Si canvies de nivell, reseteja
+  if (tipsUsats.length === 0 && totsElsTips!== dadesTips[nivell]) {
+    totsElsTips = dadesTips[nivell] || [];
+  }
+
+  mostrarTipRandom();
+}
+
+function mostrarTipRandom() {
+  if (!totsElsTips || totsElsTips.length === 0) {
+    document.getElementById('tip-text').textContent = 'No hi ha tips per aquest nivell';
+    return;
+  }
+
+  if (tipsUsats.length === totsElsTips.length) tipsUsats = [];
+
+  let idx;
+  do {
+    idx = Math.floor(Math.random() * totsElsTips.length);
+  } while (tipsUsats.includes(idx));
+
+  tipsUsats.push(idx);
+  const tip = totsElsTips[idx];
+  document.getElementById('tip-text').textContent = tip.truc;
+  document.getElementById('tip-exemple').textContent = tip.exemple || '';
+}
+
 
 // ===== GENERADOR DE LECTURA - SEPARAT DE GREMI =====
 let lecturesData = {}; // objecte, no array
