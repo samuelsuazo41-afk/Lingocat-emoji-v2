@@ -638,8 +638,8 @@ function construirCategories() {
   CATEGORIES_DESBLOQUEJADES = {};
   Object.keys(CATEGORIES_TOTS).forEach(cat => {
     CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat]
-   .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
-   .map(e => e.emoji);
+  .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
+  .map(e => e.emoji);
   });
 }
 
@@ -664,7 +664,6 @@ async function carregarDades() {
   try {
     const res = await fetch('./data/minijoc_frases.json');
     const data = await res.json();
-    // Soporta array directo [] o {frases: []}
     FRASES_MINIJOC = Array.isArray(data)? data : (data.frases || []);
   } catch(e) {
     console.error('Error frases:', e);
@@ -764,8 +763,8 @@ function generarOpcions() {
   };
 
   const falsos = TOTS_EMOJIS
- .filter(e =>!correctos.includes(e.emoji))
- .sort(() => 0.5 - Math.random()).slice(0, 10);
+.filter(e =>!correctos.includes(e.emoji))
+.sort(() => 0.5 - Math.random()).slice(0, 10);
 
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
