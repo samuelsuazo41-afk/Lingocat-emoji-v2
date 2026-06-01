@@ -638,8 +638,8 @@ function construirCategories() {
   CATEGORIES_DESBLOQUEJADES = {};
   Object.keys(CATEGORIES_TOTS).forEach(cat => {
     CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat]
-  .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
-  .map(e => e.emoji);
+   .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
+   .map(e => e.emoji);
   });
 }
 
@@ -648,7 +648,6 @@ async function carregarDades() {
   try {
     const res = await fetch('./data/biblioteca_emojis.json');
     EMOJIS_BASE = await res.json();
-    console.log('Biblioteca cargada:', EMOJIS_BASE.length);
   } catch(e) {
     console.error('Error biblioteca:', e);
     EMOJIS_BASE = [];
@@ -657,7 +656,6 @@ async function carregarDades() {
   try {
     const res = await fetch('./data/botiga_emojis.json');
     PACKS_BOTIGA = await res.json();
-    console.log('Botiga cargada:', PACKS_BOTIGA.length, 'packs');
   } catch(e) {
     console.error('Error botiga:', e);
     PACKS_BOTIGA = [];
@@ -666,8 +664,8 @@ async function carregarDades() {
   try {
     const res = await fetch('./data/minijoc_frases.json');
     const data = await res.json();
-    FRASES_MINIJOC = data.frases || [];
-    console.log('Frases cargadas:', FRASES_MINIJOC.length);
+    // Soporta array directo [] o {frases: []}
+    FRASES_MINIJOC = Array.isArray(data)? data : (data.frases || []);
   } catch(e) {
     console.error('Error frases:', e);
     FRASES_MINIJOC = [];
@@ -676,7 +674,6 @@ async function carregarDades() {
   try {
     const res = await fetch('./data/lectures.json');
     LECTURES_DATA = await res.json();
-    console.log('Lectures cargadas:', LECTURES_DATA.length);
   } catch(e) {
     console.error('Error lectures:', e);
     LECTURES_DATA = [];
@@ -736,8 +733,12 @@ function renderMissio() {
 
 // ===== MINIJOC =====
 function novaFrase() {
+  const fraseEl = document.getElementById('minijoc-frase');
+  const gridEl = document.getElementById('minijoc-emojis');
+
   if (FRASES_MINIJOC.length === 0) {
-    document.getElementById('minijoc-frase').textContent = 'Carregant...';
+    fraseEl.textContent = 'Error: no hi ha frases carregades. Revisa minijoc_frases.json';
+    gridEl.innerHTML = '';
     return;
   }
 
@@ -748,10 +749,9 @@ function novaFrase() {
   FRASE_ACTUAL = pool[Math.floor(Math.random() * pool.length)];
   EMOJIS_TRIATS = [];
 
-  document.getElementById('minijoc-frase').textContent = FRASE_ACTUAL.frase;
+  fraseEl.textContent = FRASE_ACTUAL.frase;
   document.getElementById('minijoc-seleccionats').innerHTML = '';
   document.getElementById('minijoc-feedback').innerHTML = '';
-
   generarOpcions();
 }
 
@@ -764,8 +764,8 @@ function generarOpcions() {
   };
 
   const falsos = TOTS_EMOJIS
-   .filter(e =>!correctos.includes(e.emoji))
-   .sort(() => 0.5 - Math.random()).slice(0, 10);
+ .filter(e =>!correctos.includes(e.emoji))
+ .sort(() => 0.5 - Math.random()).slice(0, 10);
 
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
@@ -773,13 +773,9 @@ function generarOpcions() {
   opcions.forEach(emojiChar => {
     const data = getEmojiData(emojiChar);
     const nom = data? data.nom_cat : '';
-
     const div = document.createElement('div');
     div.className = 'emoji-item';
-    div.innerHTML = `
-      <div class="emoji-large">${emojiChar}</div>
-      <div class="emoji-name">${nom}</div>
-    `;
+    div.innerHTML = `<div class="emoji-large">${emojiChar}</div><div class="emoji-name">${nom}</div>`;
     div.onclick = () => triarEmoji(emojiChar);
     grid.appendChild(div);
   });
@@ -787,13 +783,11 @@ function generarOpcions() {
 
 function triarEmoji(emoji) {
   if (EMOJIS_TRIATS.length >= FRASE_ACTUAL.solucio.length) return;
-
   EMOJIS_TRIATS.push(emoji);
   const cont = document.getElementById('minijoc-seleccionats');
   const span = document.createElement('span');
   span.textContent = emoji;
   cont.appendChild(span);
-
   if (EMOJIS_TRIATS.length === FRASE_ACTUAL.solucio.length) {
     setTimeout(comprovarMinijoc, 300);
   }
@@ -841,12 +835,11 @@ function renderDiccionari() {
       const colorTexto = desbloquejat? '#fff' : '#444';
       const desc = e.descripcio || e.para_frases?.join(', ') || '';
 
-      html += `
-        <div class="emoji-item" style="opacity:${opacitat}; filter:${filtre}; cursor:${cursor};">
-          <div class="emoji-large">${e.emoji}</div>
-          <div class="emoji-name" style="color:${colorTexto}; font-weight:600;">${e.nom_cat}</div>
-          <div style="font-size:10px; color:#aaa; margin-top:4px;">${desc}</div>
-        </div>`;
+      html += `<div class="emoji-item" style="opacity:${opacitat}; filter:${filtre}; cursor:${cursor};">
+        <div class="emoji-large">${e.emoji}</div>
+        <div class="emoji-name" style="color:${colorTexto}; font-weight:600;">${e.nom_cat}</div>
+        <div style="font-size:10px; color:#aaa; margin-top:4px;">${desc}</div>
+      </div>`;
     });
     html += `</div>`;
   }
@@ -856,15 +849,8 @@ function renderDiccionari() {
 // ===== LECTURA =====
 function generarLectura() {
   const cont = document.getElementById('lectura-contenidor');
-
   if (LECTURES_DATA.length === 0) {
-    cont.innerHTML = `
-      <div style="text-align:center; padding:40px;">
-        <h3>📖 Lectura intel·ligent</h3>
-        <p style="color:var(--text-dim); margin:20px 0;">Carregant lectures...</p>
-        <button class="btn" onclick="generarLectura()">Generar text</button>
-      </div>
-    `;
+    cont.innerHTML = `<div style="text-align:center; padding:40px;"><h3>📖 Lectura intel·ligent</h3><p style="color:var(--text-dim); margin:20px 0;">Carregant lectures...</p><button class="btn" onclick="generarLectura()">Generar text</button></div>`;
     return;
   }
 
@@ -873,53 +859,24 @@ function generarLectura() {
   const pool = lecturesFiltrades.length > 0? lecturesFiltrades : LECTURES_DATA;
   const lectura = pool[Math.floor(Math.random() * pool.length)];
 
-  cont.innerHTML = `
-    <div style="padding:20px;">
-      <h3 style="text-align:center; margin-bottom:15px;">📖 ${lectura.titol}</h3>
-      <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; margin-bottom:20px; line-height:1.8; font-size:15px;">
-        ${lectura.text}
-      </div>
-      <div style="text-align:center;">
-        <button class="btn" onclick="generarLectura()">Generar text</button>
-      </div>
-    </div>
-  `;
+  cont.innerHTML = `<div style="padding:20px;"><h3 style="text-align:center; margin-bottom:15px;">📖 ${lectura.titol}</h3><div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; margin-bottom:20px; line-height:1.8; font-size:15px;">${lectura.text}</div><div style="text-align:center;"><button class="btn" onclick="generarLectura()">Generar text</button></div></div>`;
 }
 
 // ===== TIPS =====
 function carregarTips() {
   const cont = document.getElementById('tips-contenidor');
   if(!cont) return;
-
   const tipsFallback = [
     {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata", nivell: "a1"},
-    {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates", nivell: "a1"},
-    {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"}
+    {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates", nivell: "a1"}
   ];
-
-  const tipsActius = (typeof totsElsTips!== 'undefined' && Array.isArray(totsElsTips) && totsElsTips.length > 0)? totsElsTips : tipsFallback;
-
-  if(tipsUsats.length === tipsActius.length) {
-    tipsUsats = [];
-  }
-
+  const tipsActius = (typeof totsElsTips!== 'undefined' && totsElsTips.length > 0)? totsElsTips : tipsFallback;
+  if(tipsUsats.length === tipsActius.length) tipsUsats = [];
   let tipsDisponibles = tipsActius.filter(t =>!tipsUsats.includes(t.truc));
   if (tipsDisponibles.length === 0) tipsDisponibles = tipsActius;
-
   const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
   tipsUsats.push(tip.truc);
-
-  cont.innerHTML = `
-    <div style="text-align:center; padding:30px;">
-      <h3 style="margin-bottom:20px;">${LANG.tips_titol}</h3>
-      <div style="background:linear-gradient(135deg, #4ade80, #22c55e); padding:25px; border-radius:15px; margin-bottom:20px;">
-        <div style="font-size:18px; font-weight:bold; margin-bottom:15px;">💡 ${tip.truc}</div>
-        <div style="font-size:14px; opacity:0.9;">Ex: ${tip.exemple}</div>
-        <div style="font-size:12px; opacity:0.7; margin-top:10px;">Nivell: ${tip.nivell.toUpperCase()}</div>
-      </div>
-      <button class="btn" onclick="carregarTips()">${LANG.tips_btn}</button>
-    </div>
-  `;
+  cont.innerHTML = `<div style="text-align:center; padding:30px;"><h3 style="margin-bottom:20px;">${LANG.tips_titol}</h3><div style="background:linear-gradient(135deg, #4ade80, #22c55e); padding:25px; border-radius:15px; margin-bottom:20px;"><div style="font-size:18px; font-weight:bold; margin-bottom:15px;">💡 ${tip.truc}</div><div style="font-size:14px; opacity:0.9;">Ex: ${tip.exemple}</div><div style="font-size:12px; opacity:0.7; margin-top:10px;">Nivell: ${tip.nivell.toUpperCase()}</div></div><button class="btn" onclick="carregarTips()">${LANG.tips_btn}</button></div>`;
 }
 
 // ===== BOTIGA =====
@@ -929,28 +886,19 @@ function renderBotiga() {
     cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha packs a la botiga.</div>`;
     return;
   }
-
   cont.innerHTML = '';
   PACKS_BOTIGA.forEach(pack => {
     const comprat = estat.compres.includes(pack.id);
     const card = document.createElement('div');
     card.className = 'capitol-card';
-    card.innerHTML = `
-      <div class="capitol-icona">🎁</div>
-      <h3>${pack.nom}</h3>
-      <p style="color:#aaa; margin:8px 0;">${pack.descripcio}</p>
-      <p style="font-size:24px;">${pack.emojis.slice(0,6).map(e => e.emoji).join(' ')}${pack.emojis.length > 6? '...' : ''}</p>
-      <button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu})" ${comprat? 'disabled' : ''}>
-        ${comprat? 'Desbloquejat' : `🪙 ${pack.preu}`}
-      </button>
-    `;
+    card.innerHTML = `<div class="capitol-icona">🎁</div><h3>${pack.nom}</h3><p style="color:#aaa; margin:8px 0;">${pack.descripcio}</p><p style="font-size:24px;">${pack.emojis.slice(0,6).map(e => e.emoji).join(' ')}${pack.emojis.length > 6? '...' : ''}</p><button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu})" ${comprat? 'disabled' : ''}>${comprat? 'Desbloquejat' : `🪙 ${pack.preu}`}</button>`;
     cont.appendChild(card);
   });
 }
 
 function comprarPack(id, preu) {
   if (estat.monedes < preu) {
-    mostrarModal(LANG.no_prou_monedes);
+    alert(LANG.no_prou_monedes);
     return;
   }
   estat.monedes -= preu;
@@ -979,9 +927,7 @@ function pintarSlide() {
   document.getElementById('intro-emoji').textContent = slide.emoji;
   document.getElementById('intro-titol').textContent = slide.titol;
   document.getElementById('intro-text').textContent = slide.text;
-  document.getElementById('intro-dots').innerHTML = INTRO_SLIDES.map((_, i) =>
-    `<span style="opacity:${i===slideActual?1:0.3}">●</span>`
-  ).join(' ');
+  document.getElementById('intro-dots').innerHTML = INTRO_SLIDES.map((_, i) => `<span style="opacity:${i===slideActual?1:0.3}">●</span>`).join(' ');
   document.getElementById('intro-btn').textContent = slideActual === INTRO_SLIDES.length - 1? 'Començar' : 'Següent';
 }
 
@@ -1022,13 +968,9 @@ function vibrar() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
-function mostrarModal(msg) {
-  alert(msg);
-}
-
 // ===== SERVICE WORKER =====
 if('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
   });
-} 
+}
