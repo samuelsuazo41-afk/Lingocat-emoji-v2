@@ -573,17 +573,10 @@ let estat = {
   },
   energia: parseInt(localStorage.getItem('cat_energia')) || 100,
   ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
-  introVist: false
+  introVist: JSON.parse(localStorage.getItem('cat_intro')) || false
 };
 
-let EMOJIS_BASE = [];
-let PACKS_BOTIGA = [];
-let TOTS_EMOJIS = [];
-let FRASES_MINIJOC = [];
-let FRASE_ACTUAL = null;
-let EMOJIS_TRIATS = [];
-let CATEGORIES_TOTS = {};
-let CATEGORIES_DESBLOQUEJADES = {};
+let slideActual = 0;
 
 // ===== LANG =====
 const LANG = {
@@ -602,8 +595,6 @@ const INTRO_SLIDES = [
   {emoji: "🎁", titol: "Desbloqueja emojis", text: "Compra packs a la botiga i amplia vocabulari"},
   {emoji: "🚀", titol: "Comencem!", text: "Prem Saltar per jugar"}
 ];
-
-let slideActual = 0;
 
 // ===== INICI =====
 document.addEventListener('DOMContentLoaded', async () => {
@@ -684,7 +675,7 @@ async function carregarDades() {
     a.findIndex(t => quitarSkinTone(t.emoji) === quitarSkinTone(v.emoji)) === i
   );
   construirCategories();
-} // <- ESTE CIERRE TE FALTABA
+}
 
 // ===== MAPA =====
 function renderMapa() {
@@ -753,7 +744,7 @@ function generarOpcions() {
   };
 
   const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
-  .sort(() => 0.5 - Math.random()).slice(0, 10);
+ .sort(() => 0.5 - Math.random()).slice(0, 10);
 
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
@@ -850,14 +841,13 @@ function carregarTips() {
     {truc: "Un/Una per indefinits singulars", exemple: "Un llibre, Una taula", nivell: "a1"}
   ];
 
-  // Usa tipsFallback si totsElsTips no existe o está vacío
-  const tipsActius = (typeof totsElsTips !== 'undefined' && Array.isArray(totsElsTips) && totsElsTips.length > 0) ? totsElsTips : tipsFallback;
+  const tipsActius = (typeof totsElsTips!== 'undefined' && Array.isArray(totsElsTips) && totsElsTips.length > 0)? totsElsTips : tipsFallback;
 
   if(tipsUsats.length === tipsActius.length) {
     tipsUsats = [];
   }
 
-  let tipsDisponibles = tipsActius.filter(t => !tipsUsats.includes(t.truc));
+  let tipsDisponibles = tipsActius.filter(t =>!tipsUsats.includes(t.truc));
   if (tipsDisponibles.length === 0) tipsDisponibles = tipsActius;
 
   const tip = tipsDisponibles[Math.floor(Math.random() * tipsDisponibles.length)];
@@ -881,7 +871,7 @@ function renderBotiga() {
   const cont = document.getElementById('botiga-contenidor');
   if (!PACKS_BOTIGA || PACKS_BOTIGA.length === 0) {
     cont.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.6;">Encara no hi ha packs a la botiga.</div>`;
-    return; // <- ESTE RETURN TE FALTABA
+    return;
   }
 
   cont.innerHTML = '';
@@ -969,6 +959,7 @@ function guardarEstat() {
   localStorage.setItem('cat_encerts', estat.progres.encerts);
   localStorage.setItem('cat_energia', estat.energia);
   localStorage.setItem('cat_ultimaEnergia', estat.ultimaRecargaEnergia);
+  localStorage.setItem('cat_intro', JSON.stringify(estat.introVist));
 }
 
 function vibrar() {
