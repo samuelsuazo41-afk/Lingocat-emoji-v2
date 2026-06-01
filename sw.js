@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lingocat-v61';  
+const CACHE_NAME = 'lingocat-v63';  
 const URLS_TO_CACHE = [
   './',
   './index.html',
