@@ -1,11 +1,12 @@
-const CACHE_NAME = 'lingocat-v42';
+const CACHE_NAME = 'lingocat-v45';
+
 const URLS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './main.js',
-  './data/biblioteca_emojis.json',
-  './data/botiga_emojis.json',
+  './data/categories_emoji.json',
+  './data/botiga_emoji.json',
   './data/minijoc_frases.json',
   './icon-192.png',
   './icon-512.png',
