@@ -637,8 +637,8 @@ function construirCategories() {
   CATEGORIES_DESBLOQUEJADES = {};
   Object.keys(CATEGORIES_TOTS).forEach(cat => {
     CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat]
-   .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
-   .map(e => e.emoji);
+  .filter(e => desbloquejats.has(quitarSkinTone(e.emoji)))
+  .map(e => e.emoji);
   });
 }
 
@@ -670,6 +670,15 @@ async function carregarDades() {
   } catch(e) {
     console.error('Error frases:', e);
     FRASES_MINIJOC = [];
+  }
+
+  try {
+    const res = await fetch('./data/lectures.json');
+    LECTURES_DATA = await res.json();
+    console.log('Lectures cargadas:', LECTURES_DATA.length);
+  } catch(e) {
+    console.error('Error lectures:', e);
+    LECTURES_DATA = [];
   }
 
   TOTS_EMOJIS = [...EMOJIS_BASE];
@@ -731,7 +740,11 @@ function novaFrase() {
     return;
   }
 
-  FRASE_ACTUAL = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
+  const nivell = estat.progres.nivellActualMapa <= 25? 'a1' : estat.progres.nivellActualMapa <= 50? 'a2' : 'b1';
+  const frasesNivell = FRASES_MINIJOC.filter(f =>!f.nivell || f.nivell === nivell);
+  const pool = frasesNivell.length > 0? frasesNivell : FRASES_MINIJOC;
+
+  FRASE_ACTUAL = pool[Math.floor(Math.random() * pool.length)];
   EMOJIS_TRIATS = [];
 
   document.getElementById('minijoc-frase').textContent = FRASE_ACTUAL.frase;
@@ -749,8 +762,9 @@ function generarOpcions() {
     return TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiChar));
   };
 
-  const falsos = TOTS_EMOJIS.filter(e =>!correctos.includes(e.emoji))
- .sort(() => 0.5 - Math.random()).slice(0, 10);
+  const falsos = TOTS_EMOJIS
+   .filter(e =>!correctos.includes(e.emoji))
+   .sort(() => 0.5 - Math.random()).slice(0, 10);
 
   const opcions = [...correctos,...falsos.map(f => f.emoji)].sort(() => 0.5 - Math.random());
 
@@ -841,15 +855,32 @@ function renderDiccionari() {
 // ===== LECTURA =====
 function generarLectura() {
   const cont = document.getElementById('lectura-contenidor');
+
+  if (LECTURES_DATA.length === 0) {
+    cont.innerHTML = `
+      <div style="text-align:center; padding:40px;">
+        <h3>📖 Lectura intel·ligent</h3>
+        <p style="color:var(--text-dim); margin:20px 0;">Carregant lectures...</p>
+        <button class="btn" onclick="generarLectura()">Generar text</button>
+      </div>
+    `;
+    return;
+  }
+
+  const nivell = estat.progres.nivellActualMapa <= 25? 'a1' : estat.progres.nivellActualMapa <= 50? 'a2' : 'b1';
+  const lecturesFiltrades = LECTURES_DATA.filter(l => l.nivell === nivell);
+  const pool = lecturesFiltrades.length > 0? lecturesFiltrades : LECTURES_DATA;
+  const lectura = pool[Math.floor(Math.random() * pool.length)];
+
   cont.innerHTML = `
-    <div style="text-align:center; padding:40px;">
-      <h3 style="margin-bottom:15px;">📖 Lectura intel·ligent</h3>
-      <p style="color:var(--text-dim); margin-bottom:20px;">
-        Aquí generaràs textos segons el teu nivell A1-B1
-      </p>
-      <button class="btn" onclick="alert('Funció pendent de implementar')">
-        Generar text
-      </button>
+    <div style="padding:20px;">
+      <h3 style="text-align:center; margin-bottom:15px;">📖 ${lectura.titol}</h3>
+      <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; margin-bottom:20px; line-height:1.8; font-size:15px;">
+        ${lectura.text}
+      </div>
+      <div style="text-align:center;">
+        <button class="btn" onclick="generarLectura()">Generar text</button>
+      </div>
     </div>
   `;
 }
