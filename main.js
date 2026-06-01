@@ -709,20 +709,16 @@ function mostrarSubTab(sub) {
   if (sub === 'minijoc') setTimeout(() => novaFrase(), 50);
 }
 
-// ===== GENERADOR DE LECTURA =====
-let lecturesData = [];
+// ===== GENERADOR DE LECTURA - SEPARAT DE GREMI =====
+let lecturesData = {}; // objecte, no array
 let lecturaActual = null;
 
-function carregarLectures() {
-  if (lecturesData.length > 0) return;
-  lecturesData = BANCO_VOCAB;
-  console.log('Lectures carregades:', Object.keys(lecturesData).length);
-}
+// BANCO_VOCAB ve de banco_lectures.js carregat abans de main.js
+lecturesData = BANCO_VOCAB;
 
 function generarLectura() {
-  const nivell = estat.progres.nivellActualMapa <= 33? 1 : estat.progres.nivellActualMapa <= 66? 2 : 3;
-  const nivellKey = nivell === 1? 'a1' : nivell === 2? 'a2' : 'b1';
-  const lecturesNivell = lecturesData[nivellKey]?.plantillas || [];
+  const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
+  const lecturesNivell = lecturesData[nivell]?.plantillas || [];
 
   const cont = document.getElementById('lectura-contingut');
   if (!cont) return;
@@ -734,39 +730,51 @@ function generarLectura() {
 
   lecturaActual = lecturesNivell[Math.floor(Math.random() * lecturesNivell.length)];
 
-  let html = `<div class="lectura-card">`;
-  html += `<h3>${lecturaActual.titol || 'Lectura'}</h3>`;
-  html += `<p class="lectura-text">${lecturaActual.text}</p>`;
+  // Tria tema aleatori dels 6 blocs
+  const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
+  const temaTriat = temes[Math.floor(Math.random() * temes.length)];
+  const vocab = lecturesData[nivell][temaTriat];
 
-  if (lecturaActual.preguntes && lecturaActual.preguntes.length > 0) {
-    html += `<div class="lectura-preguntes">`;
-    lecturaActual.preguntes.forEach((p, i) => {
-      html += `<div class="pregunta-item">`;
-      html += `<p><strong>${i+1}.</strong> ${p.pregunta}</p>`;
-      html += `<button class="btn-check" onclick="comprovarLectura(${i}, '${p.resposta}')">Comprovar</button>`;
-      html += `<div id="feedback-lectura-${i}" class="feedback"></div>`;
-      html += `</div>`;
+  // Funció per reemplaçar ${variable} amb paraula aleatòria
+  function reemplaçar(text) {
+    return text.replace(/\$\{(\w+)\}/g, (match, key) => {
+      const opcions = vocab[key];
+      if (!opcions ||!opcions.length) return key;
+      return opcions[Math.floor(Math.random() * opcions.length)];
     });
-    html += `</div>`;
   }
 
-  html += `<button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button>`;
-  html += `</div>`;
-  cont.innerHTML = html;
+  const titol = reemplaçar(lecturaActual.titol);
+  const text = lecturaActual.seq.map(linia => reemplaçar(linia)).join(' ');
+  const pregunta = reemplaçar(lecturaActual.pregunta);
+
+  cont.innerHTML = `
+    <div class="lectura-card">
+      <h3>${titol}</h3>
+      <p class="lectura-text">${text}</p>
+      <div class="lectura-preguntes">
+        <p><strong>Pregunta:</strong> ${pregunta}</p>
+        <button class="btn-primari" onclick="comprovarLectura()">Respondre</button>
+        <div id="feedback-lectura" class="feedback"></div>
+      </div>
+      <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button>
+    </div>
+  `;
 }
 
-function comprovarLectura(idx, resposta) {
-  const feedback = document.getElementById(`feedback-lectura-${idx}`);
-  const input = prompt('Escriu la teva resposta:');
-  if (input && input.toLowerCase().trim() === resposta.toLowerCase().trim()) {
-    feedback.innerHTML = '<p style="color:#4CAF50;">Correcte! +3 🪙</p>';
+function comprovarLectura() {
+  const feedback = document.getElementById('feedback-lectura');
+  const resposta = prompt('Escriu la teva resposta:');
+  if (resposta && resposta.trim().length > 3) {
+    feedback.innerHTML = '<p style="color:#4CAF50;">Resposta registrada! +3 🪙</p>';
     estat.monedes += 3;
     guardarEstat();
     actualitzarUI();
   } else {
-    feedback.innerHTML = `<p style="color:#f44336;">No és així. Resposta: ${resposta}</p>`;
+    feedback.innerHTML = '<p style="color:#f44336;">Escriu una resposta més llarga</p>';
   }
 }
+
 
 // ===== MAPA DE NIVELLS =====
 function renderMapa() {
