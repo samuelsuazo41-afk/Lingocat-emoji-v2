@@ -99,7 +99,6 @@ async function carregarDades() {
   construirCategories();
   construirTotsEmojis();
   actualitzarUI();
-  novaFrase();
 }
 
 function agruparBibliotecaPorCategoria() {
@@ -716,15 +715,12 @@ function mostrarSubTab(sub) {
 let lecturesData = [];
 let lecturaActual = null;
 
-async function carregarLectures() {
+function carregarLectures() {
   if (lecturesData.length > 0) return;
-  try {
-    const res = await fetch('./data/banco_lectura.json');
-    const data = await res.json();
-    lecturesData = data.lectures || data;
-    console.log('Lectures carregades:', lecturesData.length);
-  } catch(e) {
-    console.error('Error carregant lectures:', e);
+  lecturesData = BANCO_VOCAB;
+  console.log('Lectures carregades:', Object.keys(lecturesData).length);
+}
+ e);
     lecturesData = [];
   }
 }
@@ -1003,17 +999,13 @@ function renderDiccionari() {
 }
 
 // ===== TIPS =====
-let totsElsTips = [];
-let tipsUsats = [];
 
-async function carregarTips() {
+function carregarTips() {
   if (totsElsTips.length === 0) {
-    try {
-      const res = await fetch('./data/tips_catala.json');
-      totsElsTips = await res.json();
-    } catch(e) {
-      totsElsTips = [];
-    }
+    totsElsTips = [];
+    Object.values(dadesTips).forEach(arr => {
+      totsElsTips.push(...arr.map(t => ({text: t.truc, exemple: t.exemple})));
+    });
   }
   mostrarTipRandom();
 }
