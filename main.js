@@ -90,63 +90,35 @@ function vibrar() {
   if (navigator.vibrate) navigator.vibrate(50);
 }
 
-// ===== CARREGAR DADES =====
 async function carregarDades() {
   try {
-    const res = await fetch('./data/categories_emoji.json');
-    CATEGORIES_TOTS = await res.json();
+    const [catRes, botRes, frasesRes] = await Promise.all([
+      fetch('./data/categories_emoji.json'),
+      fetch('./data/botiga_emoji.json'),
+      fetch('./data/minijoc_frases.json')
+    ]);
+    
+    CATEGORIES_TOTS = await catRes.json();
+    PACKS_BOTIGA = await botRes.json();
+    FRASES_MINIJOC = await frasesRes.json();
+    
+    // lectures.json opcional - si falla, no petamos
+    try {
+      const lecRes = await fetch('./data/lectures.json');
+      LECTURES_DATA = await lecRes.json();
+    } catch(e) {
+      console.warn('lectures.json no encontrado, usando datos dummy');
+      LECTURES_DATA = [
+        {"nivell":"a1","titol":"Text de prova","text":"Aquest és un text de prova per si lectures.json falla."}
+      ];
+    }
+    
   } catch(e) {
-    console.error('Error categories:', e);
-    CATEGORIES_TOTS = {};
+    console.error('Error carregant dades:', e);
+    alert('Error carregant dades. Revisa que existixin els fitxers JSON a /data/');
   }
   
-  try {
-    const res = await fetch('./data/botiga_emoji.json');
-    PACKS_BOTIGA = await res.json();
-  } catch(e) {
-    console.error('Error botiga:', e);
-    PACKS_BOTIGA = [];
-  }
-  
-  try {
-    const res = await fetch('./data/minijoc_frases.json');
-    const data = await res.json();
-    FRASES_MINIJOC = Array.isArray(data)? data : (data.frases || []);
-  } catch(e) {
-    console.error('Error frases:', e);
-    FRASES_MINIJOC = [];
-  }
-  
-  try {
-    const res = await fetch('./data/lectures.json');
-    LECTURES_DATA = await res.json();
-  } catch(e) {
-    console.error('Error lectures:', e);
-    LECTURES_DATA = [];
-  }
-
-  // Inicialitza desbloquejats amb PACK_INICIAL si està buit
-  if (!estat.desbloquejats || Object.keys(estat.desbloquejats).length === 0) {
-    estat.desbloquejats = {};
-    Object.keys(CATEGORIES_TOTS).forEach(cat => {
-      estat.desbloquejats[cat] = PACK_INICIAL.filter(e => 
-        CATEGORIES_TOTS[cat]?.some(em => quitarSkinTone(em) === quitarSkinTone(e))
-      );
-    });
-  }
-
-  // Construeix TOTS_EMOJIS pla per al minijoc
-  TOTS_EMOJIS = [];
-  Object.entries(CATEGORIES_TOTS).forEach(([cat, emojis]) => {
-    emojis.forEach(emoji => {
-      const emojiNet = quitarSkinTone(emoji);
-      if (!TOTS_EMOJIS.find(e => quitarSkinTone(e.emoji) === emojiNet)) {
-        TOTS_EMOJIS.push({emoji: emoji, nom_cat: emojiNet, categoria: cat});
-      }
-    });
-  });
-  
-  construirCategories(); // <-- construye CATEGORIES_DESBLOQUEJADES
+  construirCategories();
 }
 
 // ===== UTILS EXTRA =====
@@ -1011,20 +983,24 @@ function comprarPack(id, preu) {
   alert('Pack desbloquejat a la biblioteca!');
 }
 
-// ===== INTRO ===== - CORREGIDO PARA OCULTAR
+// ===== INTRO =====
 function mostrarIntro() {
   const introEl = document.getElementById('intro');
-  if (!introEl) return;
-
-  if (estat.introVist) {
-    introEl.style.display = 'none'; // <-- CORREGIDO: style en vez de classList
+  if (!introEl) {
+    console.error('No existe #intro en HTML');
     return;
   }
 
-  introEl.style.display = 'flex'; // <-- CORREGIDO
+  if (estat.introVist) {
+    introEl.style.display = 'none';
+    mostrarTab('mapa'); // fuerza pintar mapa si intro ya se vio
+    return;
+  }
+
+  introEl.style.display = 'flex';
+  slideActual = 0;
   pintarSlide();
 }
-
 function pintarSlide() {
   const slide = INTRO_SLIDES[slideActual];
   document.getElementById('intro-emoji').textContent = slide.emoji;
