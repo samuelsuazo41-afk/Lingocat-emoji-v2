@@ -1,13 +1,14 @@
-const CACHE_NAME = 'lingocat-v48';
-
+const CACHE_NAME = 'lingocat-v61';  
 const URLS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './main.js',
+  './sw.js', // <-- AÑADIDO: el propio SW
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
   './data/minijoc_frases.json',
+  './data/lectures.json', // <-- AÑADIDO: lo usa generarLectura()
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-512.png'
@@ -25,15 +26,13 @@ self.addEventListener('install', event => {
 // Activació: esborrar caches velles
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      )
-    ).then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(
+      keys.map(key => {
+        if (key !== CACHE_NAME) {
+          return caches.delete(key);
+        }
+      })
+    )).then(() => self.clients.claim())
   );
 });
 
