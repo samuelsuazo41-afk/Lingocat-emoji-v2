@@ -690,11 +690,11 @@ function mostrarTab(tab) {
   document.querySelector(`.nav-btn[onclick="mostrarTab('${tab}')"]`).classList.add('active');
 
   if (tab === 'mapa') renderMapa();
-  if (tab === 'missio') renderMissio();
-  if (tab === 'gremi') mostrarSubTab('biblioteca');
-  if (tab === 'lectura') generarLectura(); // direct, sense carregarLectures
-  if (tab === 'tips') carregarTips();
-  if (tab === 'botiga') renderBotiga();
+if (tab === 'missio') renderMissio();
+if (tab === 'gremi') mostrarSubTab('biblioteca');
+if (tab === 'lectura') generarLectura();
+if (tab === 'tips') carregarTips();
+if (tab === 'botiga') renderBotiga();
 }
 
 function mostrarSubTab(sub) {
@@ -747,16 +747,9 @@ function mostrarTipRandom() {
 }
 
 
-// ===== GENERADOR DE LECTURA - SEPARAT DE GREMI =====
-let lecturesData = {}; // objecte, no array
-let lecturaActual = null;
-
-// BANCO_VOCAB ve de banco_lectures.js carregat abans de main.js
-lecturesData = BANCO_VOCAB;
-
 function generarLectura() {
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
-  const lecturesNivell = lecturesData[nivell]?.plantillas || [];
+  const lecturesNivell = BANCO_VOCAB[nivell]?.plantillas || [];
 
   const cont = document.getElementById('lectura-contingut');
   if (!cont) return;
@@ -766,14 +759,12 @@ function generarLectura() {
     return;
   }
 
-  lecturaActual = lecturesNivell[Math.floor(Math.random() * lecturesNivell.length)];
+  const lectura = lecturesNivell[Math.floor(Math.random() * lecturesNivell.length)];
 
-  // Tria tema aleatori dels 6 blocs
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const temaTriat = temes[Math.floor(Math.random() * temes.length)];
-  const vocab = lecturesData[nivell][temaTriat];
+  const vocab = BANCO_VOCAB[nivell][temaTriat];
 
-  // Funció per reemplaçar ${variable} amb paraula aleatòria
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       const opcions = vocab[key];
@@ -782,9 +773,9 @@ function generarLectura() {
     });
   }
 
-  const titol = reemplaçar(lecturaActual.titol);
-  const text = lecturaActual.seq.map(linia => reemplaçar(linia)).join(' ');
-  const pregunta = reemplaçar(lecturaActual.pregunta);
+  const titol = reemplaçar(lectura.titol);
+  const text = lectura.seq.map(linia => reemplaçar(linia)).join(' ');
+  const pregunta = reemplaçar(lectura.pregunta);
 
   cont.innerHTML = `
     <div class="lectura-card">
@@ -798,19 +789,6 @@ function generarLectura() {
       <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button>
     </div>
   `;
-}
-
-function comprovarLectura() {
-  const feedback = document.getElementById('feedback-lectura');
-  const resposta = prompt('Escriu la teva resposta:');
-  if (resposta && resposta.trim().length > 3) {
-    feedback.innerHTML = '<p style="color:#4CAF50;">Resposta registrada! +3 🪙</p>';
-    estat.monedes += 3;
-    guardarEstat();
-    actualitzarUI();
-  } else {
-    feedback.innerHTML = '<p style="color:#f44336;">Escriu una resposta més llarga</p>';
-  }
 }
 
 
