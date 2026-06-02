@@ -596,6 +596,19 @@ function gastarEnergia(cost) {
     alert('No tens energia! Recarrega a Missió per 50 monedes');
     return false;
   }
+  
+  estat.progres.energia -= cost;
+  guardarEstat();
+  actualitzarUI();
+  
+  // Actualiza la barra de energía de abajo
+  const energiaBar = document.getElementById('energia-bar');
+  const energiaText = document.getElementById('energia-text');
+  if (energiaBar) energiaBar.style.width = estat.progres.energia + '%';
+  if (energiaText) energiaText.textContent = estat.progres.energia;
+  
+  return true;
+}
   estat.progres.energia -= cost;
   guardarEstat();
   actualitzarUI(); // <-- corregido
