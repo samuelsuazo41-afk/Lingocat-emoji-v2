@@ -436,7 +436,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
 
       // Borra el "La " o "El " fijo que haya justo antes del {cat} para evitar duplicado
-      text = text.replace(new RegExp(`(La |El |L' )?\\{${cat}\\}`), reemplazo);
+      text = text.replace(new RegExp(`(La |El |L'|la |el |l' )?\\{${cat}\\}`, 'i'), reemplazo);
       esPrimer = false;
     } else {
       text = text.replace(`{${cat}}`, reemplazo);
