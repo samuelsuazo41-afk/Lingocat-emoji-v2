@@ -33,7 +33,38 @@ header {
   top: 0;
   z-index: 100;
 }
-.header-stats { display: flex; gap: 16px; font-size: 14px; }
+.header-stats { 
+  display: flex; 
+  gap: 16px; 
+  font-size: 14px;
+  align-items: center;
+}
+
+/* Barra de progreso del personaje */
+.stat-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.progress-bar {
+  width: 60px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.stat-level {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent);
+}
+
 .tab-content { display: none; padding: 16px; }
 .tab-content.active { display: block; }
 .nivells-grid {
@@ -225,7 +256,13 @@ header {
   <div style="font-weight: bold; font-size: 18px;">🐱 Cat Lingo Emoji</div>
   <div class="header-stats">
     <span>🪙 <span id="monedes">0</span></span>
-    <span>⭐ Nivell <span id="nivell">1</span></span>
+    <div class="stat-progress">
+      <span id="header-personatge">👨</span>
+      <div class="progress-bar">
+        <div id="barra-progres" class="progress-fill"></div>
+      </div>
+      <span class="stat-level"><span id="nivell">1</span></span>
+    </div>
     <span>⚡ <span id="energia">100</span></span>
   </div>
 </header>
