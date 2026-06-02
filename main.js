@@ -407,9 +407,14 @@ let FRASES_MINIJOC = [];
 async function carregarDadesMinijoc() {
   try {
     const [frasesRes, detRes] = await Promise.all([
-      fetch('data/minijoc_frases.json'),
-      fetch('data/minijoc_determinants.json')
+      fetch('./data/minijoc_frases.json'),
+      fetch('./data/minijoc_determinants.json')
     ]);
+    
+    if (!frasesRes.ok || !detRes.ok) {
+      throw new Error(`HTTP ${frasesRes.status} ${detRes.status}`);
+    }
+    
     FRASES_MINIJOC = await frasesRes.json();
     DETERMINANTS = await detRes.json();
     console.log('Minijoc carregat:', FRASES_MINIJOC.frases.length, 'frases');
@@ -418,6 +423,7 @@ async function carregarDadesMinijoc() {
     novaFraseMinijoc();
   } catch (e) {
     console.error('Error cargant minijoc:', e);
+    document.getElementById('minijoc-frase').textContent = "Error cargant dades. Recarrega l'app.";
   }
 }
 
