@@ -1,5 +1,8 @@
 {
-  "a1": {
+ "personatges": ["Ana", "Pau", "Sofia", "Marc", "Laia", "Jordi", "Marta", "Oriol", "Clara", "Pol", "Berta", "Àlex", "Emma", "Guillem", "Núria", "Jan", "Aina", "David", "Claudia", "Roger"], 
+
+
+"a1": {
     "plantillas": [
       {
         "titol": "Un dia a ${tema}",
