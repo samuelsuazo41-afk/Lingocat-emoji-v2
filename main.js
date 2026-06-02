@@ -25,9 +25,9 @@ let estat = {
   progres: {
     nivellActualMapa: parseInt(localStorage.getItem('cat_nivell')) || 1,
     encerts: parseInt(localStorage.getItem('cat_encerts')) || 0,
-    frasesDesDeUltimNivell: parseInt(localStorage.getItem('cat_frasesContador')) || 0
+    frasesDesDeUltimNivell: parseInt(localStorage.getItem('cat_frasesContador')) || 0,
+    energia: parseInt(localStorage.getItem('cat_energia')) || 100 // <-- energía va aquí
   },
-  energia: parseInt(localStorage.getItem('cat_energia')) || 100,
   ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
   desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {}
 };
@@ -96,8 +96,8 @@ function actualitzarUI() {
 
   if (monedesEl) monedesEl.textContent = estat.monedes;
   if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
-  if (energiaEl) energiaEl.textContent = estat.energia;
-  if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%';
+  if (energiaEl) energiaEl.textContent = estat.progres.energia; // <-- usa progres.energia
+  if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%'; // barra de progreso, no energía
 
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
   if (headerPersonatge && personatge) headerPersonatge.textContent = personatge.emoji;
@@ -109,7 +109,7 @@ function guardarEstat() {
   localStorage.setItem('cat_nivell', estat.progres.nivellActualMapa);
   localStorage.setItem('cat_encerts', estat.progres.encerts);
   localStorage.setItem('cat_frasesContador', estat.progres.frasesDesDeUltimNivell);
-  localStorage.setItem('cat_energia', estat.energia);
+  localStorage.setItem('cat_energia', estat.progres.energia); // <-- guarda progres.energia
   localStorage.setItem('cat_ultimaEnergia', estat.ultimaRecargaEnergia);
   localStorage.setItem('cat_intro', JSON.stringify(estat.introVist));
   localStorage.setItem('cat_desbloquejats', JSON.stringify(estat.desbloquejats));
@@ -291,36 +291,35 @@ function renderMissio() {
   const energia = estat.progres.energia || 100;
   const monedas = estat.monedes || 0;
 
-  // Progreso hacia B1 = nivel 25
   const nivellB1 = 25;
   const progresoB1 = Math.min(100, Math.max(0, (nivell / nivellB1) * 100));
   const nivellsPerB1 = Math.max(0, nivellB1 - nivell);
 
-  const missio1 = xpFaltant > 0 ? '🎯' : '✅';
-  const missio2 = estat.compres && estat.compres.length > 0 ? '✅' : '📦';
+  const missio1 = xpFaltant > 0? '🎯' : '✅';
+  const missio2 = estat.compres && estat.compres.length > 0? '✅' : '📦';
   const missio3 = '📚';
-  const missio4 = energia >= 100 || monedas < 50 ? '🔒' : '⚡';
-  const missio5 = nivellsPerB1 === 0 ? '✅' : '🏆';
+  const missio4 = energia >= 100 || monedas < 50? '🔒' : '⚡';
+  const missio5 = nivellsPerB1 === 0? '✅' : '🏆';
 
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
-    
+
     <div class="missio-item" onclick="canviarTab('gremi', null); mostrarSubTab('minijoc');" style="cursor:pointer;">
       ${missio1} Et falten ${xpFaltant} acerts per pujar de nivell
     </div>
-    
+
     <div class="missio-item" onclick="canviarTab('botiga', null);" style="cursor:pointer;">
       ${missio2} Desbloqueja tota la biblioteca. Compra packs d'emojis amb monedes
     </div>
-    
+
     <div class="missio-item" onclick="canviarTab('lectura', null); setTimeout(() => mostrarSubTab('gramatica'), 100);" style="cursor:pointer;">
       ${missio3} Aprèn gramàtica com un pro
     </div>
-    
+
     <div class="missio-item">
       ${missio4} Recarrega la teva energia. Gasta 50 monedes per generar una nova lectura
     </div>
-    
+
     <div class="missio-item" style="cursor:default;">
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
         <span style="font-size:32px;">${missio5}</span>
@@ -336,8 +335,7 @@ function renderMissio() {
   `;
 }
 
-
-// ===== GREMI - PERSONATGES CON 6 BASE + NOM LECTURA DES DEL BANCO =====
+// ===== GREMI - PERSONATGES =====
 function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-personatges');
   if (!cont) return;
@@ -434,7 +432,7 @@ function renderDiccionari() {
   cont.innerHTML = html;
 }
 
-// ===== MINIJOC - LÓGICA CRÒNIQUES =====
+// ===== MINIJOC =====
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
   if (!emojiData ||!emojiData.nom_cat) return emoji;
@@ -473,7 +471,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-      ? `El/${detIncorrecte}`
+     ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
@@ -527,7 +525,7 @@ function generarOpcionsMinijoc(solucio) {
   });
 
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
-  .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
+ .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
 
   const opcions = [...solucio,...falsos].sort(() => 0.5 - Math.random());
   minijoc.emojisDisponibles = opcions;
@@ -584,7 +582,7 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA - NOVA LÒGICA =====
+// ===== LECTURA =====
 function getCurrentLevel() {
   if (estat.progres.nivellActualMapa <= 33) return 'a1';
   if (estat.progres.nivellActualMapa <= 66) return 'a2';
@@ -600,16 +598,10 @@ function gastarEnergia(cost) {
   estat.progres.energia -= cost;
   guardarEstat();
   actualitzarUI();
-
-  // Actualiza la barra de abajo
-  const barra = document.getElementById('barra-progres');
-  if (barra) barra.style.width = estat.progres.energia + '%';
-
   return true;
 }
 
 function generarLectura() {
-  // Gasta 30 energia cada nova lectura
   if (!gastarEnergia(30)) return;
 
   const nivell = getCurrentLevel();
@@ -637,9 +629,7 @@ function generarLectura() {
 
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
-      if (key === 'personatge') {
-        return nomPersonatge;
-      }
+      if (key === 'personatge') return nomPersonatge;
       if (key === 'tema') return tema.replace(/_/g, ' ');
       return pick(vocab[key]) || key;
     });
@@ -717,30 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 100);
 });
-
-function comprovarPregunta(idx, resp) {
-  const p = lecturaActualPreguntes[idx];
-  const fb = document.getElementById(`feedback-${idx}`);
-  if (resp === p.correcta) {
-    fb.innerHTML = '<span style="color:#4CAF50">Correcte! +0.5 XP</span>';
-    estat.progres.encerts += 0.5;
-    guardarEstat();
-    actualitzarUI();
-  } else {
-    fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
-  }
-}
-
-// Auto-generar primera lectura al entrar a Lectura
-document.addEventListener('DOMContentLoaded', () => {
-  if (estat.progres.energia === undefined) estat.progres.energia = 100;
-  setTimeout(() => {
-    if (document.getElementById('lectura-texto') &&!lecturaActualText) {
-      generarLectura();
-    }
-  }, 100);
-});
-
 
 // ===== GRAMÀTICA =====
 const GRAMATICA_BANCO = {
@@ -829,7 +795,7 @@ function generarGramatica() {
 
         <div class="grammar-examples">
           <div class="grammar-examples-title">Exemples de la lectura:</div>
-          ${grammarPoint.exemples.length > 0 ? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
+          ${grammarPoint.exemples.length > 0? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
         </div>
 
         <div class="grammar-exercise">
