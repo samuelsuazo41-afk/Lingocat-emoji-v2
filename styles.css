@@ -1,0 +1,197 @@
+/* ===== RESET Y BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+  padding-bottom: 80px;
+}
+
+/* ===== HEADER AMB BARRA PROGRÉS ===== */
+.header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 16px;
+}
+.stat-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 200px;
+  margin: 0 10px;
+}
+.stat-icon {
+  font-size: 20px;
+}
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #22c55e);
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.stat-level {
+  font-weight: 700;
+  font-size: 14px;
+  color: #22c55e;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ===== NAVEGACIÓ SCROLL HORIZONTAL ===== */
+.nav-bottom,.sub-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 8px 12px;
+  background: #1a1a1a;
+}
+.nav-bottom::-webkit-scrollbar,.sub-tabs::-webkit-scrollbar {
+  display: none;
+}
+.nav-item,.sub-tab-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #2a2a2a;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-weight: 600;
+}
+.nav-item.active,.sub-tab-btn.active {
+  background: #22c55e;
+  color: #000;
+}
+
+/* ===== TABS ===== */
+.tab-content {
+  display: none;
+  padding: 20px;
+}
+.tab-content.active {
+  display: block;
+}
+.sub-tab-content {
+  display: none;
+}
+
+/* ===== BOTONES LECTURA ===== */
+.btn-primari {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.btn-primari:hover {
+  transform: translateY(-2px);
+}
+
+/* ===== VOCABULARI LECTURA ===== */
+#lectura-vocab {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #374151;
+}
+.vocab-tag {
+  display: inline-block;
+  background: #1f2937;
+  color: #10b981;
+  padding: 4px 12px;
+  border-radius: 6px;
+  margin: 4px;
+  font-size: 14px;
+}
+
+/* ===== TIPS CENTRADO ===== */
+#tab-tips.tip-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ===== GRIDS ===== */
+.nivells-grid,.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(60px,1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.nivell-card,.emoji-item,.capitol-card {
+  background: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+.nivell-card.active {
+  border-color: #22c55e;
+  background: #1a2a1a;
+}
+.emoji-large {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+.emoji-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+.missio-item {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.missio-item:hover {
+  border-color: #22c55e;
+}
+
+/* ===== LECTURA CARD ===== */
+.lectura-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 20px;
+}
+.lectura-text {
+  line-height: 1.8;
+  margin: 16px 0;
+  white-space: pre-wrap;
+  }
