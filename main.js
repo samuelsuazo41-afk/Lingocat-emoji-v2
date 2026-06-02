@@ -656,87 +656,186 @@ function comprovarPregunta(idx, resp) {
 }
 
 // ===== GRAMÀTICA =====
+const GRAMATICA_BANCO = {
+  present_simple: {
+    titol: "Present Simple - Present d'indicatiu",
+    explicacio: "S'usa per accions habituals, veritats generals i rutines.",
+    estructura: "Subjecte + verb en present",
+    exemples: ["Jo menjo cada dia.", "Ella treballa a l'escola.", "Nosaltres vivim a Barcelona."],
+    exercici: ["Jo _____ cada matí.", "La Laura _____ català.", "Nosaltres _____ al parc."],
+    tip: null
+  },
+  passat_perifras: {
+    titol: "Pretèrit perifràstic: va + infinitiu",
+    explicacio: "S'usa per parlar d'accions que van passar en el passat. Estructura: subjecte + va + verb en infinitiu.",
+    estructura: "Subjecte + va + infinitiu",
+    exemples: [],
+    exercici: ["La Maria _____ a la casa de l'àvia.", "En Pau _____ un gat al jardí.", "La Marta _____ amb fruita."],
+    tip: "Es pronuncia 'va' curt. Ex: 'va anar' = /banar/"
+  },
+  futur_simple: {
+    titol: "Futur Simple - Futur d'indicatiu",
+    explicacio: "S'usa per accions que passaran en el futur.",
+    estructura: "Subjecte + verb en futur",
+    exemples: ["Jo menjaré demà.", "Ella vindrà a les 5.", "Nosaltres viatjarem a Girona."],
+    exercici: ["Jo _____ demà.", "La Laura _____ a casa.", "Nosaltres _____ al cinema."],
+    tip: null
+  },
+  estar_adjectiu: {
+    titol: "Estar + adjectiu",
+    explicacio: "S'usa per descriure com se sent una persona en un moment concret.",
+    estructura: "Subjecte + estar + adjectiu",
+    exemples: [],
+    exercici: ["La Laura _____ molt content després de dinar.", "En Jordi _____ tranquil a casa.", "La Marta _____ feliç al parc."],
+    tip: null
+  },
+  articles: {
+    titol: "Articles determinats: el, la, els, les",
+    explicacio: "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
+    estructura: "el/la/els/les + nom",
+    exemples: [],
+    exercici: ["_____ gos dorm al sofà.", "_____ casa és molt bonica.", "_____ nens juguen al parc."],
+    tip: "el = masculí singular, la = femení singular"
+  },
+  present_continu: {
+    titol: "Present Continu - estar + gerundi",
+    explicacio: "S'usa per accions que estan passant ara mateix.",
+    estructura: "Subjecte + estar + verb + -ant/-ent",
+    exemples: ["Jo estic menjant.", "Ella està estudiant.", "Nosaltres estem jugant."],
+    exercici: ["Jo _____ ara.", "La Laura _____ català.", "Nosaltres _____ futbol."],
+    tip: null
+  }
+};
+
+let gramaticaMode = 'contextual';
+let gramaticaTemaSeleccionat = null;
+
 function generarGramatica() {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
 
-  if (!lecturaActualText || lecturaActualVocab.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">📚</div>
-        <p>Genera primer una lectura per veure la gramàtica</p>
-      </div>
-    `;
-    return;
-  }
-
-  const nivell = getCurrentLevel();
-  const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell);
-
-  container.innerHTML = `
-    <div class="grammar-card">
-      <div class="grammar-title">${grammarPoint.titol}</div>
-      <div class="grammar-explanation">${grammarPoint.explicacio}</div>
-
-      <div class="grammar-examples">
-        <div class="grammar-examples-title">Exemples de la lectura:</div>
-        ${grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('')}
-      </div>
-
-      <div class="grammar-exercise">
-        <div class="grammar-exercise-title">Practica:</div>
-        ${grammarPoint.exercici.map((frase, i) => `
-          <div class="grammar-exercise-item">${i+1}. ${frase}</div>
-        `).join('')}
-      </div>
-
-      ${grammarPoint.tip? `
-        <div class="grammar-tip">💡 <strong>Tip:</strong> ${grammarPoint.tip}</div>
-      ` : ''}
+  let html = `
+    <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
+      <button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')" style="padding:8px 16px; font-size:14px;">Contextual</button>
+      <button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')" style="padding:8px 16px; font-size:14px;">Guia</button>
     </div>
   `;
+
+  if (gramaticaMode === 'contextual') {
+    if (!lecturaActualText || lecturaActualVocab.length === 0) {
+      container.innerHTML = html + `
+        <div class="empty-state">
+          <div class="empty-state-icon">📚</div>
+          <p>Genera primer una lectura per veure la gramàtica</p>
+        </div>
+      `;
+      return;
+    }
+
+    const nivell = getCurrentLevel();
+    const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell);
+
+    html += `
+      <div class="grammar-card">
+        <div class="grammar-title">${grammarPoint.titol}</div>
+        <div class="grammar-explanation">${grammarPoint.explicacio}</div>
+
+        <div class="grammar-examples">
+          <div class="grammar-examples-title">Exemples de la lectura:</div>
+          ${grammarPoint.exemples.length > 0 ? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
+        </div>
+
+        <div class="grammar-exercise">
+          <div class="grammar-exercise-title">Practica:</div>
+          ${grammarPoint.exercici.map((frase, i) => `
+            <div class="grammar-exercise-item">${i+1}. ${frase}</div>
+          `).join('')}
+        </div>
+
+        ${grammarPoint.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${grammarPoint.tip}</div>` : ''}
+      </div>
+    `;
+  } else {
+    if (!gramaticaTemaSeleccionat) {
+      html += `<div class="emoji-grid">`;
+      Object.keys(GRAMATICA_BANCO).forEach(key => {
+        const tema = GRAMATICA_BANCO[key];
+        html += `
+          <div class="emoji-item" onclick="seleccionarTemaGramatica('${key}')" style="cursor:pointer;">
+            <div class="emoji-name" style="font-size:14px; font-weight:600;">${tema.titol}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    } else {
+      const tema = GRAMATICA_BANCO[gramaticaTemaSeleccionat];
+      html += `
+        <button class="btn btn-sec" onclick="tornarAGuia()" style="margin-bottom:15px;">← Tornar a la Guia</button>
+        <div class="grammar-card">
+          <div class="grammar-title">${tema.titol}</div>
+          <div class="grammar-explanation">${tema.explicacio}</div>
+          <div style="background:#1a1a1a; padding:12px; border-radius:8px; margin:12px 0; font-family:monospace; color:#4CAF50; font-size:14px;">
+            Estructura: ${tema.estructura}
+          </div>
+          <div class="grammar-examples">
+            <div class="grammar-examples-title">Exemples:</div>
+            ${tema.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('')}
+          </div>
+          <div class="grammar-exercise">
+            <div class="grammar-exercise-title">Practica:</div>
+            ${tema.exercici.map((frase, i) => `
+              <div class="grammar-exercise-item">${i+1}. ${frase}</div>
+            `).join('')}
+          </div>
+          ${tema.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${tema.tip}</div>` : ''}
+        </div>
+      `;
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+function setGramaticaMode(mode) {
+  gramaticaMode = mode;
+  gramaticaTemaSeleccionat = null;
+  generarGramatica();
+}
+
+function seleccionarTemaGramatica(key) {
+  gramaticaTemaSeleccionat = key;
+  generarGramatica();
+}
+
+function tornarAGuia() {
+  gramaticaTemaSeleccionat = null;
+  generarGramatica();
 }
 
 function detectarPuntGramatica(texto, nivell) {
   if (texto.includes('va anar') || texto.includes('va veure') || texto.includes('va fer')) {
-    return {
-      titol: "Pretèrit perifràstic: va + infinitiu",
-      explicacio: "S'usa per parlar d'accions que van passar en el passat. Estructura: subjecte + va + verb en infinitiu.",
-      exemples: extraerFrasesCon(texto, 'va '),
-      exercici: [
-        `La Maria _____ a la casa de l'àvia.`,
-        `En Pau _____ un gat al jardí.`,
-        `La Marta _____ amb fruita.`
-      ],
-      tip: "Es pronuncia 'va' curt. Ex: 'va anar' = /banar/"
-    };
+    const data = {...GRAMATICA_BANCO.passat_perifras};
+    data.exemples = extraerFrasesCon(texto, 'va ');
+    return data;
   }
 
-  if (texto.includes('estava') || texto.includes('està')) {
-    return {
-      titol: "Estar + adjectiu",
-      explicacio: "S'usa per descriure com se sent una persona en un moment concret.",
-      exemples: extraerFrasesCon(texto, 'estav'),
-      exercici: [
-        `La Laura _____ molt content després de dinar.`,
-        `En Jordi _____ tranquil a casa.`,
-        `La Marta _____ feliç al parc.`
-      ],
-      tip: null
-    };
+  if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
+    const data = {...GRAMATICA_BANCO.estar_adjectiu};
+    data.exemples = extraerFrasesCon(texto, 'estav');
+    return data;
   }
 
-  return {
-    titol: "Articles determinats: el, la, els, les",
-    explicacio: "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
-    exemples: extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3),
-    exercici: [
-      `_____ gos dorm al sofà.`,
-      `_____ casa és molt bonica.`,
-      `_____ nens juguen al parc.`
-    ],
-    tip: "el = masculí singular, la = femení singular"
-  };
+  if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
+    return GRAMATICA_BANCO.futur_simple;
+  }
+
+  if (texto.includes('estic') && (texto.includes('menjant') || texto.includes('estudiant') || texto.includes('jugant'))) {
+    return GRAMATICA_BANCO.present_continu;
+  }
+
+  const data = {...GRAMATICA_BANCO.articles};
+  data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
+  return data;
 }
 
 function extraerFrasesCon(texto, palabra) {
