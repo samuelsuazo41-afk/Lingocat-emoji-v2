@@ -396,33 +396,54 @@ function obtenirArticle(emoji) {
   const nom = emojiData.nom_cat.toLowerCase();
   const genere = emojiData.genere; // 'm' o 'f' desde tu BIBLIOTECA_PLA
 
-  // Artículo correcto según género
-  const detCorrecte = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
-  const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
+  // Mira si la palabra está en el diccionario
+  const detBase = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
 
   // Ajuste para L' delante de vocal
-  if (detCorrecte === "L'" &&!'aeiou'.includes(nom[0])) {
-    return `El/${detIncorrecte} ${emojiData.nom_cat}`;
+  if (detBase === "L'" &&!'aeiou'.includes(nom[0])) {
+    return `El ${emojiData.nom_cat}`;
   }
 
-  return `${detCorrecte}/${detIncorrecte} ${emojiData.nom_cat}`;
+  return `${detBase} ${emojiData.nom_cat}`;
 }
 
 // El resto de tu código sin tocar:
 function generarFraseDinamica(plantilla, emojisJugador) {
   let text = plantilla.text;
   let solucio = [];
+  let primerHueco = true; // flag para saber si es el primer reemplazo
+
   for (const cat of plantilla.categories) {
     const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase =>
       emojisJugador.some(eJug => quitarSkinTone(eJug) === quitarSkinTone(eBase))
     ) || [];
     if (!emojisDisponibles.length) return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)], emojisJugador);
+
     const emojiElegit = emojisDisponibles[Math.floor(Math.random() * emojisDisponibles.length)];
-    text = text.replace(`{${cat}}`, obtenirArticle(emojiElegit));
+    let article = obtenirArticle(emojiElegit);
+
+    // Solo al primer hueco le metemos la barra con la opción incorrecta
+    if (primerHueco) {
+      const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
+      const nom = emojiData?.nom_cat?.toLowerCase() || '';
+      const genere = emojiData?.genere;
+      const detCorrecte = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
+      const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
+
+      if (detCorrecte === "L'" &&!'aeiou'.includes(nom[0])) {
+        article = `El/${detIncorrecte} ${emojiData.nom_cat}`;
+      } else {
+        article = `${detCorrecte}/${detIncorrecte} ${emojiData.nom_cat}`;
+      }
+      primerHueco = false;
+    }
+
+    text = text.replace(`{${cat}}`, article);
     solucio.push(emojiElegit);
   }
   return { text, solucio };
 }
+
 function novaFraseMinijoc() {
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) return;
   const emojisJugador = [...PACK_INICIAL];
