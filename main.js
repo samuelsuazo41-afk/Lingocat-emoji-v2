@@ -411,7 +411,7 @@ function obtenirArticle(emoji) {
 function generarFraseDinamica(plantilla, emojisJugador) {
   let text = plantilla.text;
   let solucio = [];
-  let primerHueco = true; // flag para saber si es el primer reemplazo
+  let esPrimer = true; // flag para detectar el primer hueco
 
   for (const cat of plantilla.categories) {
     const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase =>
@@ -420,25 +420,25 @@ function generarFraseDinamica(plantilla, emojisJugador) {
     if (!emojisDisponibles.length) return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)], emojisJugador);
 
     const emojiElegit = emojisDisponibles[Math.floor(Math.random() * emojisDisponibles.length)];
-    let article = obtenirArticle(emojiElegit);
+    let reemplazo = obtenirArticle(emojiElegit);
 
-    // Solo al primer hueco le metemos la barra con la opción incorrecta
-    if (primerHueco) {
+    // Solo al primer hueco le cambiamos el artículo por El/La
+    if (esPrimer) {
       const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
       const genere = emojiData?.genere;
       const detCorrecte = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
-      if (detCorrecte === "L'" &&!'aeiou'.includes(nom[0])) {
-        article = `El/${detIncorrecte} ${emojiData.nom_cat}`;
-      } else {
-        article = `${detCorrecte}/${detIncorrecte} ${emojiData.nom_cat}`;
-      }
-      primerHueco = false;
+      const detAmbBarra = detCorrecte === "L'" &&!'aeiou'.includes(nom[0])
+      ? `El/${detIncorrecte}`
+        : `${detCorrecte}/${detIncorrecte}`;
+
+      reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
+      esPrimer = false;
     }
 
-    text = text.replace(`{${cat}}`, article);
+    text = text.replace(`{${cat}}`, reemplazo);
     solucio.push(emojiElegit);
   }
   return { text, solucio };
