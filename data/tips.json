@@ -1,3 +1,4 @@
+{
   a1: [
     {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata"},
     {truc: "Els per masculí plural, Les per femení plural", exemple: "Els gats, Les gates"},
@@ -81,4 +82,4 @@
     {truc: "Relatius: que, qui, el qual", exemple: "El llibre que llegeixo"},
     {truc: "Comparatiu: més/menys... que", exemple: "Més gran que tu"}
   ]
-};
+}
