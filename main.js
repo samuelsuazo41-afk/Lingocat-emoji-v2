@@ -119,9 +119,7 @@ function mostrarSubTab(sub) {
   if(btn) btn.classList.add('active');
 
   if (sub === 'personatges') mostrarGremiPersonatges();
-  if (sub === 'objectes') mostrarGremiObjectes();
   if (sub === 'biblioteca') renderDiccionari();
-  if (sub === 'llegendes') mostrarGremiLlegendes();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
 }
 
@@ -254,18 +252,10 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI - 4 SUBTABS =====
+// ===== GREMI - 2 SUBTABS =====
 function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-contenidor');
   cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Selecció de personatge</div>`;
-}
-function mostrarGremiObjectes() {
-  const cont = document.getElementById('gremi-contenidor');
-  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Inventari d'objectes</div>`;
-}
-function mostrarGremiLlegendes() {
-  const cont = document.getElementById('gremi-contenidor');
-  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Llegendes de Catalunya</div>`;
 }
 
 // ===== BIBLIOTECA =====
@@ -382,7 +372,6 @@ function comprovarMinijoc() {
     estat.monedes += 5;
     estat.progres.encerts++;
     estat.progres.frasesDesDeUltimNivell++;
-    // Cada 25 frases sube 1 nivel
     if (estat.progres.frasesDesDeUltimNivell >= 25 && estat.progres.nivellActualMapa < 100) {
       estat.progres.nivellActualMapa++;
       estat.progres.frasesDesDeUltimNivell = 0;
