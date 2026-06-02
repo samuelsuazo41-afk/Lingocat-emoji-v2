@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v3
+// main.js - Lingocat Emoji v3 - VERSIÓN ARREGLADA
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -104,20 +104,23 @@ function guardarEstat() {
   localStorage.setItem('cat_personatge', estat.personatgeTriat);
 }
 
+// ===== INICIALITZACIÓ =====
+document.addEventListener('DOMContentLoaded', async () => {
+  mostrarIntro();
+  await carregarDades();
+  actualitzarUI();
+  canviarTab('mapa', null); // SOLO carga mapa al inicio
+});
+
 // ===== NAVEGACIÓ =====
 function canviarTab(tab, e) {
-  // 1. Desactiva todas las tabs
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-
-  // 2. Activa solo la tab clicada
   const tabEl = document.getElementById('tab-'+tab);
   if (!tabEl) return;
   tabEl.classList.add('active');
-
   if(e && e.target) e.target.closest('.nav-item').classList.add('active');
 
-  // 3. Carga solo el contenido de esa tab
   if(tab === 'mapa') renderMapa();
   if(tab === 'missio') renderMissio();
   if(tab === 'gremi') mostrarSubTab('personatges');
@@ -126,40 +129,31 @@ function canviarTab(tab, e) {
   if(tab === 'botiga') renderBotiga();
 }
 
-function carregarTips() {
-  const tabTips = document.getElementById('tab-tips');
-  if (!tabTips ||!tabTips.classList.contains('active')) return;
-
-  const tipText = document.getElementById('tip-text');
-  const tipExemple = document.getElementById('tip-exemple');
-  if (!tipText ||!tipExemple) return;
-
-  const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
-  if (totsElsTips.length === 0 || totsElsTips!== dadesTips[nivell]) {
-    totsElsTips = dadesTips[nivell] || [];
-    tipsUsats = [];
-  }
-  mostrarTipRandom();
-}
-
-function generarLectura() {
-  const tabLectura = document.getElementById('tab-lectura');
-  if (!tabLectura ||!tabLectura.classList.contains('active')) return;
-
-  const cont = document.getElementById('lectura-contingut');
+// FIX CLAVE: solo toca los sub-tabs de Gremi, no todo el DOM
+function mostrarSubTab(sub) {
+  document.querySelectorAll('#gremi-contenidor.sub-tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + sub);
+  if (btn) btn.classList.add('active');
+  const cont = document.getElementById('gremi-' + sub);
   if (!cont) return;
+  cont.style.display = 'block';
 
-  // tu código de lectura aquí...
-  const lectura = BANCO_LECTURA[Math.floor(Math.random() * BANCO_LECTURA.length)];
-  cont.innerHTML = `
-    <div class="lectura-card">
-      <div class="lectura-text">${lectura.text}</div>
-      <div class="lectura-vocab"><strong>Vocabulari:</strong> ${lectura.vocab}</div>
-      <div class="lectura-pregunta"><strong>Pregunta:</strong> ${lectura.pregunta}</div>
-      <button class="btn btn-primari" onclick="generarLectura()">Nova lectura</button>
-    </div>
-  `;
+  if (sub === 'personatges') mostrarGremiPersonatges();
+  if (sub === 'biblioteca') renderDiccionari();
+  if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
+  vibrar();
 }
+
+function jugarNivell(n) {
+  if (n > estat.progres.nivellActualMapa) return;
+  canviarTab('gremi', null);
+  setTimeout(() => {
+    mostrarSubTab('minijoc');
+    novaFraseMinijoc();
+  }, 50);
+}
+function jugarNivell1() { jugarNivell(1); }
 
 // ===== CARREGAR DADES =====
 async function carregarDades() {
@@ -496,8 +490,10 @@ function carregarTips() {
   const tabTips = document.getElementById('tab-tips');
   if (!tabTips ||!tabTips.classList.contains('active')) return;
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
-  if (totsElsTips.length === 0 || totsElsTips!== dadesTips[nivell]) totsElsTips = dadesTips[nivell] || [];
-  if (tipsUsats.length === 0 && totsElsTips!== dadesTips[nivell]) tipsUsats = [];
+  if (totsElsTips.length === 0 || totsElsTips!== dadesTips[nivell]) {
+    totsElsTips = dadesTips[nivell] || [];
+    tipsUsats = [];
+  }
   mostrarTipRandom();
 }
 function mostrarTipRandom() {
