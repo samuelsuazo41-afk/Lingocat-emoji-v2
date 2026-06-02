@@ -682,26 +682,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   mostrarTab('mapa'); // 4. Activa menú y pinta mapa
 });
 
+
 // ===== NAVEGACIÓ PRINCIPAL =====
 function mostrarTab(tab) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
-  document.querySelector(`.nav-btn[onclick="mostrarTab('${tab}')"]`).classList.add('active');
+  
+  const btn = document.querySelector(`.nav-btn[onclick="mostrarTab('${tab}')"]`);
+  if (btn) btn.classList.add('active'); // guard anti-null
 
   if (tab === 'mapa') renderMapa();
-if (tab === 'missio') renderMissio();
-if (tab === 'gremi') mostrarSubTab('biblioteca');
-if (tab === 'lectura') generarLectura();
-if (tab === 'tips') carregarTips();
-if (tab === 'botiga') renderBotiga();
+  if (tab === 'missio') renderMissio();
+  if (tab === 'gremi') mostrarSubTab('biblioteca');
+  if (tab === 'lectura') generarLectura();
+  if (tab === 'tips') carregarTips();
+  if (tab === 'botiga') renderBotiga();
 }
 
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('gremi-' + sub).style.display = 'block';
-  document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`).classList.add('active');
+  
+  const subBtn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
+  if (subBtn) subBtn.classList.add('active'); // guard anti-null
 
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFrase(), 50);
