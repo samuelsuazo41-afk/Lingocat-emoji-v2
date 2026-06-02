@@ -55,6 +55,11 @@ let CATEGORIES_DESBLOQUEJADES = {};
 let BANCO_VOCAB = {};
 let dadesTips = {};
 
+// ===== LECTURA STATE =====
+let lecturaActualText = '';
+let lecturaActualVocab = [];
+let lecturaActualPreguntes = [];
+
 // ===== MINIJOC =====
 let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc')) || 1};
 let minijoc = {fraseObjectiu: null, emojisTriats: [], emojisDisponibles: []};
@@ -428,51 +433,222 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA =====
+// ===== LECTURA - NOVA LÒGICA =====
+function getCurrentLevel() {
+  if (estat.progres.nivellActualMapa <= 33) return 'a1';
+  if (estat.progres.nivellActualMapa <= 66) return 'a2';
+  return 'b1';
+}
+
 function generarLectura() {
-  const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
-  const lecturesNivell = BANCO_VOCAB[nivell]?.plantillas || [];
-  const cont = document.getElementById('lectura-contingut');
-  if (!cont) return;
-  if (lecturesNivell.length === 0) {
-    cont.innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
+  const nivell = getCurrentLevel();
+  const dataNivell = BANCO_VOCAB[nivell];
+  if (!dataNivell ||!dataNivell.plantillas) {
+    document.getElementById('lectura-texto').innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
     return;
   }
-  const lectura = lecturesNivell[Math.floor(Math.random() * lecturesNivell.length)];
+
+  const plantillas = dataNivell.plantillas;
+  const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
+
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
-  const temaTriat = temes[Math.floor(Math.random() * temes.length)];
-  const vocab = BANCO_VOCAB[nivell][temaTriat];
+  const tema = temes[Math.floor(Math.random() * temes.length)];
+  const vocab = dataNivell[tema];
+
+  lecturaActualVocab = [];
+
+  function pick(arr) {
+    if (!arr ||!arr.length) return '';
+    const val = arr[Math.floor(Math.random() * arr.length)];
+    if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
+    return val;
+  }
+
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
-      const opcions = vocab[key];
-      if (!opcions ||!opcions.length) return key;
-      return opcions[Math.floor(Math.random() * opcions.length)];
+      if (key === 'personatge') {
+        const p = PERSONATGES_JUGADOR.find(x => x.id === estat.personatgeTriat);
+        return p? p.nom : 'La Maria';
+      }
+      if (key === 'tema') return tema.replace(/_/g, ' ');
+      return pick(vocab[key]) || key;
     });
   }
-  const titol = reemplaçar(lectura.titol);
-  const text = lectura.seq.map(linia => reemplaçar(linia)).join(' ');
-  const pregunta = reemplaçar(lectura.pregunta);
-  cont.innerHTML = `
+
+  const titol = reemplaçar(plantilla.titol);
+  lecturaActualText = plantilla.seq.map(l => reemplaçar(l)).join(' ');
+  lecturaActualPreguntes = plantilla.preguntes.map(p => ({
+    q: reemplaçar(p.q),
+    opcions: p.opcions.map(o => reemplaçar(o)),
+    correcta: p.correcta
+  }));
+
+  document.getElementById('lectura-texto').innerHTML = `
     <div class="lectura-card">
       <h3>${titol}</h3>
-      <p class="lectura-text">${text}</p>
+      <p class="lectura-text">${lecturaActualText}</p>
       <div class="lectura-preguntes">
-        <p><strong>Pregunta:</strong> ${pregunta}</p>
-        <button class="btn-primari" onclick="comprovarLectura()">Respondre</button>
-        <div id="feedback-lectura" class="feedback"></div>
+        ${lecturaActualPreguntes.map((p, i) => `
+          <div style="margin-bottom:15px;">
+            <p><strong>${i+1}. ${p.q}</strong></p>
+            ${p.opcions.map((op, j) => `
+              <button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;"
+                onclick="comprovarPregunta(${i}, ${j})">${op}</button>
+            `).join('')}
+            <div id="feedback-${i}" class="feedback"></div>
+          </div>
+        `).join('')}
       </div>
       <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button>
     </div>
   `;
+
+  renderVocabLectura();
+}
+
+function renderVocabLectura() {
+  const cont = document.getElementById('lectura-vocab');
+  if (!cont) return;
+  if (lecturaActualVocab.length === 0) {
+    cont.innerHTML = '<div class="empty-state"><p>Genera una lectura per veure el vocabulari</p></div>';
+    return;
+  }
+  cont.innerHTML = `
+    <div class="vocab-grid">
+      ${lecturaActualVocab.map(w => `
+        <div class="vocab-card">
+          <div class="vocab-word">${w}</div>
+          <div class="vocab-pron">/${w}/</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function comprovarPregunta(idx, resp) {
+  const p = lecturaActualPreguntes[idx];
+  const fb = document.getElementById(`feedback-${idx}`);
+  if (resp === p.correcta) {
+    fb.innerHTML = '<span style="color:#4CAF50">Correcte! +0.5 XP</span>';
+    estat.progres.encerts += 0.5;
+    guardarEstat();
+    actualitzarUI();
+  } else {
+    fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
+  }
+}
+
+// ===== GRAMÀTICA =====
+function generarGramatica() {
+  const container = document.getElementById('lectura-gramatica');
+  if (!container) return;
+
+  if (!lecturaActualText || lecturaActualVocab.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📚</div>
+        <p>Genera primer una lectura per veure la gramàtica</p>
+      </div>
+    `;
+    return;
+  }
+
+  const nivell = getCurrentLevel();
+  const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell);
+
+  container.innerHTML = `
+    <div class="grammar-card">
+      <div class="grammar-title">${grammarPoint.titol}</div>
+      <div class="grammar-explanation">${grammarPoint.explicacio}</div>
+
+      <div class="grammar-examples">
+        <div class="grammar-examples-title">Exemples de la lectura:</div>
+        ${grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('')}
+      </div>
+
+      <div class="grammar-exercise">
+        <div class="grammar-exercise-title">Practica:</div>
+        ${grammarPoint.exercici.map((frase, i) => `
+          <div class="grammar-exercise-item">${i+1}. ${frase}</div>
+        `).join('')}
+      </div>
+
+      ${grammarPoint.tip? `
+        <div class="grammar-tip">💡 <strong>Tip:</strong> ${grammarPoint.tip}</div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function detectarPuntGramatica(texto, nivell) {
+  if (texto.includes('va anar') || texto.includes('va veure') || texto.includes('va fer')) {
+    return {
+      titol: "Pretèrit perifràstic: va + infinitiu",
+      explicacio: "S'usa per parlar d'accions que van passar en el passat. Estructura: subjecte + va + verb en infinitiu.",
+      exemples: extraerFrasesCon(texto, 'va '),
+      exercici: [
+        `La Maria _____ a la casa de l'àvia.`,
+        `En Pau _____ un gat al jardí.`,
+        `La Marta _____ amb fruita.`
+      ],
+      tip: "Es pronuncia 'va' curt. Ex: 'va anar' = /banar/"
+    };
+  }
+
+  if (texto.includes('estava') || texto.includes('està')) {
+    return {
+      titol: "Estar + adjectiu",
+      explicacio: "S'usa per descriure com se sent una persona en un moment concret.",
+      exemples: extraerFrasesCon(texto, 'estav'),
+      exercici: [
+        `La Laura _____ molt content després de dinar.`,
+        `En Jordi _____ tranquil a casa.`,
+        `La Marta _____ feliç al parc.`
+      ],
+      tip: null
+    };
+  }
+
+  if (texto.includes('mentre') || texto.includes('després')) {
+    return {
+      titol: "Connectors temporals",
+      explicacio: "Paraules que uneixen frases i marquen ordre: mentre = al mateix temps, després = més tard.",
+      exemples: extraerFrasesCon(texto, 'mentre').concat(extraerFrasesCon(texto, 'després')),
+      exercici: [
+        `La Maria va dinar, _____ va passejar pel parc.`,
+        `_____ la Marta va arribar, els amics van riure.`,
+        `En Pau va llegir, _____ va sortir a jugar.`
+      ],
+      tip: null
+    };
+  }
+
+  return {
+    titol: "Articles determinats: el, la, els, les",
+    explicacio: "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
+    exemples: extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3),
+    exercici: [
+      `_____ gos dorm al sofà.`,
+      `_____ casa és molt bonica.`,
+      `_____ nens juguen al parc.`
+    ],
+    tip: "el = masculí singular, la = femení singular"
+  };
+}
+
+function extraerFrasesCon(texto, palabra) {
+  const frases = texto.split('.');
+  return frases.filter(f => f.includes(palabra)).slice(0,3).map(f => f.trim() + '.');
 }
 
 // ===== TIPS =====
 function carregarTips() {
-  const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
+  const nivell = getCurrentLevel();
   if (totsElsTips.length === 0) totsElsTips = dadesTips[nivell] || [];
   if (tipsUsats.length === 0 && totsElsTips!== dadesTips[nivell]) totsElsTips = dadesTips[nivell] || [];
   mostrarTipRandom();
 }
+
 function mostrarTipRandom() {
   if (!totsElsTips || totsElsTips.length === 0) {
     document.getElementById('tip-text').textContent = 'No hi ha tips per aquest nivell';
@@ -504,6 +680,7 @@ function renderBotiga() {
     cont.appendChild(card);
   });
 }
+
 function comprarPack(id, preu) {
   if (estat.monedes < preu) { alert('No tens prou monedes'); return; }
   estat.monedes -= preu;
