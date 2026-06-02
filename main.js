@@ -53,6 +53,7 @@ let BIBLIOTECA_PLA = [];
 let BIBLIOTECA_POR_CAT = {};
 let PACKS_BOTIGA = [];
 let FRASES_MINIJOC = [];
+let DETERMINANTS = {}; // <- Añadido aquí
 let TOTS_EMOJIS = [];
 let CATEGORIES_DESBLOQUEJADES = {};
 let BANCO_VOCAB = {};
