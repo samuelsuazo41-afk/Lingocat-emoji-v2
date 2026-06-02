@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lingocat-v89';
+const CACHE_NAME = 'lingocat-v90';
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -9,7 +9,9 @@ const URLS_TO_CACHE = [
   './data/biblioteca_emoji.json',
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
-  './data/minijoc_frases.json'
+  './data/minijoc_frases.json',
+  './data/banco_lectura.json',
+  './data/tips.json'
 ];
 
 // Instal·lació: cachejar només lo que existeix
@@ -39,7 +41,7 @@ self.addEventListener('activate', event => {
 // Fetch: cache first per JSON, network first per HTML/JS
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  
+
   // JSON de dades: cache first
   if (url.pathname.includes('/data/')) {
     event.respondWith(
