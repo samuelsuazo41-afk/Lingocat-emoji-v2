@@ -596,20 +596,15 @@ function gastarEnergia(cost) {
     alert('No tens energia! Recarrega a Missió per 50 monedes');
     return false;
   }
-  
+
   estat.progres.energia -= cost;
   guardarEstat();
   actualitzarUI();
-  
+
   // Actualiza la barra de abajo
   const barra = document.getElementById('barra-progres');
   if (barra) barra.style.width = estat.progres.energia + '%';
-  
-  return true;
-}
-  estat.progres.energia -= cost;
-  guardarEstat();
-  actualitzarUI(); // <-- corregido
+
   return true;
 }
 
@@ -699,6 +694,29 @@ function renderVocabLectura() {
     </div>
   `;
 }
+
+function comprovarPregunta(idx, resp) {
+  const p = lecturaActualPreguntes[idx];
+  const fb = document.getElementById(`feedback-${idx}`);
+  if (resp === p.correcta) {
+    fb.innerHTML = '<span style="color:#4CAF50">Correcte! +0.5 XP</span>';
+    estat.progres.encerts += 0.5;
+    guardarEstat();
+    actualitzarUI();
+  } else {
+    fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
+  }
+}
+
+// Auto-generar primera lectura al entrar a Lectura
+document.addEventListener('DOMContentLoaded', () => {
+  if (estat.progres.energia === undefined) estat.progres.energia = 100;
+  setTimeout(() => {
+    if (document.getElementById('lectura-texto') &&!lecturaActualText) {
+      generarLectura();
+    }
+  }, 100);
+});
 
 function comprovarPregunta(idx, resp) {
   const p = lecturaActualPreguntes[idx];
