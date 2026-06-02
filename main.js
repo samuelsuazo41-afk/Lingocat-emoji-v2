@@ -281,15 +281,22 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI - PERSONATGES CON 6 BASE + NOM LECTURA =====
-function mostrarGremiPersonatges() { // [CANVI 2] Funció nova amb selector de nom per lectura
+// ===== GREMI - PERSONATGES CON 6 BASE + NOM LECTURA DES DEL BANCO =====
+function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-personatges');
   if (!cont) return;
 
-  // Noms disponibles del banc de lectura
-  const nomsDisponibles = [...new Set(BANCO_VOCAB.a1?.plantillas?.flatMap(p =>
-    p.seq.join(' ').match(/\$\{personatge\}/g)? [BANCO_VOCAB.a1.plantillas[0].seq[0].split(' ')[1]] : []
-  ) || ['Joven', 'Home', 'Dona', 'Noi', 'Noia'])];
+  // Noms disponibles del banco de lectura
+  const nomsDisponibles = new Set();
+  ['a1', 'a2', 'b1'].forEach(niv => {
+    const data = BANCO_VOCAB[niv];
+    if (data?.personatges) {
+      data.personatges.forEach(nom => nomsDisponibles.add(nom));
+    }
+  });
+  if (nomsDisponibles.size === 0) {
+    ['Ana', 'Pau', 'Sofia', 'Marc', 'Laia', 'Jordi'].forEach(n => nomsDisponibles.add(n));
+  }
 
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
 
@@ -313,7 +320,7 @@ function mostrarGremiPersonatges() { // [CANVI 2] Funció nova amb selector de n
   html += `<div id="selector-nom" style="display:none; margin-top:30px; padding-top:20px; border-top:1px solid #333;">
     <h4 style="text-align:center; margin-bottom:15px;">Tria nom per les lectures:</h4>
     <div class="emoji-grid">`;
-  nomsDisponibles.forEach(nom => {
+  [...nomsDisponibles].sort().forEach(nom => {
     const seleccionat = nom === nomPersonatge;
     html += `<div class="emoji-item" style="border:${seleccionat? '2px solid #22c55e' : '1px solid #333'}; cursor:pointer;" onclick="setNomPersonatge('${nom}')">
       <div class="emoji-name">${nom}</div>
@@ -324,16 +331,15 @@ function mostrarGremiPersonatges() { // [CANVI 2] Funció nova amb selector de n
   cont.innerHTML = html;
 }
 
-function mostrarSelectorNom() { // [CANVI 2] Helper per mostrar selector
+function mostrarSelectorNom() {
   const el = document.getElementById('selector-nom');
   el.style.display = el.style.display === 'none'? 'block' : 'none';
 }
 
-function setNomPersonatge(nom) { // [CANVI 2] Helper per canviar nom
+function setNomPersonatge(nom) {
   nomPersonatge = nom;
   mostrarGremiPersonatges();
   vibrar();
-  // Si estem a lectura, regenera per veure el canvi
   if (document.getElementById('tab-lectura').classList.contains('active')) {
     generarLectura();
   }
@@ -510,7 +516,7 @@ function generarLectura() {
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       if (key === 'personatge') {
-        return nomPersonatge; // [CANVI 3] Usa nomPersonatge en lloc de l'avatar
+        return nomPersonatge;
       }
       if (key === 'tema') return tema.replace(/_/g, ' ');
       return pick(vocab[key]) || key;
@@ -651,22 +657,7 @@ function detectarPuntGramatica(texto, nivell) {
     };
   }
 
-
-  if (texto.includes('mentre') || texto.includes('després')) {
     return {
-      titol: "Connectors temporals",
-      explicacio: "Paraules que uneixen frases i marquen ordre: mentre = al mateix temps, després = més tard.",
-      exemples: extraerFrasesCon(texto, 'mentre').concat(extraerFrasesCon(texto, 'després')),
-      exercici: [
-        `La Maria va dinar, _____ va passejar pel parc.`,
-        `_____ la Marta va arribar, els amics van riure.`,
-        `En Pau va llegir, _____ va sortir a jugar.`
-      ],
-      tip: null
-    };
-  }
-
-  return {
     titol: "Articles determinats: el, la, els, les",
     explicacio: "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
     exemples: extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3),
