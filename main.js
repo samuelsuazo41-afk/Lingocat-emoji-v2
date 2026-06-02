@@ -411,7 +411,7 @@ function obtenirArticle(emoji) {
 function generarFraseDinamica(plantilla, emojisJugador) {
   let text = plantilla.text;
   let solucio = [];
-  let esPrimer = true; // flag para detectar el primer hueco
+  let esPrimer = true;
 
   for (const cat of plantilla.categories) {
     const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase =>
@@ -422,7 +422,6 @@ function generarFraseDinamica(plantilla, emojisJugador) {
     const emojiElegit = emojisDisponibles[Math.floor(Math.random() * emojisDisponibles.length)];
     let reemplazo = obtenirArticle(emojiElegit);
 
-    // Solo al primer hueco le cambiamos el artículo por El/La
     if (esPrimer) {
       const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
@@ -431,14 +430,18 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiou'.includes(nom[0])
-      ? `El/${detIncorrecte}`
+       ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
+
+      // Borra el "La " o "El " fijo que haya justo antes del {cat} para evitar duplicado
+      text = text.replace(new RegExp(`(La |El |L' )?\\{${cat}\\}`), reemplazo);
       esPrimer = false;
+    } else {
+      text = text.replace(`{${cat}}`, reemplazo);
     }
 
-    text = text.replace(`{${cat}}`, reemplazo);
     solucio.push(emojiElegit);
   }
   return { text, solucio };
