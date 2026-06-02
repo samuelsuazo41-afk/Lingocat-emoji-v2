@@ -591,7 +591,21 @@ function getCurrentLevel() {
   return 'b1';
 }
 
+function gastarEnergia(cost) {
+  if (estat.progres.energia < cost) {
+    alert('No tens energia! Recarrega a Missió per 50 monedes');
+    return false;
+  }
+  estat.progres.energia -= cost;
+  guardarEstat();
+  actualitzarUI();
+  return true;
+}
+
 function generarLectura() {
+  // Gasta 30 energia cada nova lectura
+  if (!gastarEnergia(30)) return;
+
   const nivell = getCurrentLevel();
   const dataNivell = BANCO_VOCAB[nivell];
   if (!dataNivell ||!dataNivell.plantillas) {
@@ -649,7 +663,7 @@ function generarLectura() {
           </div>
         `).join('')}
       </div>
-      <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button>
+      <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button>
     </div>
   `;
 
