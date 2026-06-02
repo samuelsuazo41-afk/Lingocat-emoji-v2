@@ -125,15 +125,25 @@ function canviarTab(tab, e) {
 }
 
 function mostrarSubTab(sub) {
-  document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  // 1. Oculta TODO
+  document.querySelectorAll('#gremi-contenidor .sub-tab-content').forEach(t => {
+    t.style.display = 'none';
+  });
   
+  // 2. Quita active de todos los botones
+  document.querySelectorAll('.sub-tab-btn').forEach(b => {
+    b.classList.remove('active');
+  });
+  
+  // 3. Activa solo el botón correcto
   const btn = document.getElementById('btn-' + sub);
   if (btn) btn.classList.add('active');
   
+  // 4. Muestra solo el contenido correcto
   const cont = document.getElementById('gremi-' + sub);
   if (cont) cont.style.display = 'block';
 
+  // 5. Carga datos solo para ese subtab
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
