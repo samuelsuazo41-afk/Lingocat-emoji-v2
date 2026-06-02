@@ -125,17 +125,33 @@ function canviarTab(tab, e) {
 }
 
 function mostrarSubTab(sub) {
-  if (sub === 'objectes') return;
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('gremi-' + sub).style.display = 'block';
-  const btn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
-  if(btn) btn.classList.add('active');
+  
+  const btn = document.getElementById('btn-' + sub);
+  if (btn) btn.classList.add('active');
+  
+  const cont = document.getElementById('gremi-' + sub);
+  if (cont) cont.style.display = 'block';
 
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
-  if (sub === 'llegendes') mostrarGremiLlegendes();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
+  
+  vibrar();
+}
+
+function jugarNivell(n) {
+  if (n > estat.progres.nivellActualMapa) return;
+  canviarTab('gremi', null);
+  setTimeout(() => {
+    mostrarSubTab('minijoc');
+    novaFraseMinijoc();
+  }, 50);
+}
+
+function jugarNivell1() {
+  jugarNivell(1);
 }
 
 // ===== CARREGAR DADES =====
