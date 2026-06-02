@@ -381,33 +381,37 @@ function renderDiccionari() {
 
 // ===== MINIJOC - LÓGICA CRÒNIQUES =====
 
-// Diccionario de determinantes en català
-const DETERMINANTS = {
-  'home': 'El', 'noi': 'El', 'joven': 'El', 'gat': 'El', 'gos': 'El',
-  'conill': 'El', 'cotxe': 'El', 'mòbil': 'El', 'ordinador': "L'", 'futbol': 'El',
-  'dona': 'La', 'noia': 'La', 'jova': 'La', 'casa': 'La', 'taula': 'La',
-  'cadira': 'La', 'poma': 'La'
-};
+// Carga desde los JSON externos
+let DETERMINANTS = {};
+let FRASES_MINIJOC = [];
+
+async function carregarDadesMinijoc() {
+  const [frasesRes, detRes] = await Promise.all([
+    fetch('data/minijoc_frases.json'),
+    fetch('data/minijoc_determinants.json')
+  ]);
+  FRASES_MINIJOC = await frasesRes.json();
+  DETERMINANTS = await detRes.json();
+}
+
+// Llama esto al iniciar el juego
+carregarDadesMinijoc();
 
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
   if (!emojiData ||!emojiData.nom_cat) return emoji;
 
   const nom = emojiData.nom_cat.toLowerCase();
-  const genere = emojiData.genere; // 'm' o 'f' desde tu BIBLIOTECA_PLA
+  let det = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
 
-  // Mira si la palabra está en el diccionario
-  const detBase = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
-
-  // Ajuste para L' delante de vocal
-  if (detBase === "L'" &&!'aeiou'.includes(nom[0])) {
-    return `El ${emojiData.nom_cat}`;
+  // Ajuste para L' delante de consonante
+  if (det === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])) {
+    det = "El";
   }
 
-  return `${detBase} ${emojiData.nom_cat}`;
+  return `${det} ${emojiData.nom_cat}`;
 }
 
-// El resto de tu código sin tocar:
 function generarFraseDinamica(plantilla, emojisJugador) {
   let text = plantilla.text;
   let solucio = [];
@@ -425,20 +429,19 @@ function generarFraseDinamica(plantilla, emojisJugador) {
     if (esPrimer) {
       const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
-      const genere = emojiData?.genere;
-      const detCorrecte = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
-      const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
+      const detCorrecte = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
+      const detIncorrecte = detCorrecte === 'La'? 'El' : detCorrecte === 'El'? 'La' : 'El';
 
-      const detAmbBarra = detCorrecte === "L'" &&!'aeiou'.includes(nom[0])
-      ? `El/${detIncorrecte}`
+      const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
+    ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
       esPrimer = false;
     }
 
-    // Para TODOS los huecos: borra "La/El/la/el/L'/l'" si existe antes del {cat}
-    text = text.replace(new RegExp(`(La |El |L'|la |el |l' )?\\{${cat}\\}`, 'i'), reemplazo);
+    // Borra cualquier artículo delante del {cat} para evitar duplicados
+    text = text.replace(new RegExp(`(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), reemplazo);
     solucio.push(emojiElegit);
   }
   return { text, solucio };
@@ -466,6 +469,7 @@ function novaFraseMinijoc() {
   document.getElementById('minijoc-nivell').textContent = `Nivell ${NIVELL_MINIJOC.nivelActual} - ${solucio.length} emojis`;
   generarOpcionsMinijoc(solucio);
 }
+
 function generarOpcionsMinijoc(solucio) {
   const grid = document.getElementById('minijoc-emojis');
   if (!grid) return;
@@ -489,6 +493,7 @@ function generarOpcionsMinijoc(solucio) {
     grid.appendChild(div);
   });
 }
+
 function triarEmojiMinijoc(index) {
   vibrar();
   const emoji = minijoc.emojisDisponibles[index];
@@ -499,6 +504,7 @@ function triarEmojiMinijoc(index) {
     if (minijoc.emojisTriats.length === maxEmojis) setTimeout(comprovarMinijoc, 300);
   }
 }
+
 function comprovarMinijoc() {
   const feedback = document.getElementById('minijoc-feedback');
   if (!feedback ||!minijoc.fraseObjectiu) return;
