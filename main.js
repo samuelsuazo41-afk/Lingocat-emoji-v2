@@ -598,7 +598,7 @@ function gastarEnergia(cost) {
   }
   estat.progres.energia -= cost;
   guardarEstat();
-  actualitzarUI();
+  actualitzarHeader(); // <-- esto actualiza el ⚡ del header
   return true;
 }
 
@@ -701,6 +701,7 @@ function comprovarPregunta(idx, resp) {
     fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
   }
 }
+
 
 // ===== GRAMÀTICA =====
 const GRAMATICA_BANCO = {
