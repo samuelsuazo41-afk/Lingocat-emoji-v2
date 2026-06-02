@@ -1,7 +1,8 @@
-const CACHE_NAME = 'lingocat-v93';
+const CACHE_NAME = 'lingocat-v94'; 
 const URLS_TO_CACHE = [
   './',
   './index.html',
+  './style.css', 
   './main.js',
   './manifest.json',
   './icons/icon-192.png',
@@ -38,7 +39,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: cache first per JSON, network first per HTML/JS
+// Fetch: cache first per JSON, network first per HTML/JS/CSS
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
