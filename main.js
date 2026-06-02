@@ -67,6 +67,25 @@ let lecturaActualPreguntes = [];
 let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc')) || 1};
 let minijoc = {fraseObjectiu: null, emojisTriats: [], emojisDisponibles: []};
 
+// ===== CARGA DE DATOS MINIJOC =====
+let DETERMINANTS = {};
+let FRASES_MINIJOC = [];
+let minijocInicialitzat = false;
+
+async function carregarDadesMinijoc() {
+  const [frasesRes, detRes] = await Promise.all([
+    fetch('data/minijoc_frases.json'),
+    fetch('data/minijoc_determinants.json')
+  ]);
+  FRASES_MINIJOC = await frasesRes.json();
+  DETERMINANTS = await detRes.json();
+}
+
+async function iniciarMinijoc() {
+  await carregarDadesMinijoc();
+  minijocInicialitzat = true;
+  novaFraseMinijoc();
+}
 // ===== TIPS =====
 let totsElsTips = [];
 let tipsUsats = [];
