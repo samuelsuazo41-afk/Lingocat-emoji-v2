@@ -1,8 +1,7 @@
-const CACHE_NAME = 'lingocat-v98'; 
+const CACHE_NAME = 'lingocat-v100'; 
 const URLS_TO_CACHE = [
   './',
   './index.html',
-  './style.css', 
   './main.js',
   './manifest.json',
   './icons/icon-192.png',
