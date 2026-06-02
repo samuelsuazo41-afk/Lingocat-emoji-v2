@@ -45,7 +45,7 @@ const PERSONATGES_JUGADOR = [
 ];
 
 // ===== NOM DEL PROTAGONISTA A LES LECTURES =====
-let nomPersonatge = 'Joven'; // [CANVI 1] Nom que s'usa a les lectures
+let nomPersonatge = 'Joven';
 
 // ===== DATOS =====
 let CATEGORIES_TOTS = {};
@@ -53,7 +53,7 @@ let BIBLIOTECA_PLA = [];
 let BIBLIOTECA_POR_CAT = {};
 let PACKS_BOTIGA = [];
 let FRASES_MINIJOC = [];
-let DETERMINANTS = {}; // <- Añadido aquí
+let DETERMINANTS = {};
 let TOTS_EMOJIS = [];
 let CATEGORIES_DESBLOQUEJADES = {};
 let BANCO_VOCAB = {};
@@ -67,26 +67,8 @@ let lecturaActualPreguntes = [];
 // ===== MINIJOC =====
 let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc')) || 1};
 let minijoc = {fraseObjectiu: null, emojisTriats: [], emojisDisponibles: []};
-
-// ===== CARGA DE DATOS MINIJOC =====
-let DETERMINANTS = {};
-let FRASES_MINIJOC = [];
 let minijocInicialitzat = false;
 
-async function carregarDadesMinijoc() {
-  const [frasesRes, detRes] = await Promise.all([
-    fetch('data/minijoc_frases.json'),
-    fetch('data/minijoc_determinants.json')
-  ]);
-  FRASES_MINIJOC = await frasesRes.json();
-  DETERMINANTS = await detRes.json();
-}
-
-async function iniciarMinijoc() {
-  await carregarDadesMinijoc();
-  minijocInicialitzat = true;
-  novaFraseMinijoc();
-}
 // ===== TIPS =====
 let totsElsTips = [];
 let tipsUsats = [];
@@ -135,10 +117,34 @@ function guardarEstat() {
   localStorage.setItem('cat_personatge', estat.personatgeTriat);
 }
 
+// ===== CARGA DE DATOS MINIJOC =====
+async function carregarDadesMinijoc() {
+  try {
+    const [frasesRes, detRes] = await Promise.all([
+      fetch('./data/minijoc_frases.json'),
+      fetch('./data/minijoc_determinants.json')
+    ]);
+
+    if (!frasesRes.ok ||!detRes.ok) {
+      throw new Error(`HTTP ${frasesRes.status} ${detRes.status}`);
+    }
+
+    const frasesData = await frasesRes.json();
+    FRASES_MINIJOC = Array.isArray(frasesData)? frasesData : (frasesData.frases || []);
+    DETERMINANTS = await detRes.json();
+    console.log('Minijoc carregat:', FRASES_MINIJOC.length, 'frases');
+
+    minijocInicialitzat = true;
+  } catch (e) {
+    console.error('Error cargant minijoc:', e);
+  }
+}
+
 // ===== INICIALITZACIÓ =====
 document.addEventListener('DOMContentLoaded', async () => {
   mostrarIntro();
   await carregarDades();
+  await carregarDadesMinijoc();
   actualitzarUI();
   canviarTab('mapa', null);
 });
@@ -175,19 +181,16 @@ function mostrarSubTab(sub) {
 // ===== CARREGAR DADES =====
 async function carregarDades() {
   try {
-    const [catRes, bibRes, botRes, frasesRes, lecturaRes, tipsRes] = await Promise.all([
+    const [catRes, bibRes, botRes, lecturaRes, tipsRes] = await Promise.all([
       fetch('./data/categories_emoji.json'),
       fetch('./data/biblioteca_emoji.json'),
       fetch('./data/botiga_emoji.json'),
-      fetch('./data/minijoc_frases.json'),
       fetch('./data/banco_lectura.json'),
       fetch('./data/tips.json')
     ]);
     CATEGORIES_TOTS = await catRes.json();
     BIBLIOTECA_PLA = await bibRes.json();
     PACKS_BOTIGA = await botRes.json();
-    const frasesData = await frasesRes.json();
-    FRASES_MINIJOC = Array.isArray(frasesData)? frasesData : (frasesData.frases || []);
     BANCO_VOCAB = await lecturaRes.json();
     dadesTips = await tipsRes.json();
   } catch(e) {
@@ -306,7 +309,6 @@ function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-personatges');
   if (!cont) return;
 
-  // Noms disponibles del banco de lectura
   const nomsDisponibles = new Set();
   ['a1', 'a2', 'b1'].forEach(niv => {
     const data = BANCO_VOCAB[niv];
@@ -400,37 +402,6 @@ function renderDiccionari() {
 }
 
 // ===== MINIJOC - LÓGICA CRÒNIQUES =====
-
-// Carga desde los JSON externos
-let DETERMINANTS = {};
-let FRASES_MINIJOC = [];
-
-async function carregarDadesMinijoc() {
-  try {
-    const [frasesRes, detRes] = await Promise.all([
-      fetch('./data/minijoc_frases.json'),
-      fetch('./data/minijoc_determinants.json')
-    ]);
-    
-    if (!frasesRes.ok || !detRes.ok) {
-      throw new Error(`HTTP ${frasesRes.status} ${detRes.status}`);
-    }
-    
-    FRASES_MINIJOC = await frasesRes.json();
-    DETERMINANTS = await detRes.json();
-    console.log('Minijoc carregat:', FRASES_MINIJOC.frases.length, 'frases');
-
-    // Genera primera frase solo cuando todo está cargado
-    novaFraseMinijoc();
-  } catch (e) {
-    console.error('Error cargant minijoc:', e);
-    document.getElementById('minijoc-frase').textContent = "Error cargant dades. Recarrega l'app.";
-  }
-}
-
-// Llama esto al iniciar el juego
-carregarDadesMinijoc();
-
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
   if (!emojiData ||!emojiData.nom_cat) return emoji;
@@ -438,7 +409,6 @@ function obtenirArticle(emoji) {
   const nom = emojiData.nom_cat.toLowerCase();
   let det = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
 
-  // Si es L' pero la palabra no empieza por vocal, usar El
   if (det === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])) {
     det = "El";
   }
@@ -463,7 +433,6 @@ function generarFraseDinamica(plantilla, emojisJugador) {
     const emojiElegit = emojisDisponibles[Math.floor(Math.random() * emojisDisponibles.length)];
     let reemplazo = obtenirArticle(emojiElegit);
 
-    // Primera palabra: muestra El/La para que el jugador elija
     if (esPrimer) {
       const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
@@ -471,14 +440,13 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-       ? `El/${detIncorrecte}`
+      ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
       esPrimer = false;
     }
 
-    // Borra cualquier artículo delante del {cat} para evitar duplicados
     text = text.replace(new RegExp(`(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), reemplazo);
     solucio.push(emojiElegit);
   }
@@ -486,7 +454,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
 }
 
 function novaFraseMinijoc() {
-  if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) return;
+  if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0 ||!minijocInicialitzat) return;
 
   const emojisJugador = [...PACK_INICIAL];
   estat.compres.forEach(idPack => {
@@ -526,7 +494,7 @@ function generarOpcionsMinijoc(solucio) {
   });
 
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
-   .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
+  .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
 
   const opcions = [...solucio,...falsos].sort(() => 0.5 - Math.random());
   minijoc.emojisDisponibles = opcions;
@@ -758,7 +726,7 @@ function detectarPuntGramatica(texto, nivell) {
     };
   }
 
-    return {
+  return {
     titol: "Articles determinats: el, la, els, les",
     explicacio: "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
     exemples: extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3),
