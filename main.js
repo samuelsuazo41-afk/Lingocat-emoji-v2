@@ -21,7 +21,6 @@ let estat = {
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
   compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
   introVist: JSON.parse(localStorage.getItem('cat_intro')) || false,
-  personatgeTriat: localStorage.getItem('cat_personatge') || 'joven',
   progres: {
     nivellActualMapa: parseInt(localStorage.getItem('cat_nivell')) || 1,
     encerts: parseInt(localStorage.getItem('cat_encerts')) || 0,
@@ -33,16 +32,6 @@ let estat = {
 };
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
-
-// ===== PERSONATGES JUGADOR - 6 BASE =====
-const PERSONATGES_JUGADOR = [
-  {id: 'joven', emoji: '👨', nom: 'Joven'},
-  {id: 'jova', emoji: '👩', nom: 'Jova'},
-  {id: 'noi', emoji: '👦', nom: 'Noi'},
-  {id: 'noia', emoji: '👧', nom: 'Noia'},
-  {id: 'home', emoji: '👨‍🦰', nom: 'Home'},
-  {id: 'dona', emoji: '👩‍🦰', nom: 'Dona'}
-];
 
 // ===== DATOS =====
 let CATEGORIES_TOTS = {};
@@ -81,16 +70,9 @@ function actualitzarUI() {
   const monedesEl = document.getElementById('monedes');
   const nivellEl = document.getElementById('nivell');
   const energiaEl = document.getElementById('energia');
-  const barraEl = document.getElementById('barra-progres');
-  const headerPersonatge = document.getElementById('header-personatge');
-
   if (monedesEl) monedesEl.textContent = estat.monedes;
   if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
   if (energiaEl) energiaEl.textContent = estat.energia;
-  if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%';
-
-  const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
-  if (headerPersonatge && personatge) headerPersonatge.textContent = personatge.emoji;
 }
 
 function guardarEstat() {
@@ -104,7 +86,6 @@ function guardarEstat() {
   localStorage.setItem('cat_intro', JSON.stringify(estat.introVist));
   localStorage.setItem('cat_desbloquejats', JSON.stringify(estat.desbloquejats));
   localStorage.setItem('cat_nivell_minijoc', NIVELL_MINIJOC.nivelActual);
-  localStorage.setItem('cat_personatge', estat.personatgeTriat);
 }
 
 // ===== INICIALITZACIÓ =====
@@ -124,24 +105,24 @@ function canviarTab(tab, e) {
 
   if(tab === 'mapa') renderMapa();
   if(tab === 'missio') renderMissio();
-  if(tab === 'gremi') mostrarSubTab('personatges');
+  if(tab === 'gremi') mostrarSubTab('biblioteca');
   if(tab === 'lectura') generarLectura();
   if(tab === 'tips') carregarTips();
   if(tab === 'botiga') renderBotiga();
 }
 
 function mostrarSubTab(sub) {
-  document.querySelectorAll('#gremi-contenidor.sub-tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('btn-' + sub);
+  document.getElementById('gremi-' + sub).style.display = 'block';
+  const btn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
   if(btn) btn.classList.add('active');
-  const cont = document.getElementById('gremi-' + sub);
-  if(cont) cont.style.display = 'block';
 
   if (sub === 'personatges') mostrarGremiPersonatges();
+  if (sub === 'objectes') mostrarGremiObjectes();
   if (sub === 'biblioteca') renderDiccionari();
+  if (sub === 'llegendes') mostrarGremiLlegendes();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
-  vibrar();
 }
 
 // ===== CARREGAR DADES =====
@@ -245,10 +226,7 @@ function renderMapa() {
 function jugarNivell(n) {
   if (n > estat.progres.nivellActualMapa) return;
   canviarTab('gremi', null);
-  setTimeout(() => {
-    mostrarSubTab('minijoc');
-    novaFraseMinijoc();
-  }, 50);
+  mostrarSubTab('minijoc');
 }
 
 // ===== MISSIONS CLICABLES =====
@@ -276,32 +254,18 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI - 3 SUBTABS SENSE LLEGENDES =====
+// ===== GREMI - 4 SUBTABS =====
 function mostrarGremiPersonatges() {
-  const cont = document.getElementById('gremi-personatges');
-  if (!cont) return;
-  const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
-  let html = `<div style="text-align:center; padding:20px;">`;
-  html += `<div style="font-size:80px; margin-bottom:10px;">${personatge.emoji}</div>`;
-  html += `<h3>${personatge.nom}</h3>`;
-  html += `<p style="color:#888; margin-bottom:30px;">Aquest és el teu personatge actual</p>`;
-  html += `<div style="padding-top:20px; border-top:1px solid #333;"><h4 style="text-align:center; margin-bottom:15px;">Canvia de personatge</h4><div class="emoji-grid">`;
-  PERSONATGES_JUGADOR.forEach(p => {
-    const seleccionat = p.id === estat.personatgeTriat;
-    html += `<div class="emoji-item" style="border:${seleccionat? '2px solid #22c55e' : '1px solid #333'}; cursor:pointer;" onclick="triarPersonatge('${p.id}')">
-      <div class="emoji-large">${p.emoji}</div>
-      <div class="emoji-name">${p.nom}</div>
-    </div>`;
-  });
-  html += `</div></div></div>`;
-  cont.innerHTML = html;
+  const cont = document.getElementById('gremi-contenidor');
+  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Selecció de personatge</div>`;
 }
-function triarPersonatge(id) {
-  estat.personatgeTriat = id;
-  guardarEstat();
-  actualitzarUI();
-  mostrarGremiPersonatges();
-  vibrar();
+function mostrarGremiObjectes() {
+  const cont = document.getElementById('gremi-contenidor');
+  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Inventari d'objectes</div>`;
+}
+function mostrarGremiLlegendes() {
+  const cont = document.getElementById('gremi-contenidor');
+  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Llegendes de Catalunya</div>`;
 }
 
 // ===== BIBLIOTECA =====
@@ -353,8 +317,6 @@ function generarFraseDinamica(plantilla, emojisJugador) {
   return { text, solucio };
 }
 function novaFraseMinijoc() {
-  const cont = document.getElementById('gremi-minijoc');
-  if (!cont || cont.style.display === 'none') return;
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) return;
   const emojisJugador = [...PACK_INICIAL];
   estat.compres.forEach(idPack => {
@@ -420,6 +382,7 @@ function comprovarMinijoc() {
     estat.monedes += 5;
     estat.progres.encerts++;
     estat.progres.frasesDesDeUltimNivell++;
+    // Cada 25 frases sube 1 nivel
     if (estat.progres.frasesDesDeUltimNivell >= 25 && estat.progres.nivellActualMapa < 100) {
       estat.progres.nivellActualMapa++;
       estat.progres.frasesDesDeUltimNivell = 0;
@@ -449,14 +412,11 @@ function generarLectura() {
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const temaTriat = temes[Math.floor(Math.random() * temes.length)];
   const vocab = BANCO_VOCAB[nivell][temaTriat];
-  const vocabulariUsat = [];
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       const opcions = vocab[key];
       if (!opcions ||!opcions.length) return key;
-      const triat = opcions[Math.floor(Math.random() * opcions.length)];
-      if (!vocabulariUsat.includes(triat)) vocabulariUsat.push(triat);
-      return triat;
+      return opcions[Math.floor(Math.random() * opcions.length)];
     });
   }
   const titol = reemplaçar(lectura.titol);
@@ -466,10 +426,6 @@ function generarLectura() {
     <div class="lectura-card">
       <h3>${titol}</h3>
       <p class="lectura-text">${text}</p>
-      <div id="lectura-vocab">
-        <h4>Vocabulari:</h4>
-        ${vocabulariUsat.slice(0,8).map(w => `<span class="vocab-tag">${w}</span>`).join('')}
-      </div>
       <div class="lectura-preguntes">
         <p><strong>Pregunta:</strong> ${pregunta}</p>
         <button class="btn-primari" onclick="comprovarLectura()">Respondre</button>
