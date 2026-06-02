@@ -23,7 +23,6 @@ body {
   padding-bottom: 80px;
 }
 
-/* HEADER CON BARRA DE PROGRÉS */
 header {
   background: var(--card);
   padding: 12px 16px;
@@ -38,7 +37,6 @@ header {
 .header-left { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 18px; }
 .header-stats { display: flex; gap: 16px; font-size: 14px; align-items: center; }
 
-/* BARRA PROGRÉS PERSONATGE */
 .stat-progress {
   display: flex;
   align-items: center;
@@ -95,7 +93,6 @@ header {
   cursor: pointer;
 }
 
-/* SUB-TABS CON SCROLL HORIZONTAL */
 .sub-tabs {
   display: flex;
   gap: 8px;
@@ -122,6 +119,7 @@ header {
   border-color: var(--accent);
   color: #000;
 }
+.sub-tab-content { display: none; }
 
 .emoji-grid {
   display: grid;
@@ -170,13 +168,20 @@ header {
 }
 .lectura-text { line-height: 1.6; margin: 16px 0; font-size: 16px; }
 
+/* TIPS CENTRADO VERTICAL */
+#tab-tips {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 180px);
+}
 .tip-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 20px;
   max-width: 600px;
-  margin: 0 auto;
+  margin-top: 40px;
   text-align: center;
 }
 .tip-text { font-size: 18px; margin: 16px 0; }
@@ -203,7 +208,6 @@ header {
 }
 .minijoc-feedback { text-align: center; min-height: 30px; margin-top: 16px; }
 
-/* Intro */
 .intro-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -225,7 +229,6 @@ header {
 .intro-text { color: #aaa; margin-bottom: 24px; }
 .intro-dots { margin-bottom: 24px; font-size: 20px; }
 
-/* BOTTOM NAV CON SCROLL HORIZONTAL */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -262,7 +265,6 @@ header {
   <div class="header-left">🐱 Cat Lingo Emoji</div>
   <div class="header-stats">
     <span>🪙 <span id="monedes">0</span></span>
-    
     <div class="stat-progress">
       <span id="header-personatge">👨</span>
       <div class="progress-bar">
@@ -270,12 +272,10 @@ header {
       </div>
       <span class="stat-level"><span id="nivell">1</span></span>
     </div>
-    
     <span>⚡ <span id="energia">100</span></span>
   </div>
 </header>
 
-<!-- INTRO -->
 <div id="intro" class="intro-overlay" style="display:none;">
   <div class="intro-content">
     <div id="intro-emoji" class="intro-emoji">👋</div>
@@ -287,28 +287,23 @@ header {
   </div>
 </div>
 
-<!-- TAB MAPA -->
 <div id="tab-mapa" class="tab-content">
   <div id="mapa-contenidor"></div>
 </div>
 
-<!-- TAB MISSIO -->
 <div id="tab-missio" class="tab-content">
   <div id="missio-contenidor"></div>
 </div>
 
-<!-- TAB GREMI -->
 <div id="tab-gremi" class="tab-content">
   <div class="sub-tabs">
-    <button class="sub-tab-btn" onclick="mostrarSubTab('personatges')">Personatges</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('biblioteca')">Biblioteca</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('llegendes')">Llegendes</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">Minijoc</button>
+    <button class="sub-tab-btn active" id="btn-personatges" onclick="mostrarSubTab('personatges')">Personatges</button>
+    <button class="sub-tab-btn" id="btn-biblioteca" onclick="mostrarSubTab('biblioteca')">Biblioteca</button>
+    <button class="sub-tab-btn" id="btn-minijoc" onclick="mostrarSubTab('minijoc')">Minijoc</button>
   </div>
   <div id="gremi-contenidor">
     <div id="gremi-personatges" class="sub-tab-content"></div>
     <div id="gremi-biblioteca" class="sub-tab-content"></div>
-    <div id="gremi-llegendes" class="sub-tab-content"></div>
     <div id="gremi-minijoc" class="sub-tab-content">
       <div class="minijoc-container">
         <div id="minijoc-nivell" style="text-align:center; margin-bottom:12px; color:#888;"></div>
@@ -321,12 +316,10 @@ header {
   </div>
 </div>
 
-<!-- TAB LECTURA -->
 <div id="tab-lectura" class="tab-content">
   <div id="lectura-contingut"></div>
 </div>
 
-<!-- TAB TIPS -->
 <div id="tab-tips" class="tab-content">
   <div class="tip-card">
     <h3>💡 Truc del dia</h3>
@@ -336,12 +329,10 @@ header {
   </div>
 </div>
 
-<!-- TAB BOTIGA -->
 <div id="tab-botiga" class="tab-content">
   <div id="botiga-contenidor"></div>
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button class="nav-item active" onclick="canviarTab('mapa', event)">
     <span class="nav-icon">🗺️</span>
