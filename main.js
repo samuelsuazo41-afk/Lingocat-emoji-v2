@@ -684,8 +684,10 @@ function generarLectura() {
     </div>
   `;
 
-  renderVocab
-  Lectura() {
+  renderVocabLectura();
+}
+
+function renderVocabLectura() {
   const cont = document.getElementById('lectura-vocab');
   if (!cont) return;
   if (lecturaActualVocab.length === 0) {
