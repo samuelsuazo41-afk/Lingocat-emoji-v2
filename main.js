@@ -44,6 +44,9 @@ const PERSONATGES_JUGADOR = [
   {id: 'dona', emoji: '👩‍🦰', nom: 'Dona'}
 ];
 
+// ===== NOM DEL PROTAGONISTA A LES LECTURES =====
+let nomPersonatge = 'Joven'; // [CANVI 1] Nom que s'usa a les lectures
+
 // ===== DATOS =====
 let CATEGORIES_TOTS = {};
 let BIBLIOTECA_PLA = [];
@@ -138,7 +141,7 @@ function canviarTab(tab, e) {
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  
+
   document.getElementById('gremi-' + sub).style.display = 'block';
   const btn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
   if(btn) btn.classList.add('active');
@@ -146,7 +149,7 @@ function mostrarSubTab(sub) {
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
-  if (sub === 'gramatica') generarGramatica(); 
+  if (sub === 'gramatica') generarGramatica();
 }
 
 // ===== CARREGAR DADES =====
@@ -278,16 +281,26 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI - PERSONATGES CON 6 BASE =====
-function mostrarGremiPersonatges() {
+// ===== GREMI - PERSONATGES CON 6 BASE + NOM LECTURA =====
+function mostrarGremiPersonatges() { // [CANVI 2] Funció nova amb selector de nom per lectura
   const cont = document.getElementById('gremi-personatges');
   if (!cont) return;
+
+  // Noms disponibles del banc de lectura
+  const nomsDisponibles = [...new Set(BANCO_VOCAB.a1?.plantillas?.flatMap(p =>
+    p.seq.join(' ').match(/\$\{personatge\}/g)? [BANCO_VOCAB.a1.plantillas[0].seq[0].split(' ')[1]] : []
+  ) || ['Joven', 'Home', 'Dona', 'Noi', 'Noia'])];
+
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
+
   let html = `<div style="text-align:center; padding:20px;">`;
   html += `<div style="font-size:80px; margin-bottom:10px;">${personatge.emoji}</div>`;
   html += `<h3>${personatge.nom}</h3>`;
-  html += `<p style="color:#888; margin-bottom:30px;">Aquest és el teu personatge actual</p>`;
-  html += `<div style="padding-top:20px; border-top:1px solid #333;"><h4 style="text-align:center; margin-bottom:15px;">Canvia de personatge</h4><div class="emoji-grid">`;
+  html += `<p style="color:#888; margin-bottom:10px;">Avatar actual</p>`;
+  html += `<p style="color:#22c55e; margin-bottom:30px;">Nom a les lectures: <b>${nomPersonatge}</b></p>`;
+  html += `<button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin-bottom:30px;">Canviar nom de lectura</button>`;
+
+  html += `<div style="padding-top:20px; border-top:1px solid #333;"><h4 style="text-align:center; margin-bottom:15px;">Canvia d'avatar</h4><div class="emoji-grid">`;
   PERSONATGES_JUGADOR.forEach(p => {
     const seleccionat = p.id === estat.personatgeTriat;
     html += `<div class="emoji-item" style="border:${seleccionat? '2px solid #22c55e' : '1px solid #333'}; cursor:pointer;" onclick="triarPersonatge('${p.id}')">
@@ -295,9 +308,37 @@ function mostrarGremiPersonatges() {
       <div class="emoji-name">${p.nom}</div>
     </div>`;
   });
+  html += `</div></div>`;
+
+  html += `<div id="selector-nom" style="display:none; margin-top:30px; padding-top:20px; border-top:1px solid #333;">
+    <h4 style="text-align:center; margin-bottom:15px;">Tria nom per les lectures:</h4>
+    <div class="emoji-grid">`;
+  nomsDisponibles.forEach(nom => {
+    const seleccionat = nom === nomPersonatge;
+    html += `<div class="emoji-item" style="border:${seleccionat? '2px solid #22c55e' : '1px solid #333'}; cursor:pointer;" onclick="setNomPersonatge('${nom}')">
+      <div class="emoji-name">${nom}</div>
+    </div>`;
+  });
   html += `</div></div></div>`;
+
   cont.innerHTML = html;
 }
+
+function mostrarSelectorNom() { // [CANVI 2] Helper per mostrar selector
+  const el = document.getElementById('selector-nom');
+  el.style.display = el.style.display === 'none'? 'block' : 'none';
+}
+
+function setNomPersonatge(nom) { // [CANVI 2] Helper per canviar nom
+  nomPersonatge = nom;
+  mostrarGremiPersonatges();
+  vibrar();
+  // Si estem a lectura, regenera per veure el canvi
+  if (document.getElementById('tab-lectura').classList.contains('active')) {
+    generarLectura();
+  }
+}
+
 function triarPersonatge(id) {
   estat.personatgeTriat = id;
   guardarEstat();
@@ -469,8 +510,7 @@ function generarLectura() {
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       if (key === 'personatge') {
-        const p = PERSONATGES_JUGADOR.find(x => x.id === estat.personatgeTriat);
-        return p? p.nom : 'La Maria';
+        return nomPersonatge; // [CANVI 3] Usa nomPersonatge en lloc de l'avatar
       }
       if (key === 'tema') return tema.replace(/_/g, ' ');
       return pick(vocab[key]) || key;
@@ -610,6 +650,8 @@ function detectarPuntGramatica(texto, nivell) {
       tip: null
     };
   }
+
+}
 
   if (texto.includes('mentre') || texto.includes('després')) {
     return {
