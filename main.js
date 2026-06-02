@@ -81,10 +81,13 @@ function actualitzarUI() {
   const nivellEl = document.getElementById('nivell');
   const energiaEl = document.getElementById('energia');
   const barraEl = document.getElementById('barra-progres');
+  const headerPersonatge = document.getElementById('header-personatge');
   if (monedesEl) monedesEl.textContent = estat.monedes;
   if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
   if (energiaEl) energiaEl.textContent = estat.energia;
   if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%';
+  const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
+  if (headerPersonatge && personatge) headerPersonatge.textContent = personatge.emoji;
 }
 
 function guardarEstat() {
@@ -117,30 +120,20 @@ function canviarTab(tab, e) {
 }
 
 function mostrarSubTab(sub) {
-  // Oculta todos los contenidos de Gremi
-  document.querySelectorAll('#gremi-contenidor .sub-tab-content').forEach(t => {
-    t.style.display = 'none';
-  });
-  
-  // Quita active de todos los botones
-  document.querySelectorAll('.sub-tab-btn').forEach(b => {
-    b.classList.remove('active');
-  });
-  
-  // Activa solo el botón clicado
+  document.querySelectorAll('#gremi-contenidor.sub-tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+
   const btn = document.getElementById('btn-' + sub);
   if (btn) btn.classList.add('active');
-  
-  // Muestra solo el contenido clicado
+
   const cont = document.getElementById('gremi-' + sub);
   if (!cont) return;
   cont.style.display = 'block';
 
-  // Carga datos solo para ese subtab
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
-  
+
   vibrar();
 }
 
@@ -153,41 +146,7 @@ function jugarNivell(n) {
   }, 50);
 }
 
-function jugarNivell1() {
-  jugarNivell(1);
-}
-
-// ===== TIPS Y LECTURA AISLADOS =====
-function carregarTips() {
-  const tabTips = document.getElementById('tab-tips');
-  if (!tabTips || !tabTips.classList.contains('active')) return;
-  
-  const tipText = document.getElementById('tip-text');
-  const tipExemple = document.getElementById('tip-exemple');
-  if (!tipText || !tipExemple) return;
-  
-  const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
-  tipText.textContent = tip.text;
-  tipExemple.textContent = tip.exemple;
-}
-
-function generarLectura() {
-  const tabLectura = document.getElementById('tab-lectura');
-  if (!tabLectura || !tabLectura.classList.contains('active')) return;
-  
-  const cont = document.getElementById('lectura-contingut');
-  if (!cont) return;
-  
-  const lectura = BANCO_LECTURA[Math.floor(Math.random() * BANCO_LECTURA.length)];
-  cont.innerHTML = `
-    <div class="lectura-card">
-      <div class="lectura-text">${lectura.text}</div>
-      <div class="lectura-vocab"><strong>Vocabulari:</strong> ${lectura.vocab}</div>
-      <div class="lectura-pregunta"><strong>Pregunta:</strong> ${lectura.pregunta}</div>
-      <button class="btn btn-primari" onclick="generarLectura()">Nova lectura</button>
-    </div>
-  `;
-}
+function jugarNivell1() { jugarNivell(1); }
 
 // ===== CARREGAR DADES =====
 async function carregarDades() {
@@ -263,6 +222,11 @@ function seguentSlide() {
   if (slideActual < INTRO_SLIDES.length - 1) { slideActual++; pintarSlide(); }
   else { estat.introVist = true; guardarEstat(); document.getElementById('intro').style.display = 'none'; }
 }
+function tancarIntro() {
+  estat.introVist = true;
+  guardarEstat();
+  document.getElementById('intro').style.display = 'none';
+}
 
 // ===== MAPA =====
 function renderMapa() {
@@ -287,18 +251,6 @@ function renderMapa() {
   html += '</div>';
   cont.innerHTML = html;
 }
-function jugarNivell(n) {
-  if (n > estat.progres.nivellActualMapa) return;
-  canviarTab('gremi', null);
-  mostrarSubTab('minijoc');
-}
-function jugarNivell1() {
-  canviarTab('gremi', null);
-  setTimeout(() => {
-    mostrarSubTab('minijoc');
-    novaFraseMinijoc();
-  }, 50);
-}
 
 // ===== MISSIONS =====
 function renderMissio() {
@@ -320,9 +272,10 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI =====
+// ===== GREMI: PERSONATGES =====
 function mostrarGremiPersonatges() {
-  const cont = document.getElementById('gremi-contenidor');
+  const cont = document.getElementById('gremi-personatges');
+  if (!cont) return;
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
   let html = `<div style="text-align:center; padding:20px;">`;
   html += `<div style="font-size:80px; margin-bottom:10px;">${personatge.emoji}</div>`;
@@ -342,13 +295,12 @@ function mostrarGremiPersonatges() {
 function triarPersonatge(id) {
   estat.personatgeTriat = id;
   guardarEstat();
+  actualitzarUI();
   mostrarGremiPersonatges();
   vibrar();
 }
-function mostrarGremiLlegendes() {
-  const cont = document.getElementById('gremi-contenidor');
-  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Llegendes de Catalunya</div>`;
-}
+
+// ===== GREMI: BIBLIOTECA =====
 function renderDiccionari() {
   const cont = document.getElementById('gremi-biblioteca');
   if (!cont) return;
@@ -374,7 +326,7 @@ function renderDiccionari() {
   cont.innerHTML = html;
 }
 
-// ===== MINIJOC =====
+// ===== GREMI: MINIJOC =====
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
   if (!emojiData ||!emojiData.genere) return emojiData?.nom_cat || emoji;
@@ -397,6 +349,8 @@ function generarFraseDinamica(plantilla, emojisJugador) {
   return { text, solucio };
 }
 function novaFraseMinijoc() {
+  const cont = document.getElementById('gremi-minijoc');
+  if (!cont || cont.style.display === 'none') return;
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) return;
   const emojisJugador = [...PACK_INICIAL];
   estat.compres.forEach(idPack => {
@@ -479,6 +433,8 @@ function comprovarMinijoc() {
 
 // ===== LECTURA =====
 function generarLectura() {
+  const tabLectura = document.getElementById('tab-lectura');
+  if (!tabLectura ||!tabLectura.classList.contains('active')) return;
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
   const lecturesNivell = BANCO_VOCAB[nivell]?.plantillas || [];
   const cont = document.getElementById('lectura-contingut');
@@ -524,9 +480,11 @@ function generarLectura() {
 
 // ===== TIPS =====
 function carregarTips() {
+  const tabTips = document.getElementById('tab-tips');
+  if (!tabTips ||!tabTips.classList.contains('active')) return;
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
-  if (totsElsTips.length === 0) totsElsTips = dadesTips[nivell] || [];
-  if (tipsUsats.length === 0 && totsElsTips!== dadesTips[nivell]) totsElsTips = dadesTips[nivell] || [];
+  if (totsElsTips.length === 0 || totsElsTips!== dadesTips[nivell]) totsElsTips = dadesTips[nivell] || [];
+  if (tipsUsats.length === 0 && totsElsTips!== dadesTips[nivell]) tipsUsats = [];
   mostrarTipRandom();
 }
 function mostrarTipRandom() {
