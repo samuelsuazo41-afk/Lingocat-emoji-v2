@@ -430,18 +430,15 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiou'.includes(nom[0])
-       ? `El/${detIncorrecte}`
+      ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
-
-      // Borra el "La " o "El " fijo que haya justo antes del {cat} para evitar duplicado
-      text = text.replace(new RegExp(`(La |El |L'|la |el |l' )?\\{${cat}\\}`, 'i'), reemplazo);
       esPrimer = false;
-    } else {
-      text = text.replace(`{${cat}}`, reemplazo);
     }
 
+    // Para TODOS los huecos: borra "La/El/la/el/L'/l'" si existe antes del {cat}
+    text = text.replace(new RegExp(`(La |El |L'|la |el |l' )?\\{${cat}\\}`, 'i'), reemplazo);
     solucio.push(emojiElegit);
   }
   return { text, solucio };
