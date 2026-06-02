@@ -598,7 +598,7 @@ function gastarEnergia(cost) {
   }
   estat.progres.energia -= cost;
   guardarEstat();
-  actualitzarHeader(); // <-- esto actualiza el ⚡ del header
+  actualitzarUI(); // <-- corregido
   return true;
 }
 
@@ -701,6 +701,16 @@ function comprovarPregunta(idx, resp) {
     fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
   }
 }
+
+// Auto-generar primera lectura al entrar a Lectura
+document.addEventListener('DOMContentLoaded', () => {
+  if (estat.progres.energia === undefined) estat.progres.energia = 100;
+  setTimeout(() => {
+    if (document.getElementById('lectura-texto') &&!lecturaActualText) {
+      generarLectura();
+    }
+  }, 100);
+});
 
 
 // ===== GRAMÀTICA =====
