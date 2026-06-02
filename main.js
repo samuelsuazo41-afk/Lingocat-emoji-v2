@@ -101,14 +101,6 @@ function guardarEstat() {
   localStorage.setItem('cat_personatge', estat.personatgeTriat);
 }
 
-// ===== INICIALITZACIÓ =====
-document.addEventListener('DOMContentLoaded', async () => {
-  mostrarIntro();
-  await carregarDades();
-  actualitzarUI();
-  canviarTab('mapa', null);
-});
-
 // ===== NAVEGACIÓ =====
 function canviarTab(tab, e) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -125,25 +117,26 @@ function canviarTab(tab, e) {
 }
 
 function mostrarSubTab(sub) {
-  // 1. Oculta TODO
+  // Oculta todos los contenidos de Gremi
   document.querySelectorAll('#gremi-contenidor .sub-tab-content').forEach(t => {
     t.style.display = 'none';
   });
   
-  // 2. Quita active de todos los botones
+  // Quita active de todos los botones
   document.querySelectorAll('.sub-tab-btn').forEach(b => {
     b.classList.remove('active');
   });
   
-  // 3. Activa solo el botón correcto
+  // Activa solo el botón clicado
   const btn = document.getElementById('btn-' + sub);
   if (btn) btn.classList.add('active');
   
-  // 4. Muestra solo el contenido correcto
+  // Muestra solo el contenido clicado
   const cont = document.getElementById('gremi-' + sub);
-  if (cont) cont.style.display = 'block';
+  if (!cont) return;
+  cont.style.display = 'block';
 
-  // 5. Carga datos solo para ese subtab
+  // Carga datos solo para ese subtab
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
@@ -162,6 +155,38 @@ function jugarNivell(n) {
 
 function jugarNivell1() {
   jugarNivell(1);
+}
+
+// ===== TIPS Y LECTURA AISLADOS =====
+function carregarTips() {
+  const tabTips = document.getElementById('tab-tips');
+  if (!tabTips || !tabTips.classList.contains('active')) return;
+  
+  const tipText = document.getElementById('tip-text');
+  const tipExemple = document.getElementById('tip-exemple');
+  if (!tipText || !tipExemple) return;
+  
+  const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+  tipText.textContent = tip.text;
+  tipExemple.textContent = tip.exemple;
+}
+
+function generarLectura() {
+  const tabLectura = document.getElementById('tab-lectura');
+  if (!tabLectura || !tabLectura.classList.contains('active')) return;
+  
+  const cont = document.getElementById('lectura-contingut');
+  if (!cont) return;
+  
+  const lectura = BANCO_LECTURA[Math.floor(Math.random() * BANCO_LECTURA.length)];
+  cont.innerHTML = `
+    <div class="lectura-card">
+      <div class="lectura-text">${lectura.text}</div>
+      <div class="lectura-vocab"><strong>Vocabulari:</strong> ${lectura.vocab}</div>
+      <div class="lectura-pregunta"><strong>Pregunta:</strong> ${lectura.pregunta}</div>
+      <button class="btn btn-primari" onclick="generarLectura()">Nova lectura</button>
+    </div>
+  `;
 }
 
 // ===== CARREGAR DADES =====
