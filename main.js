@@ -405,12 +405,20 @@ let DETERMINANTS = {};
 let FRASES_MINIJOC = [];
 
 async function carregarDadesMinijoc() {
-  const [frasesRes, detRes] = await Promise.all([
-    fetch('data/minijoc_frases.json'),
-    fetch('data/minijoc_determinants.json')
-  ]);
-  FRASES_MINIJOC = await frasesRes.json();
-  DETERMINANTS = await detRes.json();
+  try {
+    const [frasesRes, detRes] = await Promise.all([
+      fetch('data/minijoc_frases.json'),
+      fetch('data/minijoc_determinants.json')
+    ]);
+    FRASES_MINIJOC = await frasesRes.json();
+    DETERMINANTS = await detRes.json();
+    console.log('Minijoc carregat:', FRASES_MINIJOC.frases.length, 'frases');
+
+    // Genera primera frase solo cuando todo está cargado
+    novaFraseMinijoc();
+  } catch (e) {
+    console.error('Error cargant minijoc:', e);
+  }
 }
 
 // Llama esto al iniciar el juego
@@ -423,7 +431,7 @@ function obtenirArticle(emoji) {
   const nom = emojiData.nom_cat.toLowerCase();
   let det = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
 
-  // Ajuste para L' delante de consonante
+  // Si es L' pero la palabra no empieza por vocal, usar El
   if (det === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])) {
     det = "El";
   }
@@ -440,19 +448,23 @@ function generarFraseDinamica(plantilla, emojisJugador) {
     const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase =>
       emojisJugador.some(eJug => quitarSkinTone(eJug) === quitarSkinTone(eBase))
     ) || [];
-    if (!emojisDisponibles.length) return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)], emojisJugador);
+
+    if (!emojisDisponibles.length) {
+      return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)], emojisJugador);
+    }
 
     const emojiElegit = emojisDisponibles[Math.floor(Math.random() * emojisDisponibles.length)];
     let reemplazo = obtenirArticle(emojiElegit);
 
+    // Primera palabra: muestra El/La para que el jugador elija
     if (esPrimer) {
       const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
       const detCorrecte = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
-      const detIncorrecte = detCorrecte === 'La'? 'El' : detCorrecte === 'El'? 'La' : 'El';
+      const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-    ? `El/${detIncorrecte}`
+       ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
@@ -468,18 +480,22 @@ function generarFraseDinamica(plantilla, emojisJugador) {
 
 function novaFraseMinijoc() {
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0) return;
+
   const emojisJugador = [...PACK_INICIAL];
   estat.compres.forEach(idPack => {
     const pack = PACKS_BOTIGA.find(p => p.id === idPack);
     if (pack && pack.emojis) pack.emojis.forEach(e => emojisJugador.push(e.emoji));
   });
+
   if (emojisJugador.length < 2) {
     document.getElementById('minijoc-frase').textContent = "Compra més emojis per desbloquejar frases!";
     document.getElementById('minijoc-emojis').innerHTML = '';
     return;
   }
+
   const plantilla = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
   const { text, solucio } = generarFraseDinamica(plantilla, emojisJugador);
+
   minijoc.fraseObjectiu = { text, solucio };
   minijoc.emojisTriats = [];
   document.getElementById('minijoc-frase').textContent = text;
@@ -492,17 +508,23 @@ function novaFraseMinijoc() {
 function generarOpcionsMinijoc(solucio) {
   const grid = document.getElementById('minijoc-emojis');
   if (!grid) return;
+
   const numOpcions = solucio.length <= 3? 16 : 20;
   const numFalsos = numOpcions - solucio.length;
+
   const emojisJugador = [...PACK_INICIAL];
   estat.compres.forEach(idPack => {
     const pack = PACKS_BOTIGA.find(p => p.id === idPack);
     if (pack && pack.emojis) pack.emojis.forEach(e => emojisJugador.push(e.emoji));
   });
-  const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol))).sort(() => 0.5 - Math.random()).slice(0, numFalsos);
+
+  const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
+   .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
+
   const opcions = [...solucio,...falsos].sort(() => 0.5 - Math.random());
   minijoc.emojisDisponibles = opcions;
   grid.innerHTML = '';
+
   opcions.forEach((emoji, i) => {
     const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
     const div = document.createElement('div');
@@ -527,19 +549,23 @@ function triarEmojiMinijoc(index) {
 function comprovarMinijoc() {
   const feedback = document.getElementById('minijoc-feedback');
   if (!feedback ||!minijoc.fraseObjectiu) return;
+
   const solucioCorrecta = minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join('');
   const triatsCorrecte = minijoc.emojisTriats.map(quitarSkinTone).join('');
   const esCorrecte = solucioCorrecta === triatsCorrecte;
+
   if (esCorrecte) {
     feedback.innerHTML = `<p style="color:#4CAF50; font-weight:bold;">Correcte! +5 🪙</p>`;
     estat.monedes += 5;
     estat.progres.encerts++;
     estat.progres.frasesDesDeUltimNivell++;
+
     if (estat.progres.frasesDesDeUltimNivell >= 25 && estat.progres.nivellActualMapa < 100) {
       estat.progres.nivellActualMapa++;
       estat.progres.frasesDesDeUltimNivell = 0;
       alert(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);
     }
+
     NIVELL_MINIJOC.nivelActual = Math.min(NIVELL_MINIJOC.nivelActual + 1, NIVELL_MINIJOC.maxEmojis);
     guardarEstat();
     actualitzarUI();
