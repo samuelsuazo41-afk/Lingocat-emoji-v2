@@ -283,26 +283,59 @@ function jugarNivell(n) {
 function renderMissio() {
   const cont = document.getElementById('missio-contenidor');
   if (!cont) return;
-  const missio1 = estat.progres.encerts >= 5? '✅' : '🔒';
-  const missio2 = estat.compres.length > 0? '✅' : '🔒';
-  const missio3 = estat.progres.nivellActualMapa >= 10? '✅' : '🔒';
-  const missio4 = estat.progres.frasesDesDeUltimNivell >= 25? '✅' : '🔒';
+
+  const nivell = estat.progres.nivellActualMapa || 1;
+  const xp = estat.progres.xp || 0;
+  const xpPerNivell = nivell * 100;
+  const xpFaltant = xpPerNivell - xp;
+  const energia = estat.progres.energia || 100;
+  const monedas = estat.monedes || 0;
+
+  // Progreso hacia B1 = nivel 25
+  const nivellB1 = 25;
+  const progresoB1 = Math.min(100, Math.max(0, (nivell / nivellB1) * 100));
+  const nivellsPerB1 = Math.max(0, nivellB1 - nivell);
+
+  const missio1 = xpFaltant > 0 ? '🎯' : '✅';
+  const missio2 = estat.compres && estat.compres.length > 0 ? '✅' : '📦';
+  const missio3 = '📚';
+  const missio4 = energia >= 100 || monedas < 50 ? '🔒' : '⚡';
+  const missio5 = nivellsPerB1 === 0 ? '✅' : '🏆';
+
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
+    
     <div class="missio-item" onclick="canviarTab('gremi', null); mostrarSubTab('minijoc');" style="cursor:pointer;">
-      ${missio1} Juga al Minijoc 5 vegades
+      ${missio1} Et falten ${xpFaltant} acerts per pujar de nivell
     </div>
+    
     <div class="missio-item" onclick="canviarTab('botiga', null);" style="cursor:pointer;">
-      ${missio2} Desbloqueja 1 pack a la Botiga
+      ${missio2} Desbloqueja tota la biblioteca. Compra packs d'emojis amb monedes
     </div>
-    <div class="missio-item" onclick="canviarTab('mapa', null);" style="cursor:pointer;">
-      ${missio3} Arriba al nivell 10
+    
+    <div class="missio-item" onclick="canviarTab('lectura', null); setTimeout(() => mostrarSubTab('gramatica'), 100);" style="cursor:pointer;">
+      ${missio3} Aprèn gramàtica com un pro
     </div>
-    <div class="missio-item" onclick="canviarTab('lectura', null);" style="cursor:pointer;">
-      ${missio4} Completa 25 frases per pujar de nivell
+    
+    <div class="missio-item">
+      ${missio4} Recarrega la teva energia. Gasta 50 monedes per generar una nova lectura
+    </div>
+    
+    <div class="missio-item" style="cursor:default;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+        <span style="font-size:32px;">${missio5}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:16px; margin-bottom:4px;">Arriba al nivell B1</div>
+          <div style="font-size:13px; color:#aaa;">Nivell ${nivell} de ${nivellB1} - Et falten ${nivellsPerB1} nivells</div>
+        </div>
+      </div>
+      <div style="width:100%; height:8px; background:var(--border); border-radius:4px; overflow:hidden;">
+        <div style="width:${progresoB1}%; height:100%; background:var(--accent); transition:width 0.4s ease;"></div>
+      </div>
     </div>
   `;
 }
+
 
 // ===== GREMI - PERSONATGES CON 6 BASE + NOM LECTURA DES DEL BANCO =====
 function mostrarGremiPersonatges() {
