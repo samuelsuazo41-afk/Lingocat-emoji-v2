@@ -1018,35 +1018,6 @@ function renderDiccionari() {
 }
 
 
-// ===== TIPS =====
-let totsElsTips = [];
-let tipsUsats = [];
-
-function carregarTips() {
-  if (totsElsTips.length === 0) {
-    totsElsTips = [];
-    Object.values(dadesTips).forEach(arr => {
-      totsElsTips.push(...arr.map(t => ({text: t.truc, exemple: t.exemple})));
-    });
-  }
-  mostrarTipRandom();
-}
-
-function mostrarTipRandom() {
-  if (totsElsTips.length === 0) return;
-  if (tipsUsats.length === totsElsTips.length) tipsUsats = [];
-
-  let idx;
-  do {
-    idx = Math.floor(Math.random() * totsElsTips.length);
-  } while (tipsUsats.includes(idx));
-
-  tipsUsats.push(idx);
-  const tip = totsElsTips[idx];
-  document.getElementById('tip-text').textContent = tip.text;
-  document.getElementById('tip-exemple').textContent = tip.exemple || '';
-}
-
 // ===== BOTIGA =====
 function renderBotiga() {
   const cont = document.getElementById('botiga-contenidor');
