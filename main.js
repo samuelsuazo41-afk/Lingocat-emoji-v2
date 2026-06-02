@@ -601,11 +601,9 @@ function gastarEnergia(cost) {
   guardarEstat();
   actualitzarUI();
   
-  // Actualiza la barra de energía de abajo
-  const energiaBar = document.getElementById('energia-bar');
-  const energiaText = document.getElementById('energia-text');
-  if (energiaBar) energiaBar.style.width = estat.progres.energia + '%';
-  if (energiaText) energiaText.textContent = estat.progres.energia;
+  // Actualiza la barra de abajo
+  const barra = document.getElementById('barra-progres');
+  if (barra) barra.style.width = estat.progres.energia + '%';
   
   return true;
 }
