@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lingocat-v147'; 
+const CACHE_NAME = 'lingocat-v148'; 
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const URLS_TO_CACHE = [
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
   './data/minijoc_frases.json',
+  './data/minijoc_determinants.json',
   './data/banco_lectura.json',
   './data/tips.json'
 ];
