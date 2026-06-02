@@ -1,4 +1,5 @@
-// main.js - Lingocat Emoji v3 - VERSIÓN ARREGLADA
+// main.js - Lingocat Emoji v3
+// Estructura Cròniques + Mapa 100 nivells + 25 frases per nivell
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -14,16 +15,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   btn.onclick = () => { deferredPrompt.prompt(); btn.remove(); };
   document.body.appendChild(btn);
 });
-
-// ===== PERSONATGES JUGADOR =====
-const PERSONATGES_JUGADOR = [
-  {id: 'joven', emoji: '👨', nom: 'Joven'},
-  {id: 'jova', emoji: '👩', nom: 'Jova'},
-  {id: 'noi', emoji: '👦', nom: 'Noi'},
-  {id: 'noia', emoji: '👧', nom: 'Noia'},
-  {id: 'home', emoji: '👨‍🦰', nom: 'Home'},
-  {id: 'dona', emoji: '👩‍🦰', nom: 'Dona'}
-];
 
 // ===== ESTADO GLOBAL =====
 let estat = {
@@ -42,6 +33,16 @@ let estat = {
 };
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
+
+// ===== PERSONATGES JUGADOR - 6 BASE =====
+const PERSONATGES_JUGADOR = [
+  {id: 'joven', emoji: '👨', nom: 'Joven'},
+  {id: 'jova', emoji: '👩', nom: 'Jova'},
+  {id: 'noi', emoji: '👦', nom: 'Noi'},
+  {id: 'noia', emoji: '👧', nom: 'Noia'},
+  {id: 'home', emoji: '👨‍🦰', nom: 'Home'},
+  {id: 'dona', emoji: '👩‍🦰', nom: 'Dona'}
+];
 
 // ===== DATOS =====
 let CATEGORIES_TOTS = {};
@@ -82,10 +83,12 @@ function actualitzarUI() {
   const energiaEl = document.getElementById('energia');
   const barraEl = document.getElementById('barra-progres');
   const headerPersonatge = document.getElementById('header-personatge');
+
   if (monedesEl) monedesEl.textContent = estat.monedes;
   if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
   if (energiaEl) energiaEl.textContent = estat.energia;
   if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%';
+
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
   if (headerPersonatge && personatge) headerPersonatge.textContent = personatge.emoji;
 }
@@ -109,16 +112,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   mostrarIntro();
   await carregarDades();
   actualitzarUI();
-  canviarTab('mapa', null); // SOLO carga mapa al inicio
+  canviarTab('mapa', null);
 });
 
 // ===== NAVEGACIÓ =====
 function canviarTab(tab, e) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  const tabEl = document.getElementById('tab-'+tab);
-  if (!tabEl) return;
-  tabEl.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
   if(e && e.target) e.target.closest('.nav-item').classList.add('active');
 
   if(tab === 'mapa') renderMapa();
@@ -129,31 +130,19 @@ function canviarTab(tab, e) {
   if(tab === 'botiga') renderBotiga();
 }
 
-// FIX CLAVE: solo toca los sub-tabs de Gremi, no todo el DOM
 function mostrarSubTab(sub) {
   document.querySelectorAll('#gremi-contenidor.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('btn-' + sub);
-  if (btn) btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   const cont = document.getElementById('gremi-' + sub);
-  if (!cont) return;
-  cont.style.display = 'block';
+  if(cont) cont.style.display = 'block';
 
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
   vibrar();
 }
-
-function jugarNivell(n) {
-  if (n > estat.progres.nivellActualMapa) return;
-  canviarTab('gremi', null);
-  setTimeout(() => {
-    mostrarSubTab('minijoc');
-    novaFraseMinijoc();
-  }, 50);
-}
-function jugarNivell1() { jugarNivell(1); }
 
 // ===== CARREGAR DADES =====
 async function carregarDades() {
@@ -229,13 +218,8 @@ function seguentSlide() {
   if (slideActual < INTRO_SLIDES.length - 1) { slideActual++; pintarSlide(); }
   else { estat.introVist = true; guardarEstat(); document.getElementById('intro').style.display = 'none'; }
 }
-function tancarIntro() {
-  estat.introVist = true;
-  guardarEstat();
-  document.getElementById('intro').style.display = 'none';
-}
 
-// ===== MAPA =====
+// ===== MAPA - 100 NIVELLS, 25 FRASES PER NIVELL =====
 function renderMapa() {
   const cont = document.getElementById('mapa-contenidor');
   if (!cont) return;
@@ -251,35 +235,48 @@ function renderMapa() {
     const opacitat = desbloquejat? '1' : '0.4';
     const cursor = desbloquejat? 'pointer' : 'not-allowed';
     const color = desbloquejat? '#22c55e' : '#333';
-    const onclick = desbloquejat? (i === 1? `jugarNivell1()` : `jugarNivell(${i})`) : '';
+    const onclick = desbloquejat? `jugarNivell(${i})` : '';
     const tooltip = desbloquejat? '' : ` title="Falten ${25 - estat.progres.frasesDesDeUltimNivell} frases per desbloquejar"`;
     html += `<div class="nivell-card" style="border-color:${color}; opacity:${opacitat}; cursor:${cursor}" onclick="${onclick}"${tooltip}>${i}</div>`;
   }
   html += '</div>';
   cont.innerHTML = html;
 }
+function jugarNivell(n) {
+  if (n > estat.progres.nivellActualMapa) return;
+  canviarTab('gremi', null);
+  setTimeout(() => {
+    mostrarSubTab('minijoc');
+    novaFraseMinijoc();
+  }, 50);
+}
 
-// ===== MISSIONS =====
+// ===== MISSIONS CLICABLES =====
 function renderMissio() {
   const cont = document.getElementById('missio-contenidor');
   if (!cont) return;
-  const frasesFaltants = 25 - estat.progres.frasesDesDeUltimNivell;
-  const teEnergia = estat.energia >= 20;
+  const missio1 = estat.progres.encerts >= 5? '✅' : '🔒';
+  const missio2 = estat.compres.length > 0? '✅' : '🔒';
+  const missio3 = estat.progres.nivellActualMapa >= 10? '✅' : '🔒';
+  const missio4 = estat.progres.frasesDesDeUltimNivell >= 25? '✅' : '🔒';
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
-    <div class="missio-item" onclick="jugarNivell1();" style="cursor:pointer;">
-      🎯 Missió 1: Completa ${frasesFaltants} frases més per pujar al nivell ${estat.progres.nivellActualMapa + 1}
-    </div>
-    <div class="missio-item" onclick="canviarTab('lectura', null);" style="cursor:pointer;">
-      ⚡ Missió 2: ${teEnergia? 'Tens energia! Genera nova lectura' : 'Recarrega energia per llegir'}
+    <div class="missio-item" onclick="canviarTab('gremi', null); mostrarSubTab('minijoc');" style="cursor:pointer;">
+      ${missio1} Juga al Minijoc 5 vegades
     </div>
     <div class="missio-item" onclick="canviarTab('botiga', null);" style="cursor:pointer;">
-      🎁 Missió 3: Compra un pack d'emojis a la Botiga
+      ${missio2} Desbloqueja 1 pack a la Botiga
+    </div>
+    <div class="missio-item" onclick="canviarTab('mapa', null);" style="cursor:pointer;">
+      ${missio3} Arriba al nivell 10
+    </div>
+    <div class="missio-item" onclick="canviarTab('lectura', null);" style="cursor:pointer;">
+      ${missio4} Completa 25 frases per pujar de nivell
     </div>
   `;
 }
 
-// ===== GREMI: PERSONATGES =====
+// ===== GREMI - 3 SUBTABS SENSE LLEGENDES =====
 function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-personatges');
   if (!cont) return;
@@ -307,7 +304,7 @@ function triarPersonatge(id) {
   vibrar();
 }
 
-// ===== GREMI: BIBLIOTECA =====
+// ===== BIBLIOTECA =====
 function renderDiccionari() {
   const cont = document.getElementById('gremi-biblioteca');
   if (!cont) return;
@@ -333,7 +330,7 @@ function renderDiccionari() {
   cont.innerHTML = html;
 }
 
-// ===== GREMI: MINIJOC =====
+// ===== MINIJOC - LÓGICA CRÒNIQUES =====
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
   if (!emojiData ||!emojiData.genere) return emojiData?.nom_cat || emoji;
@@ -440,8 +437,6 @@ function comprovarMinijoc() {
 
 // ===== LECTURA =====
 function generarLectura() {
-  const tabLectura = document.getElementById('tab-lectura');
-  if (!tabLectura ||!tabLectura.classList.contains('active')) return;
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
   const lecturesNivell = BANCO_VOCAB[nivell]?.plantillas || [];
   const cont = document.getElementById('lectura-contingut');
@@ -487,13 +482,9 @@ function generarLectura() {
 
 // ===== TIPS =====
 function carregarTips() {
-  const tabTips = document.getElementById('tab-tips');
-  if (!tabTips ||!tabTips.classList.contains('active')) return;
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
-  if (totsElsTips.length === 0 || totsElsTips!== dadesTips[nivell]) {
-    totsElsTips = dadesTips[nivell] || [];
-    tipsUsats = [];
-  }
+  if (totsElsTips.length === 0) totsElsTips = dadesTips[nivell] || [];
+  if (tipsUsats.length === 0 && totsElsTips!== dadesTips[nivell]) totsElsTips = dadesTips[nivell] || [];
   mostrarTipRandom();
 }
 function mostrarTipRandom() {
