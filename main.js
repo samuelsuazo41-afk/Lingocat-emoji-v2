@@ -31,7 +31,8 @@ let estat = {
   desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {}
 };
 
-const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
+// 6 personatges base desbloqueats des de l'inici
+const PACK_INICIAL = ["😀","😊","😂","👨","👩","👴","👵","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
 
 // ===== DATOS =====
 let CATEGORIES_TOTS = {};
@@ -112,6 +113,9 @@ function canviarTab(tab, e) {
 }
 
 function mostrarSubTab(sub) {
+  // Ignora clicks en Objectes - ya no existe
+  if (sub === 'objectes') return;
+
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('gremi-' + sub).style.display = 'block';
@@ -119,7 +123,6 @@ function mostrarSubTab(sub) {
   if(btn) btn.classList.add('active');
 
   if (sub === 'personatges') mostrarGremiPersonatges();
-  if (sub === 'objectes') mostrarGremiObjectes();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'llegendes') mostrarGremiLlegendes();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
@@ -216,7 +219,8 @@ function renderMapa() {
     const opacitat = desbloquejat? '1' : '0.4';
     const cursor = desbloquejat? 'pointer' : 'not-allowed';
     const color = desbloquejat? '#22c55e' : '#333';
-    const onclick = desbloquejat? `jugarNivell(${i})` : '';
+    // Nivell 1 va directe al Minijoc
+    const onclick = desbloquejat? (i === 1? `jugarNivell1()` : `jugarNivell(${i})`) : '';
     const tooltip = desbloquejat? '' : ` title="Falten ${25 - estat.progres.frasesDesDeUltimNivell} frases per desbloquejar"`;
     html += `<div class="nivell-card" style="border-color:${color}; opacity:${opacitat}; cursor:${cursor}" onclick="${onclick}"${tooltip}>${i}</div>`;
   }
@@ -227,6 +231,13 @@ function jugarNivell(n) {
   if (n > estat.progres.nivellActualMapa) return;
   canviarTab('gremi', null);
   mostrarSubTab('minijoc');
+}
+function jugarNivell1() {
+  canviarTab('gremi', null);
+  setTimeout(() => {
+    mostrarSubTab('minijoc');
+    novaFraseMinijoc();
+  }, 50);
 }
 
 // ===== MISSIONS CLICABLES =====
@@ -254,14 +265,14 @@ function renderMissio() {
   `;
 }
 
-// ===== GREMI - 4 SUBTABS =====
+// ===== GREMI - 4 SUBTABS SENSE OBJECTES =====
 function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-contenidor');
-  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Selecció de personatge</div>`;
-}
-function mostrarGremiObjectes() {
-  const cont = document.getElementById('gremi-contenidor');
-  cont.innerHTML = `<div style="text-align:center; color:#888; padding:40px;">Pròximament: Inventari d'objectes</div>`;
+  cont.innerHTML = `<div class="emoji-grid">` +
+    BIBLIOTECA_PLA.filter(e => e.tipus === 'personatge' &&
+      estat.desbloquejats.personatges?.includes(quitarSkinTone(e.emoji)))
+   .map(e => `<div class="emoji-item"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`)
+   .join('') + `</div>`;
 }
 function mostrarGremiLlegendes() {
   const cont = document.getElementById('gremi-contenidor');
@@ -382,7 +393,6 @@ function comprovarMinijoc() {
     estat.monedes += 5;
     estat.progres.encerts++;
     estat.progres.frasesDesDeUltimNivell++;
-    // Cada 25 frases sube 1 nivel
     if (estat.progres.frasesDesDeUltimNivell >= 25 && estat.progres.nivellActualMapa < 100) {
       estat.progres.nivellActualMapa++;
       estat.progres.frasesDesDeUltimNivell = 0;
@@ -398,7 +408,7 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA =====
+// ===== LECTURA AMB VOCABULARI =====
 function generarLectura() {
   const nivell = estat.progres.nivellActualMapa <= 33? 'a1' : estat.progres.nivellActualMapa <= 66? 'a2' : 'b1';
   const lecturesNivell = BANCO_VOCAB[nivell]?.plantillas || [];
@@ -412,20 +422,29 @@ function generarLectura() {
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const temaTriat = temes[Math.floor(Math.random() * temes.length)];
   const vocab = BANCO_VOCAB[nivell][temaTriat];
+
+  const vocabulariUsat = [];
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       const opcions = vocab[key];
       if (!opcions ||!opcions.length) return key;
-      return opcions[Math.floor(Math.random() * opcions.length)];
+      const triat = opcions[Math.floor(Math.random() * opcions.length)];
+      if (!vocabulariUsat.includes(triat)) vocabulariUsat.push(triat);
+      return triat;
     });
   }
   const titol = reemplaçar(lectura.titol);
   const text = lectura.seq.map(linia => reemplaçar(linia)).join(' ');
   const pregunta = reemplaçar(lectura.pregunta);
+
   cont.innerHTML = `
     <div class="lectura-card">
       <h3>${titol}</h3>
       <p class="lectura-text">${text}</p>
+      <div id="lectura-vocab">
+        <h4>Vocabulari:</h4>
+        ${vocabulariUsat.slice(0,8).map(w => `<span class="vocab-tag">${w}</span>`).join('')}
+      </div>
       <div class="lectura-preguntes">
         <p><strong>Pregunta:</strong> ${pregunta}</p>
         <button class="btn-primari" onclick="comprovarLectura()">Respondre</button>
