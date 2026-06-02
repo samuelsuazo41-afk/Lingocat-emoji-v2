@@ -3,288 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lingocat Emoji v2</title>
-<meta name="theme-color" content="#0a0a0a">
+<title>Cat Lingo Emoji</title>
 <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0d0d0d">
 <style>
 :root {
-  --bg: #0a0a0a;
+  --bg: #0d0d0d;
   --card: #1a1a1a;
-  --accent: #4ade80;
-  --accent2: #22c55e;
-  --text: #ffffff;
-  --text-dim: #888;
+  --text: #f5f5f5;
+  --accent: #22c55e;
+  --accent2: #3b82f6;
   --border: #2a2a2a;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
   padding-bottom: 80px;
-  overflow-x: hidden;
 }
 header {
   background: var(--card);
-  padding: 15px 20px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
 }
-.header-stats { display: flex; gap: 20px; font-size: 14px; }
-.stat { display: flex; align-items: center; gap: 5px; }
-.tab-content { display: none; padding: 20px; }
+.header-stats { display: flex; gap: 16px; font-size: 14px; }
+.tab-content { display: none; padding: 16px; }
 .tab-content.active { display: block; }
-.sub-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
-}
-.sub-tab-btn {
-  flex: 1;
-  padding: 10px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-}
-.sub-tab-btn.active {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-  font-weight: bold;
-}
 .nivells-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  max-width: 500px;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  max-width: 600px;
   margin: 0 auto;
 }
 .nivell-card {
   aspect-ratio: 1;
   background: var(--card);
   border: 2px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 18px;
-  transition: transform 0.2s;
+  transition: all 0.2s;
 }
-.nivell-card:active { transform: scale(0.95); }
+.nivell-card:hover { transform: scale(1.05); }
 .missio-item {
   background: var(--card);
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  border-left: 3px solid var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.sub-tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
   cursor: pointer;
+  font-size: 14px;
+}
+.sub-tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 .emoji-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin: 20px 0;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 12px;
 }
 .emoji-item {
   background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
   text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
 }
-.emoji-item:active { transform: scale(0.95); border-color: var(--accent); }
-.emoji-large { font-size: 32px; margin-bottom: 5px; }
-.emoji-name { font-size: 12px; color: var(--text-dim); }
-#minijoc-frase {
-  background: var(--card);
-  padding: 20px;
-  border-radius: 12px;
-  font-size: 18px;
-  text-align: center;
-  margin-bottom: 20px;
-  border: 2px solid var(--border);
-}
-#minijoc-seleccionats {
-  min-height: 50px;
-  background: #0f2a1f;
-  border: 2px dashed var(--accent);
-  border-radius: 12px;
-  padding: 15px;
-  font-size: 28px;
-  text-align: center;
-  margin-bottom: 20px;
-}
-#minijoc-feedback { text-align: center; margin-top: 15px; font-size: 16px; }
+.emoji-large { font-size: 32px; margin-bottom: 4px; }
+.emoji-name { font-size: 12px; color: #aaa; }
 .capitol-card {
   background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 15px;
-  border: 2px solid var(--border);
+  margin-bottom: 16px;
   text-align: center;
 }
-.capitol-icona { font-size: 48px; margin-bottom: 10px; }
+.capitol-icona { font-size: 48px; margin-bottom: 8px; }
 .btn {
-  background: var(--accent);
-  color: #000;
+  padding: 10px 20px;
   border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
-  font-size: 15px;
-  transition: opacity 0.2s;
+  margin-top: 12px;
 }
-.btn:active { opacity: 0.7; }
-.btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.btn-sec { background: var(--card); color: var(--text); border: 2px solid var(--border); }
-.btn-prim { background: var(--accent); color: #000; }
-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+.btn-primari { background: var(--accent); color: #000; }
+.btn-sec { background: var(--border); color: var(--text); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.lectura-card {
   background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.lectura-text { line-height: 1.6; margin: 16px 0; font-size: 16px; }
+.tip-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.tip-text { font-size: 18px; margin: 16px 0; }
+.tip-exemple { color: var(--accent); font-style: italic; margin-top: 12px; }
+.minijoc-container { max-width: 600px; margin: 0 auto; }
+.minijoc-frase {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.minijoc-triats {
+  min-height: 50px;
+  background: var(--card);
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.minijoc-feedback { text-align: center; min-height: 30px; margin-top: 16px; }
+
+/* Intro */
+.intro-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.intro-content {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  text-align: center;
+}
+.intro-emoji { font-size: 80px; margin-bottom: 16px; }
+.intro-titol { font-size: 24px; margin-bottom: 12px; }
+.intro-text { color: #aaa; margin-bottom: 24px; }
+.intro-dots { margin-bottom: 24px; font-size: 20px; }
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid var(--border);
-  z-index: 10;
+  padding: 8px 0;
 }
-.nav-btn {
+.nav-item {
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--text-dim);
-  font-size: 11px;
-  padding: 8px 4px;
+  color: #888;
+  padding: 8px;
   cursor: pointer;
+  font-size: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
 }
-.nav-btn.active { color: var(--accent); }
-.nav-btn svg { width: 24px; height: 24px; }
-#intro {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.95);
-  z-index: 100;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-}
-#intro.hidden { display: none; }
-#intro-emoji { font-size: 80px; margin-bottom: 20px; }
-#intro-titol { font-size: 24px; font-weight: bold; margin-bottom: 10px; text-align: center; }
-#intro-text { font-size: 16px; color: var(--text-dim); text-align: center; margin-bottom: 30px; }
-#intro-dots { font-size: 24px; margin-bottom: 30px; letter-spacing: 8px; }
-@media (max-width: 400px) {
-  .emoji-grid { grid-template-columns: repeat(3, 1fr); }
-  .nivells-grid { grid-template-columns: repeat(4, 1fr); }
-}
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 20px; }
 </style>
 </head>
 <body>
+
 <header>
+  <div style="font-weight: bold; font-size: 18px;">🐱 Cat Lingo Emoji</div>
   <div class="header-stats">
-    <div class="stat">🪙 <span id="monedes">0</span></div>
-    <div class="stat">⚡ <span id="energia">100</span></div>
-    <div class="stat">🏆 Niv <span id="nivell">1</span></div>
+    <span>🪙 <span id="monedes">0</span></span>
+    <span>⭐ Nivell <span id="nivell">1</span></span>
+    <span>⚡ <span id="energia">100</span></span>
   </div>
 </header>
 
-<div id="tab-mapa" class="tab-content active">
+<!-- INTRO -->
+<div id="intro" class="intro-overlay" style="display:none;">
+  <div class="intro-content">
+    <div id="intro-emoji" class="intro-emoji">👋</div>
+    <h2 id="intro-titol" class="intro-titol">Benvingut</h2>
+    <p id="intro-text" class="intro-text">Text</p>
+    <div id="intro-dots" class="intro-dots">●</div>
+    <button id="intro-btn" class="btn btn-primari" onclick="seguentSlide()">Següent</button>
+    <button class="btn btn-sec" onclick="tancarIntro()" style="margin-top:8px;">Saltar</button>
+  </div>
+</div>
+
+<!-- TAB MAPA -->
+<div id="tab-mapa" class="tab-content">
   <div id="mapa-contenidor"></div>
 </div>
 
+<!-- TAB MISSIO -->
 <div id="tab-missio" class="tab-content">
   <div id="missio-contenidor"></div>
 </div>
 
+<!-- TAB GREMI -->
 <div id="tab-gremi" class="tab-content">
   <div class="sub-tabs">
-    <button class="sub-tab-btn active" onclick="mostrarSubTab('biblioteca')">📚 Biblioteca</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">🎮 Minijoc</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('personatges')">Personatges</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('objectes')">Objectes</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('biblioteca')">Biblioteca</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('llegendes')">Llegendes</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">Minijoc</button>
   </div>
-  
-  <div id="gremi-biblioteca" class="sub-tab-content" style="display:block;"></div>
-  <div id="gremi-minijoc" class="sub-tab-content" style="display:none;">
-    <p id="minijoc-frase">Carregant...</p>
-    <div id="minijoc-emojis" class="emoji-grid"></div>
-    <div id="minijoc-seleccionats"></div>
-    <div id="minijoc-feedback"></div>
-    <div style="text-align:center; margin-top:20px;">
-      <button class="btn" id="btn-seguent-frase" onclick="novaFrase()">Següent frase</button>
+  <div id="gremi-contenidor">
+    <div id="gremi-personatges" class="sub-tab-content"></div>
+    <div id="gremi-objectes" class="sub-tab-content"></div>
+    <div id="gremi-biblioteca" class="sub-tab-content"></div>
+    <div id="gremi-llegendes" class="sub-tab-content"></div>
+    <div id="gremi-minijoc" class="sub-tab-content">
+      <div class="minijoc-container">
+        <div id="minijoc-nivell" style="text-align:center; margin-bottom:12px; color:#888;"></div>
+        <div id="minijoc-frase" class="minijoc-frase">Carregant...</div>
+        <div id="minijoc-triats" class="minijoc-triats"></div>
+        <div id="minijoc-emojis" class="emoji-grid"></div>
+        <div id="minijoc-feedback" class="minijoc-feedback"></div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- TAB LECTURA -->
 <div id="tab-lectura" class="tab-content">
   <div id="lectura-contingut"></div>
 </div>
 
+<!-- TAB TIPS -->
 <div id="tab-tips" class="tab-content">
-  <div class="capitol-card">
-    <p id="tip-text"></p>
-    <p id="tip-exemple" style="color:var(--text-dim); font-size:14px; margin-top:8px;"></p>
+  <div class="tip-card">
+    <h3>💡 Truc del dia</h3>
+    <p id="tip-text" class="tip-text">Carregant...</p>
+    <p id="tip-exemple" class="tip-exemple"></p>
+    <button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip</button>
   </div>
 </div>
 
+<!-- TAB BOTIGA -->
 <div id="tab-botiga" class="tab-content">
   <div id="botiga-contenidor"></div>
 </div>
 
-<nav>
-  <button class="nav-btn active" onclick="mostrarTab('mapa')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></svg>
-    Mapa
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="canviarTab('mapa', event)">
+    <span class="nav-icon">🗺️</span>
+    <span>Mapa</span>
   </button>
-  <button class="nav-btn" onclick="mostrarTab('missio')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-    Missió
+  <button class="nav-item" onclick="canviarTab('missio', event)">
+    <span class="nav-icon">🎯</span>
+    <span>Missió</span>
   </button>
-  <button class="nav-btn" onclick="mostrarTab('gremi')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-    Gremi
+  <button class="nav-item" onclick="canviarTab('gremi', event)">
+    <span class="nav-icon">🏛️</span>
+    <span>Gremi</span>
   </button>
-  <button class="nav-btn" onclick="mostrarTab('lectura')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
-    Lectura
+  <button class="nav-item" onclick="canviarTab('lectura', event)">
+    <span class="nav-icon">📖</span>
+    <span>Lectura</span>
   </button>
-  <button class="nav-btn" onclick="mostrarTab('tips')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 21h6c.55 0 1-.45 1-1v-1H8v1c0 .55.45 1 1 1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>
-    Tips
+  <button class="nav-item" onclick="canviarTab('tips', event)">
+    <span class="nav-icon">💡</span>
+    <span>Tips</span>
   </button>
-  <button class="nav-btn" onclick="mostrarTab('botiga')">
-    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 4V2C7 1.45 6.55 1 6 1S5 1.45 5 2v2H2v2h2v2h2V6h2V4H7zM2 18v2h2v2h2v-2h2v-2H6v-2H4v2H2zm18-2v-2h-2v-2h-2v2h-2v2h2v2h2v2h2v-2h2z"/></svg>
-    Botiga
+  <button class="nav-item" onclick="canviarTab('botiga', event)">
+    <span class="nav-icon">🛒</span>
+    <span>Botiga</span>
   </button>
 </nav>
-
-<div id="intro" class="hidden">
-  <div id="intro-emoji"></div>
-  <div id="intro-titol"></div>
-  <div id="intro-text"></div>
-  <div id="intro-dots"></div>
-  <button class="btn" id="intro-btn" onclick="seguentSlide()"></button>
-</div>
 
 <script src="./main.js"></script>
 </body>
