@@ -4,26 +4,32 @@
       {
         "titol": "Un dia a ${tema}",
         "seq": [
-          "${temp_inici}, ${protagonista} va anar a ${lloc}.",
-          "${protagonista} va veure ${cosa1} i ${cosa2}.",
-          "${companys} van ${accio_grup} mentre ${protagonista} ${accio_prota}.",
-          "Després ${protagonista} va ${accio_dinar} amb ${menjar} i ${beguda}.",
-          "Més tard, ${protagonista} va ${accio_final}.",
-          "Al final del dia, ${protagonista} va pensar: ${tema} és el meu lloc preferit!"
+          "${temp_inici}, ${personatge} va anar a ${lloc}.",
+          "${personatge} va veure ${cosa1} i ${cosa2}.",
+          "${companys} van ${accio_grup} mentre ${personatge} ${accio_prota}.",
+          "Després ${personatge} va ${accio_dinar} amb ${menjar} i ${beguda}.",
+          "Més tard, ${personatge} va ${accio_final}.",
+          "Al final del dia, ${personatge} va pensar: ${tema} és el meu lloc preferit!"
         ],
-        "pregunta": "Què va fer ${protagonista} més tard a ${tema}?"
+        "preguntes": [
+          {"q": "Què va fer ${personatge} més tard a ${tema}?", "opcions": ["${accio_final}", "${accio_dinar}", "${accio_prota}"], "correcta": 0},
+          {"q": "Amb què va ${accio_dinar} ${personatge}?", "opcions": ["${menjar} i ${beguda}", "només ${menjar}", "només ${beguda}"], "correcta": 0}
+        ]
       },
       {
-        "titol": "${protagonista} a ${tema}",
+        "titol": "${personatge} a ${tema}",
         "seq": [
-          "${temp_inici} ${protagonista} va visitar ${lloc}.",
+          "${temp_inici} ${personatge} va visitar ${lloc}.",
           "Allà hi havia ${cosa1} i també ${cosa2}.",
-          "${protagonista} estava molt ${estat}.",
-          "${protagonista} va parlar amb ${persona}.",
+          "${personatge} estava molt ${estat}.",
+          "${personatge} va parlar amb ${persona}.",
           "Junts van ${accio_grup}.",
-          "${protagonista} va tornar a casa molt ${estat_final}."
+          "${personatge} va tornar a casa molt ${estat_final}."
         ],
-        "pregunta": "Com se sentia ${protagonista} al tornar a casa?"
+        "preguntes": [
+          {"q": "Com se sentia ${personatge} al tornar a casa?", "opcions": ["${estat_final}", "${estat}", "cansat"], "correcta": 0},
+          {"q": "Amb qui va parlar ${personatge} a ${tema}?", "opcions": ["${persona}", "${companys}", "ningú"], "correcta": 0}
+        ]
       }
     ],
     "la_familia": {
@@ -129,144 +135,216 @@
       "temp_inici": ["Ahir", "Avui", "Divendres", "Diumenge", "Dissabte"]
     }
   },
-  "a2": {
+"a2": {
     "plantillas": [
       {
         "titol": "Un dia a ${tema}",
         "seq": [
-          "${temp_inici}, ${protagonista} va decidir anar a ${lloc}.",
-          "Quan va arribar, ${protagonista} va veure ${cosa1} i també ${cosa2}.",
-          "${companys} van ${accio_grup} mentre ${protagonista} ${accio_prota}.",
-          "Després ${protagonista} va ${accio_dinar} amb ${menjar} i va beure ${beguda}.",
-          "Més tard, ${protagonista} va ${accio_final} i es va sentir ${estat_final}.",
-          "En acabar, ${protagonista} va pensar que ${tema} era una bona manera de passar el dia."
+          "${temp_inici}, ${personatge} va decidir anar a ${lloc}.",
+          "Quan va arribar, ${personatge} va veure ${cosa1} i també ${cosa2}.",
+          "${companys} van ${accio_grup} mentre ${personatge} ${accio_prota}.",
+          "Després ${personatge} va ${accio_dinar} amb ${menjar} i va beure ${beguda}.",
+          "Més tard, ${personatge} va ${accio_final} i es va sentir ${estat_final}.",
+          "En acabar, ${personatge} va pensar que ${tema} era una bona manera de passar el dia."
         ],
-        "pregunta": "Què va fer ${protagonista} després de ${accio_dinar} a ${tema}?"
+        "preguntes": [
+          {"q": "Què va fer ${personatge} després de ${accio_dinar} a ${tema}?", "opcions": ["${accio_final}", "${accio_prota}", "${accio_grup}"], "correcta": 0},
+          {"q": "Com es va sentir ${personatge} en acabar?", "opcions": ["${estat_final}", "${estat}", "cansat"], "correcta": 0}
+        ]
       },
       {
-        "titol": "${protagonista} visita ${tema}",
+        "titol": "${personatge} visita ${tema}",
         "seq": [
-          "${temp_inici} ${protagonista} va anar a visitar ${lloc}.",
+          "${temp_inici} ${personatge} va anar a visitar ${lloc}.",
           "Allà hi havia ${cosa1} i ${cosa2}, i tot estava molt ${descripcio}.",
-          "${protagonista} estava ${estat} i va parlar amb ${persona}.",
-          "Junts van ${accio_grup} i ${protagonista} va ${accio_prota}.",
-          "Abans de marxar, ${protagonista} va ${accio_final}.",
-          "${protagonista} va tornar a casa molt ${estat_final}."
+          "${personatge} estava ${estat} i va parlar amb ${persona}.",
+          "Junts van ${accio_grup} i ${personatge} va ${accio_prota}.",
+          "Abans de marxar, ${personatge} va ${accio_final}.",
+          "${personatge} va tornar a casa molt ${estat_final}."
         ],
-        "pregunta": "Amb qui va parlar ${protagonista} a ${tema}?"
+        "preguntes": [
+          {"q": "Amb qui va parlar ${personatge} a ${tema}?", "opcions": ["${persona}", "${companys}", "ningú"], "correcta": 0},
+          {"q": "Com estava tot a ${lloc}?", "opcions": ["molt ${descripcio}", "molt brut", "molt buit"], "correcta": 0}
+        ]
+      },
+      {
+        "titol": "Un matí amb ${personatge} a ${tema}",
+        "seq": [
+          "${temp_inici} ${personatge} es va llevar d’hora per anar a ${lloc}.",
+          "Feia bon temps i ${personatge} estava molt ${estat}.",
+          "A ${lloc}, ${personatge} va trobar ${cosa1} i també ${cosa2}.",
+          "${companys} ja eren allà i van ${accio_grup} amb ${personatge}.",
+          "Després de ${accio_dinar}, ${personatge} va ${accio_final} abans de tornar.",
+          "${personatge} va arribar a casa molt ${estat_final} i content."
+        ],
+        "preguntes": [
+          {"q": "Com estava el temps quan ${personatge} va sortir?", "opcions": ["Feia bon temps", "Plovia molt", "Feia fred"], "correcta": 0},
+          {"q": "Què va fer ${personatge} abans de tornar a casa?", "opcions": ["${accio_final}", "dormir", "treballar"], "correcta": 0}
+        ]
+      },
+      {
+        "titol": "${personatge} i els amics a ${tema}",
+        "seq": [
+          "Un dia ${personatge} va quedar amb ${companys} per anar a ${lloc}.",
+          "A ${lloc} van veure ${cosa1} i van parlar de ${tema}.",
+          "${personatge} estava ${estat} perquè feia temps que no hi anava.",
+          "Tots junts van ${accio_grup} i després ${personatge} va ${accio_prota}.",
+          "Van ${accio_dinar} alguna cosa i van beure ${beguda}.",
+          "Quan van acabar, ${personatge} es va sentir molt ${estat_final}."
+        ],
+        "preguntes": [
+          {"q": "Amb qui va anar ${personatge} a ${lloc}?", "opcions": ["${companys}", "sol", "amb ${persona}"], "correcta": 0},
+          {"q": "Què van fer tots junts a ${tema}?", "opcions": ["${accio_grup}", "${accio_final}", "dormir"], "correcta": 0}
+        ]
+      },
+      {
+        "titol": "La visita de ${personatge} a ${tema}",
+        "seq": [
+          "${temp_inici} ${personatge} va fer una visita a ${lloc}.",
+          "${lloc} era molt ${descripcio} i hi havia ${cosa1} per tot arreu.",
+          "${personatge} va saludar ${persona} i van començar a ${accio_grup}.",
+          "Mentre caminaven, ${personatge} va veure ${cosa2}.",
+          "Després van ${accio_dinar} i ${personatge} va ${accio_final}.",
+          "${personatge} va marxar molt ${estat_final} de la visita."
+        ],
+        "preguntes": [
+          {"q": "Com era ${lloc} segons ${personatge}?", "opcions": ["molt ${descripcio}", "molt petit", "molt fosc"], "correcta": 0},
+          {"q": "Què va veure ${personatge} mentre caminava?", "opcions": ["${cosa2}", "${cosa1}", "res"], "correcta": 0}
+        ]
+      },
+      {
+        "titol": "Una tarda especial per a ${personatge}",
+        "seq": [
+          "Una tarda, ${personatge} va anar a ${lloc} amb ${companys}.",
+          "A ${lloc} feia molt bon ambient i tot estava molt ${descripcio}.",
+          "${personatge} va provar ${menjar} i va beure ${beguda} amb els amics.",
+          "Després van ${accio_grup} i ${personatge} va ${accio_prota}.",
+          "Abans de marxar, ${personatge} va ${accio_final}.",
+          "Aquella tarda ${personatge} va tornar a casa molt ${estat_final}."
+        ],
+        "preguntes": [
+          {"q": "Què va provar ${personatge} a ${lloc}?", "opcions": ["${menjar}", "${cosa1}", "${beguda}"], "correcta": 0},
+          {"q": "Com va tornar ${personatge} a casa?", "opcions": ["molt ${estat_final}", "molt cansat", "molt enfadat"], "correcta": 0}
+        ]
       }
     ],
-    "la_familia": {
-      "persones": ["La Maria", "En Pau", "La Marta", "En Jordi", "La Clàudia", "En David"],
-      "lloc": ["casa de l’àvia al poble", "casa del tiet", "casa dels cosins", "la seva llar", "casa de l’oncle", "pis dels avis"],
-      "cosa1": ["un àlbum de fotos antigues", "un gat dormint", "un jardí molt verd", "un piano antic", "un gos jugant", "flors al gerro"],
-      "cosa2": ["llibres apilats", "flors de colors", "joguines al terra", "un quadre bonic", "coixins al sofà", "espelmes enceses"],
-      "companys": ["La seva germana", "El seu germà", "La seva mare", "El seu pare", "Els seus cosins", "Un veí"],
-      "accio_grup": ["parlar de records", "riure molt", "jugar a cartes", "mirar l’àlbum", "cantar cançons", "cuinar junts"],
-      "accio_prota": ["mirar les fotos antigues", "tocar una melodia", "regar les plantes", "jugar amb el gat", "llegir un llibre", "ajudar a cuinar"],
-      "accio_dinar": ["dinar junts", "berenar a la terrassa", "sopar tranquils", "prendre cafè", "fer un mos", "provar pastissos"],
-      "menjar": ["pa amb tomàquet", "truita de patates", "galetes casolanes", "amanida fresca", "pastís de xocolata", "fruita tallada"],
-      "beguda": ["aigua fresca", "llet calenta", "suc natural", "te amb llimona", "cafè amb llet", "refresc"],
-      "accio_final": ["recollir la taula", "acomiadar-se amb abraçada", "sortir a passejar", "rentar plats", "guardar cadires", "apagar llums"],
-      "estat": ["content", "contenta", "sorprès", "sorpresa", "tranquil", "tranquil·la", "nostàlgic", "nostàlgica", "curiós", "curiosa", "emocionat", "emocionada"],
-      "estat_final": ["feliç", "tranquil", "tranquil·la", "content", "contenta", "relaxat", "relaxada", "agraït", "agraïda", "satisfet", "satisfeta"],
-      "persona": ["la seva àvia", "el seu tiet", "la seva mare", "el seu germà", "la seva cosina", "un veí"],
-      "temp_inici": ["Ahir al matí", "Diumenge passat", "Avui", "Dissabte", "Dilluns", "Aquesta setmana"],
-      "descripcio": ["acollidor", "net", "bonic", "tranquil", "alegre", "familiar"]
+
+    "la_familia": { 
+      "persones": ["La Maria", "En Pau", "La Marta", "En Jordi", "La Clàudia", "En David", "La Júlia", "En Bernat"], 
+      "lloc": ["casa de l’àvia al poble", "casa del tiet al centre", "casa dels cosins", "la seva llar", "casa de l’oncle", "pis dels avis", "la casa pairal", "l’apartament familiar"], 
+      "cosa1": ["un àlbum de fotos antigues", "un gat dormint", "un jardí molt verd", "un piano antic", "un gos jugant", "flors al gerro", "un rellotge antic", "llibres de records"], 
+      "cosa2": ["llibres apilats", "flors de colors", "joguines al terra", "un quadre bonic", "coixins al sofà", "espelmes enceses", "fotografies a la paret", "una manta al sofà"], 
+      "companys": ["La seva germana", "El seu germà", "La seva mare", "El seu pare", "Els seus cosins", "Un veí", "La seva tieta", "El seu avi"], 
+      "accio_grup": ["parlar de records", "riure molt", "jugar a cartes", "mirar l’àlbum", "cantar cançons", "cuinar junts", "explicar històries", "veure fotos"], 
+      "accio_prota": ["mirar les fotos antigues", "tocar una melodia", "regar les plantes", "jugar amb el gat", "llegir un llibre", "ajudar a cuinar", "escriure una carta", "organitzar fotos"], 
+      "accio_dinar": ["dinar junts", "berenar a la terrassa", "sopar tranquils", "prendre cafè", "fer un mos", "provar pastissos", "menjar fruita", "fer un brunch"], 
+      "menjar": ["pa amb tomàquet", "truita de patates", "galetes casolanes", "amanida fresca", "pastís de xocolata", "fruita tallada", "formatge", "olives"], 
+      "beguda": ["aigua fresca", "llet calenta", "suc natural", "te amb llimona", "cafè amb llet", "refresc", "vi", "infusió"], 
+      "accio_final": ["recollir la taula", "acomiadar-se amb abraçada", "sortir a passejar", "rentar plats", "guardar cadires", "apagar llums", "tancar portes", "ordenar la cuina"], 
+      "estat": ["content", "contenta", "sorprès", "sorpresa", "tranquil", "tranquil·la", "nostàlgic", "nostàlgica", "curiós", "curiosa", "emocionat", "emocionada"], 
+      "estat_final": ["feliç", "tranquil", "tranquil·la", "content", "contenta", "relaxat", "relaxada", "agraït", "agraïda", "satisfet", "satisfeta"], 
+      "persona": ["la seva àvia", "el seu tiet", "la seva mare", "el seu germà", "la seva cosina", "un veí", "el seu avi", "la seva tia"], 
+      "temp_inici": ["Ahir al matí", "Diumenge passat", "Avui", "Dissabte", "Dilluns", "Aquesta setmana", "Dimarts", "Divendres"], 
+      "descripcio": ["acollidor", "net", "bonic", "tranquil", "alegre", "familiar", "càlid", "ordenat"] 
     },
-    "la_casa": {
-      "persones": ["En Jordi", "La Laura", "En Marc", "La Marta", "En Pau", "La Clàudia"],
-      "lloc": ["la seva habitació", "la cuina reformada", "el saló", "el bany", "el balcó", "el despatx"],
-      "cosa1": ["un llit ben fet", "una taula de fusta", "un sofà còmode", "una estanteria plena", "una cadira nova", "un armari gran"],
-      "cosa2": ["una finestra gran", "una làmpada moderna", "un mirall ovalat", "una planta verda", "un quadre colorit", "una catifa suau"],
-      "companys": ["El seu germà", "La seva mare", "El seu pare", "La seva germana", "Un amic", "Un veí"],
-      "accio_grup": ["netejar tota la casa", "ordenar els llibres", "pintar una paret", "decorar el saló", "rentar el terra", "canviar cortines"],
-      "accio_prota": ["fer el llit", "rentar els plats", "mirar una sèrie", "llegir un llibre", "escoltar música", "dormir una estona"],
-      "accio_dinar": ["preparar esmorzar", "dinar ràpid", "sopar tranquil", "berenar", "cuinar alguna cosa", "menjar a la taula"],
-      "menjar": ["cereals amb llet", "pa amb mantega", "fruita fresca", "iogurt amb mel", "galetes", "sandvitx"],
-      "beguda": ["llet freda", "te calent", "aigua mineral", "suc de taronja", "cafè", "refresc"],
-      "accio_final": ["rentar els plats bruts", "fer el llit amb cura", "tancar la finestra", "apagar les llums", "recollir la roba", "escombrar el terra"],
-      "estat": ["tranquil", "tranquil·la", "content", "contenta", "cansat", "cansada", "relaxat", "relaxada", "concentrat", "concentrada", "alegre"],
-      "estat_final": ["relaxat", "relaxada", "content", "contenta", "tranquil", "tranquil·la", "feliç", "satisfet", "satisfeta"],
-      "persona": ["la seva mare", "el seu pare", "el seu germà", "la seva germana", "un amic", "un veí"],
-      "temp_inici": ["Aquest matí", "Avui", "Ahir a la tarda", "Ara mateix", "Diumenge", "Dissabte"],
-      "descripcio": ["neteja", "acollidora", "ordenada", "luminosa", "còmoda", "moderna"]
+
+    "la_casa": { 
+      "persones": ["En Jordi", "La Laura", "En Marc", "La Marta", "En Pau", "La Clàudia", "La Núria", "En Roger"], 
+      "lloc": ["la seva habitació", "la cuina reformada", "el saló", "el bany", "el balcó", "el despatx", "el menjador", "la terrassa"], 
+      "cosa1": ["un llit ben fet", "una taula de fusta", "un sofà còmode", "una estanteria plena", "una cadira nova", "un armari gran", "una finestra gran", "una làmpada moderna"], 
+      "cosa2": ["una finestra gran", "una làmpada moderna", "un mirall ovalat", "una planta verda", "un quadre colorit", "una catifa suau", "una estora", "un gerro amb flors"], 
+      "companys": ["El seu germà", "La seva mare", "El seu pare", "La seva germana", "Un amic", "Un veí", "La seva cosina", "Un company"], 
+      "accio_grup": ["netejar tota la casa", "ordenar els llibres", "pintar una paret", "decorar el saló", "rentar el terra", "canviar cortines", "muntar mobles", "organitzar calaixos"], 
+      "accio_prota": ["fer el llit", "rentar els plats", "mirar una sèrie", "llegir un llibre", "escoltar música", "dormir una estona", "estudiar", "descansar al sofà"], 
+      "accio_dinar": ["preparar esmorzar", "dinar ràpid", "sopar tranquil", "berenar", "cuinar alguna cosa", "menjar a la taula", "fer un cafè", "preparar un entrepà"], 
+      "menjar": ["cereals amb llet", "pa amb mantega", "fruita fresca", "iogurt amb mel", "galetes", "sandvitx", "torrades", "sopa"], 
+      "beguda": ["llet freda", "te calent", "aigua mineral", "suc de taronja", "cafè", "refresc", "xocolata calenta", "infusió"], 
+      "accio_final": ["rentar els plats bruts", "fer el llit amb cura", "tancar la finestra", "apagar les llums", "recollir la roba", "escombrar el terra", "tancar persianes", "ordenar el menjador"], 
+      "estat": ["tranquil", "tranquil·la", "content", "contenta", "cansat", "cansada", "relaxat", "relaxada", "concentrat", "concentrada", "alegre"], 
+      "estat_final": ["relaxat", "relaxada", "content", "contenta", "tranquil", "tranquil·la", "feliç", "satisfet", "satisfeta"], 
+      "persona": ["la seva mare", "el seu pare", "el seu germà", "la seva germana", "un amic", "un veí", "la seva cosina", "un company"], 
+      "temp_inici": ["Aquest matí", "Avui", "Ahir a la tarda", "Ara mateix", "Diumenge", "Dissabte", "Dilluns", "Divendres"], 
+      "descripcio": ["neteja", "acollidora", "ordenada", "luminosa", "còmoda", "moderna", "espaiosa", "agradable"] 
     },
-    "l_escola": {
-      "persones": ["La Marta", "En Pau", "La Clàudia", "En David", "La Laura", "En Jordi"],
-      "lloc": ["l’escola", "la classe de català", "el pati gran", "la biblioteca", "el laboratori", "el gimnàs"],
-      "cosa1": ["un professor explicant", "llibres oberts", "una pissarra plena", "un ordinador nou", "un mapa gran", "un projecte"],
-      "cosa2": ["altres nens", "cadires ordenades", "motxilles al terra", "llapis de colors", "quaderns oberts", "calculadores"],
-      "companys": ["El seu millor amic", "La seva amiga", "El seu germà", "La seva germana", "Un company nou", "La seva tutora"],
-      "accio_grup": ["estudiar junts", "escriure al quadern", "llegir en veu alta", "jugar al pati", "fer un projecte", "practicar"],
-      "accio_prota": ["escoltar atent", "fer els deures", "dibuixar", "preguntar dubtes", "copiar la pissarra", "presentar"],
-      "accio_dinar": ["berenar amb amics", "dinar al menjador", "descansar al pati", "xerrar", "jugar a pilota", "llegir"],
-      "menjar": ["entrepà de pernil", "poma verda", "galetes casolanes", "iogurt", "fruita", "pastís"],
-      "beguda": ["aigua fresca", "suc de fruita", "llet", "refresc", "te", "cafè"],
-      "accio_final": ["recollir els llibres", "acomiadar-se dels amics", "sortir del pati", "tornar a classe", "netejar la taula", "tancar la porta"],
-      "estat": ["content", "contenta", "nerviós", "nerviosa", "atent", "atenta", "curiós", "curiosa", "motivat", "motivada", "tranquil", "tranquil·la"],
-      "estat_final": ["feliç", "cansat", "cansada", "content", "contenta", "tranquil", "tranquil·la", "satisfet", "satisfeta", "relaxat", "relaxada"],
-      "persona": ["el professor", "la seva millor amiga", "un company nou", "la tutora", "el director", "un monitor"],
-      "temp_inici": ["Ahir", "Avui al matí", "Dilluns passat", "Aquesta setmana", "Avui", "Dimarts"],
-      "opinions": ["m’agrada molt", "em sembla interessant", "ho trobo útil", "m’ho passo bé", "aprenc molt", "em motiva"],
-      "descripcio": ["interessant", "divertida", "tranquil·la", "ordenada", "moderna", "bonica"]
+
+    "l_escola": { 
+      "persones": ["La Marta", "En Pau", "La Clàudia", "En David", "La Laura", "En Jordi", "La Sílvia", "En Gerard"], 
+      "lloc": ["l’escola", "la classe de català", "el pati gran", "la biblioteca", "el laboratori", "el gimnàs", "l’aula d’arts", "la sala d’estudi"], 
+      "cosa1": ["un professor explicant", "llibres oberts", "una pissarra plena", "un ordinador nou", "un mapa gran", "un projecte", "materials d’art", "instruments musicals"], 
+      "cosa2": ["altres nens", "cadires ordenades", "motxilles al terra", "llapis de colors", "quaderns oberts", "calculadores", "papers", "una bola de món"], 
+      "companys": ["El seu millor amic", "La seva amiga", "El seu germà", "La seva germana", "Un company nou", "La seva tutora", "Un company de grup", "La delegada"], 
+      "accio_grup": ["estudiar junts", "escriure al quadern", "llegir en veu alta", "jugar al pati", "fer un projecte", "practicar", "presentar treballs", "debatre idees"], 
+      "accio_prota": ["escoltar atent", "fer els deures", "dibuixar", "preguntar dubtes", "copiar la pissarra", "presentar", "experimentar", "tocar un instrument"], 
+      "accio_dinar": ["berenar amb amics", "dinar al menjador", "descansar al pati", "xerrar", "jugar a pilota", "llegir", "fer esport", "passejar"], 
+      "menjar": ["entrepà de pernil", "poma verda", "galetes casolanes", "iogurt", "fruita", "pastís", "bocata", "barreta de cereals"], 
+      "beguda": ["aigua fresca", "suc de fruita", "llet", "refresc", "te", "cafè", "xocolata", "infusió"], 
+      "accio_final": ["recollir els llibres", "acomiadar-se dels amics", "sortir del pati", "tornar a classe", "netejar la taula", "tancar la porta", "guardar materials", "apagar l’ordinador"], 
+      "estat": ["content", "contenta", "nerviós", "nerviosa", "atent", "atenta", "curiós", "curiosa", "motivat", "motivada", "tranquil", "tranquil·la"], 
+      "estat_final": ["feliç", "cansat", "cansada", "content", "contenta", "tranquil", "tranquil·la", "satisfet", "satisfeta", "relaxat", "relaxada"], 
+      "persona": ["el professor", "la seva millor amiga", "un company nou", "la tutora", "el director", "un monitor", "la professora d’arts", "el coordinador"], 
+      "temp_inici": ["Ahir", "Avui al matí", "Dilluns passat", "Aquesta setmana", "Avui", "Dimarts", "Dimecres", "Divendres"], 
+      "opinions": ["m’agrada molt", "em sembla interessant", "ho trobo útil", "m’ho passo bé", "aprenc molt", "em motiva", "és divertit", "m’agrada estudiar"], 
+      "descripcio": ["interessant", "divertida", "tranquil·la", "ordenada", "moderna", "bonica", "acollidora", "dinàmica"] 
     },
-    "la_ciutat": {
-      "persones": ["En David", "La Laura", "En Jordi", "La Marta", "En Pau", "La Clàudia"],
-      "lloc": ["el centre històric", "la plaça major", "el barri modern", "el mercat", "el passeig marítim", "el carrer comercial"],
-      "cosa1": ["botigues obertes", "cotxes aparcats", "molta gent caminant", "bicicletes", "busos passant", "taxis esperant"],
-      "cosa2": ["edificis alts", "semàfors en funcionament", "bancs lliures", "una font", "arbres grans", "escultures"],
-      "companys": ["La seva millor amiga", "El seu germà gran", "La seva mare", "Un company", "Un veí", "Un turista"],
-      "accio_grup": ["caminar sense pressa", "mirar els aparadors", "xerrar de tot", "fer fotos", "prendre cafè", "comprar"],
-      "accio_prota": ["fer fotos boniques", "mirar el mapa al mòbil", "comprar un regal", "preguntar adreces", "esperar el bus", "llegir un cartell"],
-      "accio_dinar": ["anar a dinar", "berenar al bar", "prendre un cafè", "descansar", "menjar un gelat", "provar tapes"],
-      "menjar": ["gelat de vainilla", "entrepà gran", "pizza calenta", "pastís dolç", "tapes variades", "fruita fresca"],
-      "beguda": ["aigua mineral", "refresc fresc", "cafè calent", "suc natural", "te", "xocolata calenta"],
-      "accio_final": ["tornar cap a casa", "agafar el bus", "passejar una mica més", "seure en un banc", "mirar el rellotge", "dir adéu"],
-      "estat": ["content", "contenta", "sorprès", "sorpresa", "cansat", "cansada", "curiós", "curiosa", "tranquil", "tranquil·la", "animat", "animada"],
-      "estat_final": ["feliç", "tranquil", "tranquil·la", "content", "contenta", "relaxat", "relaxada", "satisfet", "satisfeta", "agraït", "agraïda"],
-      "persona": ["un amic de feina", "la seva amiga", "un venedor simpàtic", "un turista", "un veí", "un guia"],
-      "temp_inici": ["Ahir a la tarda", "Avui al matí", "Dissabte passat", "Aquesta setmana", "Diumenge", "Divendres"],
-      "opinions": ["m’agradava molt", "em semblava bonic", "era interessant", "ho trobava curiós", "m’ho vaig passar bé", "repetiré"],
-      "descripcio": ["molt animada", "tranquil·la", "bonica", "plena de gent", "moderna", "acollidora"]
+
+    "la_ciutat": { 
+      "persones": ["En David", "La Laura", "En Jordi", "La Marta", "En Pau", "La Clàudia", "La Montse", "En Carles"], 
+      "lloc": ["el centre històric", "la plaça major", "el barri modern", "el mercat", "el passeig marítim", "el carrer comercial", "el barri gòtic", "l’avinguda principal"], 
+      "cosa1": ["botigues obertes", "cotxes aparcats", "molta gent caminant", "bicicletes", "busos passant", "taxis esperant", "turistes", "artistes al carrer"], 
+      "cosa2": ["edificis alts", "semàfors en funcionament", "bancs lliures", "una font", "arbres grans", "escultures", "aparadors il·luminats", "terrasses plenes"], 
+      "companys": ["La seva millor amiga", "El seu germà gran", "La seva mare", "Un company", "Un veí", "Un turista", "La seva cosina", "Un amic de feina"], 
+      "accio_grup": ["caminar sense pressa", "mirar els aparadors", "xerrar de tot", "fer fotos", "prendre cafè", "comprar", "visitar botigues", "descobrir racons"], 
+      "accio_prota": ["fer fotos boniques", "mirar el mapa al mòbil", "comprar un regal", "preguntar adreces", "esperar el bus", "llegir un cartell", "consultar horaris", "buscar un lloc"], 
+      "accio_dinar": ["anar a dinar", "berenar al bar", "prendre un cafè", "descansar", "menjar un gelat", "provar tapes", "fer un brunch", "menjar un entrepà"], 
+      "menjar": ["gelat de vainilla", "entrepà gran", "pizza calenta", "pastís dolç", "tapes variades", "fruita fresca", "crep", "pasta"], 
+      "beguda": ["aigua mineral", "refresc fresc", "cafè calent", "suc natural", "te", "xocolata calenta", "vi", "cervesa"], 
+      "accio_final": ["tornar cap a casa", "agafar el bus", "passejar una mica més", "seure en un banc", "mirar el rellotge", "dir adéu", "agafar el metro", "caminar fins l’estació"], 
+      "estat": ["content", "contenta", "sorprès", "sorpresa", "cansat", "cansada", "curiós", "curiosa", "tranquil", "tranquil·la", "animat", "animada"], 
+      "estat_final": ["feliç", "tranquil", "tranquil·la", "content", "contenta", "relaxat", "relaxada", "satisfet", "satisfeta", "agraït", "agraïda"], 
+      "persona": ["un amic de feina", "la seva amiga", "un venedor simpàtic", "un turista", "un veí", "un guia", "un venedor", "un músic de carrer"], 
+      "temp_inici": ["Ahir a la tarda", "Avui al matí", "Dissabte passat", "Aquesta setmana", "Diumenge", "Divendres", "Dilluns", "Dimecres"], 
+      "opinions": ["m’agradava molt", "em semblava bonic", "era interessant", "ho trobava curiós", "m’ho vaig passar bé", "repetiré", "m’ha sorprès", "m’ha agradat"], 
+      "descripcio": ["molt animada", "tranquil·la", "bonica", "plena de gent", "moderna", "acollidora", "vibrant", "històrica"] 
     },
-    "la_natura": {
-      "persones": ["La Maria", "En Pau", "La Marta", "En Jordi", "La Clàudia", "En David"],
-      "lloc": ["el parc natural", "el bosc profund", "la muntanya", "la platja tranquil·la", "el llac", "el jardí botànic"],
-      "cosa1": ["arbres molt grans", "ocells cantant", "flors de colors", "fulles al terra", "pedres al camí", "herba verda"],
-      "cosa2": ["un camí estret", "un banc de fusta", "un riu tranquil", "una pedra gran", "un pont de fusta", "una font"],
-      "companys": ["El seu germà", "La seva millor amiga", "El seu pare", "La seva mare", "Un veí", "Un guia"],
-      "accio_grup": ["caminar en silenci", "mirar els ocells", "fer fotos del paisatge", "recollir fulles", "córrer pel camí", "descansar"],
-      "accio_prota": ["collir flors silvestres", "descansar al banc", "escoltar els ocells", "tocar l’aigua", "saltar pedres", "olorar les flors"],
-      "accio_dinar": ["preparar un pícnic", "berenar a l’ombra", "descansar una estona", "menjar fruita", "beure aigua", "compartir menjar"],
-      "menjar": ["fruita fresca", "entrepà casolà", "galetes integrals", "fruits secs", "iogurt", "pastís"],
-      "beguda": ["aigua fresca", "suc natural", "te calent", "llet", "refresc", "cafè"],
-      "accio_final": ["tornar al camí principal", "fer una última foto", "tornar cap a casa", "dir adéu", "córrer una mica", "recollir brossa"],
-      "estat": ["tranquil", "tranquil·la", "content", "contenta", "sorprès", "sorpresa", "curiós", "curiosa", "relaxat", "relaxada", "inspirat", "inspirada"],
-      "estat_final": ["relaxat", "relaxada", "feliç", "content", "contenta", "tranquil", "tranquil·la", "agraït", "agraïda", "satisfet", "satisfeta"],
-      "persona": ["el seu germà", "la seva millor amiga", "un excursionista", "el seu pare", "un guia", "un veí"],
-      "temp_inici": ["Diumenge passat", "Ahir al matí", "Avui", "Dissabte", "Dilluns", "Aquesta setmana"],
-      "opinions": ["m’encantava", "era molt bonic", "em relaxava", "ho trobava interessant", "em feia feliç", "repetiré"],
-      "descripcio": ["molt tranquil", "preciòs", "verd", "silenciós", "net", "fresc"]
+
+    "la_natura": { 
+      "persones": ["La Maria", "En Pau", "La Marta", "En Jordi", "La Clàudia", "En David", "La Júlia", "En Bernat"], 
+      "lloc": ["el parc natural", "el bosc profund", "la muntanya", "la platja tranquil·la", "el llac", "el jardí botànic", "la reserva", "el camí rural"], 
+      "cosa1": ["arbres molt grans", "ocells cantant", "flors de colors", "fulles al terra", "pedres al camí", "herba verda", "arbustos", "pinedes"], 
+      "cosa2": ["un camí estret", "un banc de fusta", "un riu tranquil", "una pedra gran", "un pont de fusta", "una font", "un mirador", "un rètol informatiu"], 
+      "companys": ["El seu germà", "La seva millor amiga", "El seu pare", "La seva mare", "Un veí", "Un guia", "La seva cosina", "Un amic excursionista"], 
+      "accio_grup": ["caminar en silenci", "mirar els ocells", "fer fotos del paisatge", "recollir fulles", "córrer pel camí", "descansar", "observar animals", "pujar al mirador"], 
+      "accio_prota": ["collir flors silvestres", "descansar al banc", "escoltar els ocells", "tocar l’aigua", "saltar pedres", "olorar les flors", "seure a l’herba", "respirar aire pur"], 
+      "accio_dinar": ["preparar un pícnic", "berenar a l’ombra", "descansar una estona", "menjar fruita", "beure aigua", "compartir menjar", "fer un mos", "menjar fruits secs"], 
+      "menjar": ["fruita fresca", "entrepà casolà", "galetes integrals", "fruits secs", "iogurt", "pastís", "poma", "plàtan"], 
+      "beguda": ["aigua fresca", "suc natural", "te calent", "llet", "refresc", "cafè", "infusió", "aigua amb llimona"], 
+      "accio_final": ["tornar al camí principal", "fer una última foto", "tornar cap a casa", "dir adéu", "córrer una mica", "recollir brossa", "baixar de la muntanya", "sortir del bosc"], 
+      "estat": ["tranquil", "tranquil·la", "content", "contenta", "sorprès", "sorpresa", "curiós", "curiosa", "relaxat", "relaxada", "inspirat", "inspirada"], 
+      "estat_final": ["relaxat", "relaxada", "feliç", "content", "contenta", "tranquil", "tranquil·la", "agraït", "agraïda", "satisfet", "satisfeta"], 
+      "persona": ["el seu germà", "la seva millor amiga", "un excursionista", "el seu pare", "un guia", "un veí", "un naturalista", "un guarda forestal"], 
+      "temp_inici": ["Diumenge passat", "Ahir al matí", "Avui", "Dissabte", "Dilluns", "Aquesta setmana", "Dimarts", "Divendres"], 
+      "opinions": ["m’encantava", "era molt bonic", "em relaxava", "ho trobava interessant", "em feia feliç", "repetiré", "era preciós", "m’ha inspirat"], 
+      "descripcio": ["molt tranquil", "preciòs", "verd", "silenciós", "net", "fresc", "pacífic", "natural"] 
     },
-    "el_temps_lliure": {
-      "persones": ["La Marta", "En Pau", "La Clàudia", "En Jordi", "La Laura", "En David"],
-      "lloc": ["el cinema del centre", "la biblioteca municipal", "el parc de la ciutat", "el museu d’art", "el teatre", "el centre esportiu"],
-      "cosa1": ["una pel·lícula nova", "molts llibres", "nens jugant", "quadres interessants", "un escenari", "pistes esportives"],
-      "cosa2": ["palomites calentes", "cadires còmodes", "un banc a l’ombra", "una audioguia", "un programa", "material esportiu"],
-      "companys": ["El seu millor amic", "La seva germana", "El seu germà", "La seva mare", "Un company", "Un veí"],
-      "accio_grup": ["mirar la pel·lícula atents", "llegir en silenci", "jugar junts", "mirar els quadres", "escoltar música", "practicar esport"],
-      "accio_prota": ["menjar palomites", "llegir un llibre interessant", "dibuixar al quadern", "escoltar l’audioguia", "ballar", "córrer"],
-      "accio_dinar": ["menjar alguna cosa", "beure un refresc", "descansar una estona", "parlar baixet", "riure", "compartir"],
-      "menjar": ["palomites salades", "gelat de vainilla", "galetes de xocolata", "entrepà petit", "fruita", "pastís"],
-      "beguda": ["refresc fresc", "aigua mineral", "suc natural", "cafè", "te", "xocolata"],
-      "accio_final": ["sortir del cinema", "tornar el llibre", "tornar cap a casa", "dir adéu als amics", "pagar l’entrada", "agafar el bus"],
-      "estat": ["content", "contenta", "relaxat", "relaxada", "divertit", "divertida", "curiós", "curiosa", "atent", "atenta", "animat", "animada"],
-      "estat_final": ["feliç", "tranquil", "tranquil·la", "content", "contenta", "satisfet", "satisfeta", "relaxat", "relaxada", "agraït", "agraïda"],
-      "persona": ["el seu millor amic", "el bibliotecari", "la seva germana", "el guia del museu", "un company", "un monitor"],
-      "temp_inici": ["Divendres passat", "Ahir", "Avui a la tarda", "Aquesta setmana", "Diumenge", "Dissabte"],
-      "opinions": ["m’ho vaig passar bé", "era molt interessant", "em va agradar", "ho recomano", "m’ho passaré bé", "tornaré"],
-      "descripcio": ["molt interessant", "tranquil", "divertit", "cultural", "animat", "modern"]
+
+    "el_temps_lliure": { 
+      "persones": ["La Marta", "En Pau", "La Clàudia", "En Jordi", "La Laura", "En David", "La Sílvia", "En Gerard"], 
+      "lloc": ["el cinema del centre", "la biblioteca municipal", "el parc de la ciutat", "el museu d’art", "el teatre", "el centre esportiu", "la sala de concerts", "el centre cultural"], 
+      "cosa1": ["una pel·lícula nova", "molts llibres", "nens jugant", "quadres interessants", "un escenari", "pistes esportives", "instruments musicals", "exposicions"], 
+      "cosa2": ["palomites calentes", "cadires còmodes", "un banc a l’ombra", "una audioguia", "un programa", "material esportiu", "seients numerats", "cartells informatius"], 
+      "companys": ["El seu millor amic", "La seva germana", "El seu germà", "La seva mare", "Un company", "Un veí", "La seva cosina", "Un amic de feina"], 
+      "accio_grup": ["mirar la pel·lícula atents", "llegir en silenci", "jugar junts", "mirar els quadres", "escoltar música", "practicar esport", "assistir al concert", "visitar l’exposició"], 
+      "accio_prota": ["menjar palomites", "llegir un llibre interessant", "dibuixar al quadern", "escoltar l’audioguia", "ballar", "córrer", "cantar", "fer fotos"], 
+      "accio_dinar": ["menjar alguna cosa", "beure un refresc", "descansar una estona", "parlar baixet", "riure", "compartir", "fer una pausa", "menjar un snack"], 
+      "menjar": ["palomites salades", "gelat de vainilla", "galetes de xocolata", "entrepà petit", "fruita", "pastís", "crisps", "fruits secs"], 
+      "beguda": ["refresc fresc", "aigua mineral", "suc natural", "cafè", "te", "xocolata", "suc de fruita", "infusió"], 
+      "accio_final": ["sortir del cinema", "tornar el llibre", "tornar cap a casa", "dir adéu als amics", "pagar l’entrada", "agafar el bus", "aplaudir", "comprar un record"], 
+      "estat": ["content", "contenta", "relaxat", "relaxada", "divertit", "divertida", "curiós", "curiosa", "atent", "atenta", "animat", "animada"], 
+      "estat_final": ["feliç", "tranquil", "tranquil·la", "content", "contenta", "satisfet", "satisfeta", "relaxat", "relaxada", "agraït", "agraïda"], 
+      "persona": ["el seu millor amic", "el bibliotecari", "la seva germana", "el guia del museu", "un company", "un monitor", "el director", "un músic"], 
+      "temp_inici": ["Divendres passat", "Ahir", "Avui a la tarda", "Aquesta setmana", "Diumenge", "Dissabte", "Dilluns", "Dimecres"], 
+      "opinions": ["m’ho vaig passar bé", "era molt interessant", "em va agradar", "ho recomano", "m’ho passaré bé", "tornaré", "ha estat genial", "m’ha encantat"], 
+      "descripcio": ["molt interessant", "tranquil", "divertit", "cultural", "animat", "modern", "entretingut", "acollidor"] 
     }
   },
   "b1": {
@@ -274,26 +352,32 @@
       {
         "titol": "La meva experiència a ${tema}",
         "seq": [
-          "${temp_inici}, ${protagonista} va decidir passar el dia a ${lloc}.",
-          "En arribar, ${protagonista} va observar ${cosa1} i també ${cosa2}, i tot plegat li va semblar molt ${descripcio}.",
-          "Mentrestant, ${companys} van ${accio_grup}, mentre que ${protagonista} preferia ${accio_prota}.",
-          "Més tard, ${protagonista} va ${accio_dinar} i va acompanyar-ho amb ${menjar} i ${beguda}.",
-          "Abans de marxar, ${protagonista} va ${accio_final}, i això el/la va fer sentir ${estat_final}.",
-          "Al final, ${protagonista} va concloure que ${tema} era un dels seus llocs favorits."
+          "${temp_inici}, ${personatge} va decidir passar el dia a ${lloc}.",
+          "En arribar, ${personatge} va observar ${cosa1} i també ${cosa2}, i tot plegat li va semblar molt ${descripcio}.",
+          "Mentrestant, ${companys} van ${accio_grup}, mentre que ${personatge} preferia ${accio_prota}.",
+          "Més tard, ${personatge} va ${accio_dinar} i va acompanyar-ho amb ${menjar} i ${beguda}.",
+          "Abans de marxar, ${personatge} va ${accio_final}, i això el/la va fer sentir ${estat_final}.",
+          "Al final, ${personatge} va concloure que ${tema} era un dels seus llocs favorits."
         ],
-        "pregunta": "Per què ${protagonista} va decidir anar a ${lloc} aquell dia?"
+        "preguntes": [
+          {"q": "Per què ${personatge} va decidir anar a ${lloc} aquell dia?", "opcions": ["Per passar el dia", "Per treballar", "Per dormir"], "correcta": 0},
+          {"q": "Què va pensar ${personatge} al final de ${tema}?", "opcions": ["Que era un dels seus llocs favorits", "Que no li va agradar", "Que era molt car"], "correcta": 0}
+        ]
       },
       {
-        "titol": "${protagonista} descobreix ${tema}",
+        "titol": "${personatge} descobreix ${tema}",
         "seq": [
-          "${temp_inici} ${protagonista} va visitar ${lloc} per primera vegada.",
+          "${temp_inici} ${personatge} va visitar ${lloc} per primera vegada.",
           "El lloc tenia ${cosa1} i ${cosa2}, i l’ambient era força ${descripcio}.",
-          "${protagonista} es trobava ${estat}, així que va començar a parlar amb ${persona}.",
-          "Junts van ${accio_grup}, i després ${protagonista} va ${accio_prota}.",
-          "Per acabar, ${protagonista} va ${accio_final} abans de tornar a casa.",
-          "${protagonista} va marxar molt ${estat_final} i amb ganes de repetir."
+          "${personatge} es trobava ${estat}, així que va començar a parlar amb ${persona}.",
+          "Junts van ${accio_grup}, i després ${personatge} va ${accio_prota}.",
+          "Per acabar, ${personatge} va ${accio_final} abans de tornar a casa.",
+          "${personatge} va marxar molt ${estat_final} i amb ganes de repetir."
         ],
-        "pregunta": "Quina impressió es va emportar ${protagonista} de ${tema}?"
+        "preguntes": [
+          {"q": "Quina impressió es va emportar ${personatge} de ${tema}?", "opcions": ["${estat_final} i amb ganes de repetir", "cansat i amb ganes d’anar-se’n", "indiferent"], "correcta": 0},
+          {"q": "Amb qui va parlar ${personatge} a ${tema}?", "opcions": ["${persona}", "${companys}", "amb ningú"], "correcta": 0}
+        ]
       }
     ],
 
