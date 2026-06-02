@@ -396,15 +396,16 @@ function obtenirArticle(emoji) {
   const nom = emojiData.nom_cat.toLowerCase();
   const genere = emojiData.genere; // 'm' o 'f' desde tu BIBLIOTECA_PLA
 
-  // Mira si la palabra está en el diccionario
-  const detBase = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
+  // Artículo correcto según género
+  const detCorrecte = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
+  const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
   // Ajuste para L' delante de vocal
-  if (detBase === "L'" &&!'aeiou'.includes(nom[0])) {
-    return `El ${emojiData.nom_cat}`;
+  if (detCorrecte === "L'" &&!'aeiou'.includes(nom[0])) {
+    return `El/${detIncorrecte} ${emojiData.nom_cat}`;
   }
 
-  return `${detBase} ${emojiData.nom_cat}`;
+  return `${detCorrecte}/${detIncorrecte} ${emojiData.nom_cat}`;
 }
 
 // El resto de tu código sin tocar:
