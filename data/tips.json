@@ -1,5 +1,4 @@
-// Frase 1: inici 
-// ===== TIPS =====
+
 const dadesTips = {
   a1: [
     {truc: "El per masculí singular, La per femení singular", exemple: "El gat, La gata"},
