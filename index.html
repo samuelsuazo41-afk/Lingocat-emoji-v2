@@ -197,6 +197,22 @@ header {
 }
 .minijoc-feedback { text-align: center; min-height: 30px; margin-top: 16px; }
 
+/* Vocab y Gramática cards */
+.vocab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+.vocab-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+.vocab-word { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.vocab-pron { font-size: 12px; color: #aaa; }
+
 /* Intro */
 .intro-overlay {
   position: fixed;
@@ -311,9 +327,24 @@ header {
   </div>
 </div>
 
-<!-- TAB LECTURA -->
+<!-- TAB LECTURA - NUEVAS 3 SUBTUBS -->
 <div id="tab-lectura" class="tab-content">
-  <div id="lectura-contingut"></div>
+  <div class="sub-tabs">
+    <button class="sub-tab-btn active" onclick="mostrarSubTab('lectura')">Lectura</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">Vocabulari</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">Gramàtica</button>
+  </div>
+  <div id="lectura-contenidor">
+    <div id="gremi-lectura" class="sub-tab-content" style="display:block;">
+      <div id="lectura-texto"></div>
+    </div>
+    <div id="gremi-vocab" class="sub-tab-content" style="display:none;">
+      <div id="lectura-vocab"></div>
+    </div>
+    <div id="gremi-gramatica" class="sub-tab-content" style="display:none;">
+      <div id="lectura-gramatica"></div>
+    </div>
+  </div>
 </div>
 
 <!-- TAB TIPS -->
