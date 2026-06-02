@@ -380,13 +380,34 @@ function renderDiccionari() {
 }
 
 // ===== MINIJOC - LÓGICA CRÒNIQUES =====
+
+// Diccionario de determinantes en català
+const DETERMINANTS = {
+  'home': 'El', 'noi': 'El', 'joven': 'El', 'gat': 'El', 'gos': 'El',
+  'conill': 'El', 'cotxe': 'El', 'mòbil': 'El', 'ordinador': "L'", 'futbol': 'El',
+  'dona': 'La', 'noia': 'La', 'jova': 'La', 'casa': 'La', 'taula': 'La',
+  'cadira': 'La', 'poma': 'La'
+};
+
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
-  if (!emojiData ||!emojiData.genere) return emojiData?.nom_cat || emoji;
-  const nom = emojiData.nom_cat;
-  const article = emojiData.genere === 'f'? 'La' : 'El';
-  return `${article} ${nom}`;
+  if (!emojiData ||!emojiData.nom_cat) return emoji;
+
+  const nom = emojiData.nom_cat.toLowerCase();
+  const genere = emojiData.genere; // 'm' o 'f' desde tu BIBLIOTECA_PLA
+
+  // Mira si la palabra está en el diccionario
+  const detBase = DETERMINANTS[nom] || (genere === 'f'? 'La' : 'El');
+
+  // Ajuste para L' delante de vocal
+  if (detBase === "L'" &&!'aeiou'.includes(nom[0])) {
+    return `El ${emojiData.nom_cat}`;
+  }
+
+  return `${detBase} ${emojiData.nom_cat}`;
 }
+
+// El resto de tu código sin tocar:
 function generarFraseDinamica(plantilla, emojisJugador) {
   let text = plantilla.text;
   let solucio = [];
