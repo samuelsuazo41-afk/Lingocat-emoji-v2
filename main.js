@@ -651,7 +651,6 @@ function detectarPuntGramatica(texto, nivell) {
     };
   }
 
-}
 
   if (texto.includes('mentre') || texto.includes('després')) {
     return {
