@@ -984,7 +984,7 @@ function renderBotiga() {
         });
       }
    } else {
-  subPacks = ;
+  subPacks = [];
 }
     subPacks.forEach(sp => {
       const comprat = estat.compres.includes(sp.id);
