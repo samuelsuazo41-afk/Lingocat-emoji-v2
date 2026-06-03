@@ -330,11 +330,9 @@ function renderMissio() {
   const progresoB1 = Math.min(100, Math.max(0, (nivell / nivellB1) * 100));
   const nivellsPerB1 = Math.max(0, nivellB1 - nivell);
 
-  const potRecarregar = energia < 100 && monedas >= 50;
   const missio1 = xpFaltant > 0? '🎯' : '✅';
   const missio2 = estat.compres && estat.compres.length > 0? '✅' : '📦';
   const missio3 = '📚';
-  const missio4 = potRecarregar? '⚡' : '🔒';
   const missio5 = nivellsPerB1 === 0? '✅' : '🏆';
 
   cont.innerHTML = `
@@ -352,8 +350,8 @@ function renderMissio() {
       ${missio3} Aprèn gramàtica com un pro
     </div>
 
-    <div class="missio-item" onclick="${potRecarregar? 'recarregarEnergia()' : ''}" style="cursor:${potRecarregar? 'pointer' : 'not-allowed'}; opacity:${potRecarregar? '1' : '0.5'};">
-      ${missio4} Recarrega la teva energia. Gasta 50 monedes per tornar a 100
+    <div class="missio-item" onclick="recarregarEnergia()" style="cursor:pointer;">
+      ⚡ Recarrega la teva energia. Gasta 50 monedes per tornar a 100
     </div>
 
     <div class="missio-item" style="cursor:default;">
