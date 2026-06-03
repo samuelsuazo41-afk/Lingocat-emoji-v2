@@ -5,35 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cat Lingo Emoji</title>
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0F1115">
+<meta name="theme-color" content="#000">
 <style>
 :root {
-  /* Paleta 2026 - Dark premium azulado */
-  --bg: #0F1115;
-  --bg-elevated: #1A1D23;
-  --card: #1E2229;
-  --text: #F5F7FA;
-  --text-muted: #A3A8B3;
-  --accent: #4F9CF9;      /* Azul educativo moderno */
-  --accent-soft: #7BB0FF;
-  --success: #22C55E;
-  --border: #2A2F38;
-  --shadow: rgba(0, 0, 0, 0.3);
+  /* Paleta Lingocat - Negro + Verde + Gradiente */
+  --bg: #000;
+  --bg-elevated: #121212;
+  --card: #1A1A1A;
+  --text: #FFFFFF;
+  --text-muted: #A0A0A0;
+  --accent: #2ECC71;      /* Verde Duolingo */
+  --accent-soft: #00D4AA; /* Cyan del gradiente */
+  --success: #2ECC71;
+  --border: #2A2A2A;
+  --shadow: rgba(0, 0, 0, 0.5);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: radial-gradient(ellipse at top left, #151821 0%, #0F1115 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
   color: var(--text);
   padding-bottom: 80px;
-  letter-spacing: -0.01em;
 }
 
 header {
-  background: rgba(26, 29, 35, 0.8);
-  backdrop-filter: blur(12px);
+  background: #1A1A1A;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -42,7 +40,6 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 16px var(--shadow);
 }
 
 .header-stats { 
@@ -69,7 +66,7 @@ header {
   height: 100%;
   background: linear-gradient(90deg, var(--accent), var(--accent-soft));
   width: 0%;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.4s ease;
 }
 .stat-level {
   font-weight: 700;
@@ -83,74 +80,61 @@ header {
 .nivells-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-  gap: 10px;
+  gap: 8px;
   max-width: 600px;
   margin: 0 auto;
 }
 .nivell-card {
   aspect-ratio: 1;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px var(--shadow);
+  font-weight: bold;
+  transition: all 0.2s;
 }
 .nivell-card:hover { 
-  transform: translateY(-2px);
+  transform: scale(1.05);
   border-color: var(--accent);
-  box-shadow: 0 8px 20px rgba(79, 156, 249, 0.15);
 }
 
 .missio-item {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 16px;
   margin-bottom: 12px;
-  transition: transform 0.2s ease;
-}
-.missio-item:hover {
-  transform: translateX(4px);
-  border-color: var(--accent);
 }
 
 /* Subtabs con scroll lateral */
 .sub-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .sub-tabs::-webkit-scrollbar { display: none; }
 .sub-tab-btn {
   flex-shrink: 0;
-  padding: 10px 18px;
+  padding: 8px 16px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 6px;
   color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
   white-space: nowrap;
-  transition: all 0.2s ease;
-}
-.sub-tab-btn:hover {
-  background: var(--bg-elevated);
-  color: var(--text);
 }
 .sub-tab-btn.active {
   background: linear-gradient(135deg, var(--accent), var(--accent-soft));
   border-color: transparent;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(79, 156, 249, 0.3);
+  color: #000;
+  font-weight: 700;
 }
 
 .emoji-grid {
@@ -161,107 +145,79 @@ header {
 .emoji-item {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 8px;
+  padding: 12px;
   text-align: center;
-  transition: all 0.2s ease;
 }
-.emoji-item:hover {
-  transform: scale(1.05);
-  border-color: var(--accent);
-}
-.emoji-large { font-size: 32px; margin-bottom: 6px; }
+.emoji-large { font-size: 32px; margin-bottom: 4px; }
 .emoji-name { font-size: 12px; color: var(--text-muted); }
 
 .capitol-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px;
   margin-bottom: 16px;
   text-align: center;
-  transition: all 0.3s ease;
 }
-.capitol-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px var(--shadow);
-}
-.capitol-icona { font-size: 48px; margin-bottom: 12px; }
+.capitol-icona { font-size: 48px; margin-bottom: 8px; }
 
 .btn {
-  padding: 12px 24px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 10px;
-  font-weight: 600;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
   margin-top: 12px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: inherit;
-}
-.btn:active {
-  transform: scale(0.97);
 }
 .btn-primari { 
   background: linear-gradient(135deg, var(--accent), var(--accent-soft));
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(79, 156, 249, 0.3);
-}
-.btn-primari:hover {
-  box-shadow: 0 6px 20px rgba(79, 156, 249, 0.4);
-  transform: translateY(-1px);
+  color: #000;
 }
 .btn-sec { 
   background: var(--bg-elevated);
   color: var(--text);
   border: 1px solid var(--border);
 }
-.btn-sec:hover {
-  background: var(--card);
-  border-color: var(--accent);
-}
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .lectura-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px;
   max-width: 600px;
   margin: 0 auto;
-  box-shadow: 0 4px 20px var(--shadow);
 }
-.lectura-text { line-height: 1.7; margin: 20px 0; font-size: 16px; }
+.lectura-text { line-height: 1.6; margin: 16px 0; font-size: 16px; }
 
 .tip-card {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent), var(--accent-soft));
   border-radius: 16px;
   padding: 24px;
   max-width: 600px;
   margin: 0 auto;
   text-align: center;
-  box-shadow: 0 4px 20px var(--shadow);
 }
-.tip-text { font-size: 18px; margin: 16px 0; font-weight: 500; }
-.tip-exemple { color: var(--accent-soft); font-style: italic; margin-top: 12px; }
+.tip-text { font-size: 18px; margin: 16px 0; color: #000; font-weight: 700; }
+.tip-exemple { color: rgba(0,0,0,0.7); font-style: italic; margin-top: 12px; }
 
 .minijoc-container { max-width: 600px; margin: 0 auto; }
 .minijoc-frase {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px;
   font-size: 20px;
   text-align: center;
   margin-bottom: 20px;
-  font-weight: 500;
 }
 .minijoc-triats {
   min-height: 50px;
   background: var(--bg-elevated);
   border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 12px;
   margin-bottom: 20px;
   text-align: center;
 }
@@ -276,24 +232,18 @@ header {
 .vocab-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 12px;
   text-align: center;
-  transition: all 0.2s ease;
 }
-.vocab-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
-.vocab-word { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+.vocab-word { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
 .vocab-pron { font-size: 12px; color: var(--text-muted); }
 
 /* Intro */
 .intro-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(15, 17, 21, 0.95);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.95);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -301,54 +251,45 @@ header {
 }
 .intro-content {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 40px 32px;
+  border-radius: 16px;
+  padding: 32px;
   max-width: 400px;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
-.intro-emoji { font-size: 80px; margin-bottom: 20px; }
-.intro-titol { font-size: 26px; margin-bottom: 12px; font-weight: 700; }
-.intro-text { color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
-.intro-dots { margin-bottom: 28px; font-size: 20px; }
+.intro-emoji { font-size: 80px; margin-bottom: 16px; }
+.intro-titol { font-size: 24px; margin-bottom: 12px; }
+.intro-text { color: var(--text-muted); margin-bottom: 24px; }
+.intro-dots { margin-bottom: 24px; font-size: 20px; }
 
 /* Bottom nav con scroll lateral */
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  background: rgba(26, 29, 35, 0.85);
-  backdrop-filter: blur(16px);
+  background: #1A1A1A;
   border-top: 1px solid var(--border);
   display: flex;
   gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 10px 0;
-  box-shadow: 0 -4px 20px var(--shadow);
+  padding: 8px 0;
 }
 .bottom-nav::-webkit-scrollbar { display: none; }
 .nav-item {
   flex-shrink: 0;
-  width: 72px;
+  width: 70px;
   background: transparent;
   border: none;
   color: var(--text-muted);
-  padding: 10px 8px;
+  padding: 8px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 500;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  transition: all 0.2s ease;
 }
-.nav-item.active { 
-  color: var(--accent);
-  transform: translateY(-2px);
-}
-.nav-icon { font-size: 22px; }
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 20px; }
 
 /* Mensaje flotante */
 .app-message {
@@ -357,15 +298,14 @@ header {
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, var(--accent), var(--accent-soft));
-  color: #fff;
-  padding: 14px 24px;
-  border-radius: 12px;
-  font-weight: 600;
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
   z-index: 9999;
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideDown 0.3s ease;
   max-width: 90%;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(79, 156, 249, 0.4);
 }
 @keyframes slideDown {
   from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
@@ -457,7 +397,7 @@ header {
 <!-- TAB TIPS -->
 <div id="tab-tips" class="tab-content">
   <div class="tip-card">
-    <h3>💡 Truc del dia</h3>
+    <h3 style="color:#000;">💡 Truc del dia</h3>
     <p id="tip-text" class="tip-text">Carregant...</p>
     <p id="tip-exemple" class="tip-exemple"></p>
     <button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip</button>
