@@ -19,13 +19,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   document.body.appendChild(btn);
 });
 
-
 // ===== ESTADO GLOBAL =====
 const DEBUG_NO_ENERGIA = false;
 
-let estat = cargarEstat() || {};
-if (estat.progres === undefined) {
-  estat.progres = {
+let estat = {
+  progres: {
     nivellActualMapa: parseInt(localStorage.getItem('cat_nivell')) || 1,
     encerts: parseInt(localStorage.getItem('cat_encerts')) || 0,
     frasesDesDeUltimNivell: parseInt(localStorage.getItem('cat_frasesContador')) || 0,
@@ -34,18 +32,17 @@ if (estat.progres === undefined) {
       return saved === null ? 100 : parseInt(saved); // 100 solo primera vez
     })(),
     xp: parseInt(localStorage.getItem('cat_xp')) || 0
-  };
-}
-
-estat.monedes = parseInt(localStorage.getItem('cat_monedes')) || 0;
-estat.compres = JSON.parse(localStorage.getItem('cat_compres')) || [];
-estat.introVist = JSON.parse(localStorage.getItem('cat_intro')) || false;
-estat.personatgeTriat = localStorage.getItem('cat_personatge') || 'joven';
-estat.ultimaRecargaEnergia = (() => {
-  const saved = localStorage.getItem('cat_ultimaEnergia');
-  return saved === null ? Date.now() : parseInt(saved);
-})();
-estat.desbloquejats = JSON.parse(localStorage.getItem('cat_desbloquejats')) || {};
+  },
+  monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
+  compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
+  introVist: JSON.parse(localStorage.getItem('cat_intro')) || false,
+  personatgeTriat: localStorage.getItem('cat_personatge') || 'joven',
+  ultimaRecargaEnergia: (() => {
+    const saved = localStorage.getItem('cat_ultimaEnergia');
+    return saved === null ? Date.now() : parseInt(saved);
+  })(),
+  desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {}
+};
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
 
