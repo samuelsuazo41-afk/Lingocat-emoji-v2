@@ -472,7 +472,15 @@ function renderDiccionari() {
     html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
     emojis.forEach(e => {
       const emojiNet = quitarSkinTone(e.emoji);
-      const desbloquejat = CATEGORIES_DESBLOQUEJADES[cat]?.includes(emojiNet);
+      
+      // CANVI: comprova emoji per emoji si està desbloquejat per nivell o per pack comprat
+      const desbloquejatPerNivell = (e.nivellDesbloqueig || 1) <= estat.progres.nivellActualMapa;
+      const desbloquejatPerPack = estat.compres.some(idPack => {
+        const pack = PACKS_BOTIGA.find(p => p.id === idPack);
+        return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
+      });
+      const desbloquejat = desbloquejatPerNivell || desbloquejatPerPack;
+      
       const opacitat = desbloquejat? '1' : '0.12';
       const filtre = desbloquejat? '' : 'grayscale(1) brightness(0.4)';
       const cursor = desbloquejat? 'pointer' : 'not-allowed';
