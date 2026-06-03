@@ -690,12 +690,26 @@ function generarLectura() {
   }
 
   const titol = reemplaçar(plantilla.titol);
-  lecturaActualText = plantilla.seq.map(l => reemplaçar(l)).join(' ');
-  lecturaActualPreguntes = plantilla.preguntes.map(p => ({
-    q: reemplaçar(p.q),
-    opcions: p.opcions.map(o => reemplaçar(o)),
-    correcta: p.correcta
-  }));
+
+let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
+
+const finalsAlternatius = [
+  'la ciutat és el meu lloc preferit!',
+  'm\'encanta passar temps aquí!',
+  'vull tornar aviat!',
+  'ha estat un dia genial!'
+];
+
+const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
+
+// Reemplaza el final fijo por uno aleatorio
+lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
+
+lecturaActualPreguntes = plantilla.preguntes.map(p => ({
+  q: reemplaçar(p.q),
+  opcions: p.opcions.map(o => reemplaçar(o)),
+  correcta: p.correcta
+}));
 
   document.getElementById('lectura-texto').innerHTML = `
     <div class="lectura-card">
