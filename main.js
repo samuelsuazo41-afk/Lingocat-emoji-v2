@@ -95,6 +95,14 @@ const INTRO_SLIDES = [
 function quitarSkinTone(emoji) { return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ''); }
 function vibrar() { if (navigator.vibrate) navigator.vibrate(50); }
 
+function mostrarMissatge(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  div.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#22c55e; color:#000; padding:12px 20px; border-radius:8px; font-weight:700; z-index:10000;';
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 2000);
+}
+
 function actualitzarUI() {
   const monedesEl = document.getElementById('monedes');
   const nivellEl = document.getElementById('nivell');
@@ -246,10 +254,11 @@ function agruparBibliotecaPorCategoria() {
     BIBLIOTECA_POR_CAT[e.categoria].push(e);
   });
 }
+
 function construirCategories() {
   const desbloquejats = new Set(PACK_INICIAL.map(e => quitarSkinTone(e)));
   estat.compres.forEach(idPack => {
-    const [packId] = idPack.split('_p');
+    const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
     const pack = PACKS_BOTIGA.find(p => p.id === packId);
     if (pack && pack.emojis) pack.emojis.forEach(e => desbloquejats.add(quitarSkinTone(e.emoji)));
   });
@@ -261,6 +270,7 @@ function construirCategories() {
   });
   estat.desbloquejats = CATEGORIES_DESBLOQUEJADES;
 }
+
 function construirTotsEmojis() { TOTS_EMOJIS = BIBLIOTECA_PLA.map(e => ({...e})); }
 
 // ===== INTRO =====
@@ -474,17 +484,13 @@ function renderDiccionari() {
     html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
     emojis.forEach(e => {
       const emojiNet = quitarSkinTone(e.emoji);
-
       const esBase = BASE_INICIAL.includes(emojiNet);
-
       const desbloquejatPerPack = estat.compres.some(idPack => {
-        const [packId] = idPack.split('_p');
+        const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
         const pack = PACKS_BOTIGA.find(p => p.id === packId);
         return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
       });
-
       const desbloquejat = esBase || desbloquejatPerPack;
-
       const opacitat = desbloquejat? '1' : '0.12';
       const filtre = desbloquejat? '' : 'grayscale(1) brightness(0.4)';
       const cursor = desbloquejat? 'pointer' : 'not-allowed';
@@ -504,14 +510,11 @@ function renderDiccionari() {
 function obtenirArticle(emoji) {
   const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
   if (!emojiData ||!emojiData.nom_cat) return emoji;
-
   const nom = emojiData.nom_cat.toLowerCase();
   let det = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
-
   if (det === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])) {
     det = "El";
   }
-
   return `${det} ${emojiData.nom_cat}`;
 }
 
@@ -519,33 +522,25 @@ function generarFraseDinamica(plantilla, emojisJugador) {
   let text = plantilla.text;
   let solucio = [];
   let esPrimer = true;
-
   for (const cat of plantilla.categories) {
     const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase =>
       emojisJugador.some(eJug => quitarSkinTone(eJug) === quitarSkinTone(eBase))
     ) || [];
-
     if (!emojisDisponibles.length) {
       return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)], emojisJugador);
     }
-
     const emojiElegit = emojisDisponibles[Math.floor(Math.random() * emojisDisponibles.length)];
     let reemplazo = obtenirArticle(emojiElegit);
-
     if (esPrimer) {
       const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emojiElegit));
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
       const detCorrecte = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
-
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-? `El/${detIncorrecte}`
-        : `${detCorrecte}/${detIncorrecte}`;
-
+? `El/${detIncorrecte}` : `${detCorrecte}/${detIncorrecte}`;
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
       esPrimer = false;
     }
-
     text = text.replace(new RegExp(`\\s*(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), ` ${reemplazo}`);
     solucio.push(emojiElegit);
   }
@@ -554,13 +549,12 @@ function generarFraseDinamica(plantilla, emojisJugador) {
 
 function novaFraseMinijoc() {
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0 ||!minijocInicialitzat) return;
-
   const emojisJugador = BIBLIOTECA_PLA
 .filter(e => {
     const emojiNet = quitarSkinTone(e.emoji);
     const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
     const desbloquejatPerPack = estat.compres.some(idPack => {
-      const [packId] = idPack.split('_p');
+      const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
       const pack = PACKS_BOTIGA.find(p => p.id === packId);
       return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
     });
@@ -589,16 +583,14 @@ function novaFraseMinijoc() {
 function generarOpcionsMinijoc(solucio) {
   const grid = document.getElementById('minijoc-emojis');
   if (!grid) return;
-
   const numOpcions = solucio.length <= 3? 16 : 20;
   const numFalsos = numOpcions - solucio.length;
-
   const emojisJugador = BIBLIOTECA_PLA
 .filter(e => {
     const emojiNet = quitarSkinTone(e.emoji);
     const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
     const desbloquejatPerPack = estat.compres.some(idPack => {
-      const [packId] = idPack.split('_p');
+      const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
       const pack = PACKS_BOTIGA.find(p => p.id === packId);
       return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
     });
@@ -608,7 +600,6 @@ function generarOpcionsMinijoc(solucio) {
 
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
 .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
-
   const opcions = [...solucio,...falsos].sort(() => 0.5 - Math.random());
   minijoc.emojisDisponibles = opcions;
   grid.innerHTML = '';
@@ -637,7 +628,6 @@ function triarEmojiMinijoc(index) {
 function comprovarMinijoc() {
   const feedback = document.getElementById('minijoc-feedback');
   if (!feedback ||!minijoc.fraseObjectiu) return;
-
   const solucioCorrecta = minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join('');
   const triatsCorrecte = minijoc.emojisTriats.map(quitarSkinTone).join('');
   const esCorrecte = solucioCorrecta === triatsCorrecte;
@@ -647,13 +637,11 @@ function comprovarMinijoc() {
     estat.monedes += 5;
     estat.progres.encerts++;
     estat.progres.frasesDesDeUltimNivell++;
-
     if (estat.progres.frasesDesDeUltimNivell >= 25 && estat.progres.nivellActualMapa < 100) {
       estat.progres.nivellActualMapa++;
       estat.progres.frasesDesDeUltimNivell = 0;
       mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);
     }
-
     NIVELL_MINIJOC.nivelActual = Math.min(NIVELL_MINIJOC.nivelActual + 1, NIVELL_MINIJOC.maxEmojis);
     guardarEstat();
     actualitzarUI();
@@ -673,7 +661,6 @@ function getCurrentLevel() {
 
 function gastarEnergia(cantidad) {
   if (DEBUG_NO_ENERGIA) return true;
-
   if (estat.progres.energia < cantidad) return false;
   estat.progres.energia -= cantidad;
   guardarEstat();
