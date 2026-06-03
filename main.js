@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v3
+// main.js - Lingocat Emoji v3 REPARADO
 // Estructura Cròniques + Mapa 100 nivells + 25 frases per nivell
 
 let deferredPrompt;
@@ -12,13 +12,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
   btn.style.bottom = '80px';
   btn.style.right = '20px';
   btn.style.zIndex = '999';
-  btn.onclick = () => { deferredPrompt.prompt(); btn.remove(); };
+  btn.onclick = () => {
+    deferredPrompt.prompt();
+    btn.remove();
+  };
   document.body.appendChild(btn);
 });
 
 // ===== ESTADO GLOBAL =====
 const DEBUG_NO_ENERGIA = false;
-
 let estat = {
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
   compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
@@ -31,7 +33,8 @@ let estat = {
     energia: (() => {
       const saved = localStorage.getItem('cat_energia');
       return saved === null? 100 : parseInt(saved);
-    })()
+    })(),
+    xp: parseInt(localStorage.getItem('cat_xp')) || 0
   },
   ultimaRecargaEnergia: (() => {
     const saved = localStorage.getItem('cat_ultimaEnergia');
@@ -92,8 +95,13 @@ const INTRO_SLIDES = [
 ];
 
 // ===== UTILS =====
-function quitarSkinTone(emoji) { return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ''); }
-function vibrar() { if (navigator.vibrate) navigator.vibrate(50); }
+function quitarSkinTone(emoji) {
+  return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, '');
+}
+
+function vibrar() {
+  if (navigator.vibrate) navigator.vibrate(50);
+}
 
 function mostrarMissatge(text) {
   const div = document.createElement('div');
@@ -109,12 +117,10 @@ function actualitzarUI() {
   const energiaEl = document.getElementById('energia');
   const barraEl = document.getElementById('barra-progres');
   const headerPersonatge = document.getElementById('header-personatge');
-
   if (monedesEl) monedesEl.textContent = estat.monedes;
   if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
   if (energiaEl) energiaEl.textContent = estat.progres.energia;
   if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%';
-
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
   if (headerPersonatge && personatge) headerPersonatge.textContent = personatge.emoji;
 }
@@ -122,7 +128,6 @@ function actualitzarUI() {
 function regenerarEnergia() {
   const ara = Date.now();
   const diffMinuts = Math.floor((ara - estat.ultimaRecargaEnergia) / 60000);
-
   if (diffMinuts >= 5 && estat.progres.energia < 100) {
     const blocs = Math.floor(diffMinuts / 5);
     const energiaRecuperada = blocs * 30;
@@ -158,6 +163,7 @@ function guardarEstat() {
   localStorage.setItem('cat_desbloquejats', JSON.stringify(estat.desbloquejats));
   localStorage.setItem('cat_nivell_minijoc', NIVELL_MINIJOC.nivelActual);
   localStorage.setItem('cat_personatge', estat.personatgeTriat);
+  localStorage.setItem('cat_xp', estat.progres.xp);
 }
 
 // ===== CARGA DE DATOS MINIJOC =====
@@ -167,16 +173,13 @@ async function carregarDadesMinijoc() {
       fetch('./data/minijoc_frases.json'),
       fetch('./data/minijoc_determinants.json')
     ]);
-
     if (!frasesRes.ok ||!detRes.ok) {
       throw new Error(`HTTP ${frasesRes.status} ${detRes.status}`);
     }
-
     const frasesData = await frasesRes.json();
     FRASES_MINIJOC = Array.isArray(frasesData)? frasesData : (frasesData.frases || []);
     DETERMINANTS = await detRes.json();
     console.log('Minijoc carregat:', FRASES_MINIJOC.length, 'frases');
-
     minijocInicialitzat = true;
   } catch (e) {
     console.error('Error cargant minijoc:', e);
@@ -192,6 +195,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarDadesMinijoc();
   actualitzarUI();
   canviarTab('mapa', null);
+  // Auto-generar primera lectura si toca
+  setTimeout(() => {
+    if (document.getElementById('lectura-texto') &&!lecturaActualText) {
+      generarLectura();
+    }
+  }, 200);
 });
 
 // ===== NAVEGACIÓ =====
@@ -200,7 +209,6 @@ function canviarTab(tab, e) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   if(e && e.target) e.target.closest('.nav-item').classList.add('active');
-
   if(tab === 'mapa') renderMapa();
   if(tab === 'missio') renderMissio();
   if(tab === 'gremi') mostrarSubTab('biblioteca');
@@ -212,11 +220,9 @@ function canviarTab(tab, e) {
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-
   document.getElementById('gremi-' + sub).style.display = 'block';
   const btn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
   if(btn) btn.classList.add('active');
-
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
@@ -264,38 +270,47 @@ function construirCategories() {
   });
   CATEGORIES_DESBLOQUEJADES = {};
   Object.keys(CATEGORIES_TOTS).forEach(cat => {
-    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat].filter(e =>
-      desbloquejats.has(quitarSkinTone(e))
-    );
+    CATEGORIES_DESBLOQUEJADES[cat] = CATEGORIES_TOTS[cat].filter(e => desbloquejats.has(quitarSkinTone(e)));
   });
   estat.desbloquejats = CATEGORIES_DESBLOQUEJADES;
 }
 
-function construirTotsEmojis() { TOTS_EMOJIS = BIBLIOTECA_PLA.map(e => ({...e})); }
+function construirTotsEmojis() {
+  TOTS_EMOJIS = BIBLIOTECA_PLA.map(e => ({...e}));
+}
 
 // ===== INTRO =====
 function mostrarIntro() {
   const introEl = document.getElementById('intro');
   if (!introEl) return;
-  if (estat.introVist) { introEl.style.display = 'none'; return; }
+  if (estat.introVist) {
+    introEl.style.display = 'none';
+    return;
+  }
   introEl.style.display = 'flex';
   slideActual = 0;
   pintarSlide();
 }
+
 function pintarSlide() {
   const slide = INTRO_SLIDES[slideActual];
   document.getElementById('intro-emoji').textContent = slide.emoji;
   document.getElementById('intro-titol').textContent = slide.titol;
   document.getElementById('intro-text').textContent = slide.text;
-  document.getElementById('intro-dots').innerHTML = INTRO_SLIDES.map((_, i) =>
-    `<span style="opacity:${i===slideActual?1:0.3}">●</span>`).join(' ');
-  document.getElementById('intro-btn').textContent =
-    slideActual === INTRO_SLIDES.length - 1? 'Començar' : 'Següent';
+  document.getElementById('intro-dots').innerHTML = INTRO_SLIDES.map((_, i) => `<span style="opacity:${i===slideActual?1:0.3}">●</span>`).join(' ');
+  document.getElementById('intro-btn').textContent = slideActual === INTRO_SLIDES.length - 1? 'Començar' : 'Següent';
 }
+
 function seguentSlide() {
   vibrar();
-  if (slideActual < INTRO_SLIDES.length - 1) { slideActual++; pintarSlide(); }
-  else { estat.introVist = true; guardarEstat(); document.getElementById('intro').style.display = 'none'; }
+  if (slideActual < INTRO_SLIDES.length - 1) {
+    slideActual++;
+    pintarSlide();
+  } else {
+    estat.introVist = true;
+    guardarEstat();
+    document.getElementById('intro').style.display = 'none';
+  }
 }
 
 // ===== MAPA - 100 NIVELLS, 25 FRASES PER NIVELL =====
@@ -321,6 +336,7 @@ function renderMapa() {
   html += '</div>';
   cont.innerHTML = html;
 }
+
 function jugarNivell(n) {
   if (n > estat.progres.nivellActualMapa) return;
   canviarTab('gremi', null);
@@ -331,40 +347,31 @@ function jugarNivell(n) {
 function renderMissio() {
   const cont = document.getElementById('missio-contenidor');
   if (!cont) return;
-
   const nivell = estat.progres.nivellActualMapa || 1;
   const xp = estat.progres.xp || 0;
   const xpPerNivell = nivell * 100;
   const xpFaltant = xpPerNivell - xp;
-
   const nivellB1 = 25;
   const progresoB1 = Math.min(100, Math.max(0, (nivell / nivellB1) * 100));
   const nivellsPerB1 = Math.max(0, nivellB1 - nivell);
-
   const missio1 = xpFaltant > 0? '🎯' : '✅';
   const missio2 = estat.compres && estat.compres.length > 0? '✅' : '📦';
   const missio3 = '📚';
   const missio5 = nivellsPerB1 === 0? '✅' : '🏆';
-
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
-
     <div class="missio-item" onclick="canviarTab('gremi', null); mostrarSubTab('minijoc');" style="cursor:pointer;">
       ${missio1} Et falten ${xpFaltant} acerts per pujar de nivell
     </div>
-
     <div class="missio-item" onclick="canviarTab('botiga', null);" style="cursor:pointer;">
       ${missio2} Desbloqueja tota la biblioteca. Compra packs d'emojis amb monedes
     </div>
-
     <div class="missio-item" onclick="canviarTab('lectura', null); setTimeout(() => mostrarSubTab('gramatica'), 100);" style="cursor:pointer;">
       ${missio3} Aprèn gramàtica com un pro
     </div>
-
     <div class="missio-item" onclick="recarregarEnergia()" style="cursor:pointer;">
       ⚡ Recarrega la teva energia. Gasta 50 monedes per tornar a 100
     </div>
-
     <div class="missio-item" style="cursor:default;">
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
         <span style="font-size:32px;">${missio5}</span>
@@ -389,7 +396,6 @@ function recarregarEnergia() {
     mostrarMissatge('No tens prou monedes. Necessites 50.');
     return;
   }
-
   estat.monedes -= 50;
   estat.progres.energia = 100;
   estat.ultimaRecargaEnergia = Date.now();
@@ -404,7 +410,6 @@ function recarregarEnergia() {
 function mostrarGremiPersonatges() {
   const cont = document.getElementById('gremi-personatges');
   if (!cont) return;
-
   const nomsDisponibles = new Set();
   ['a1', 'a2', 'b1'].forEach(niv => {
     const data = BANCO_VOCAB[niv];
@@ -415,16 +420,13 @@ function mostrarGremiPersonatges() {
   if (nomsDisponibles.size === 0) {
     ['Ana', 'Pau', 'Sofia', 'Marc', 'Laia', 'Jordi'].forEach(n => nomsDisponibles.add(n));
   }
-
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
-
   let html = `<div style="text-align:center; padding:20px;">`;
   html += `<div style="font-size:80px; margin-bottom:10px;">${personatge.emoji}</div>`;
   html += `<h3>${personatge.nom}</h3>`;
   html += `<p style="color:#888; margin-bottom:10px;">Avatar actual</p>`;
   html += `<p style="color:#22c55e; margin-bottom:30px;">Nom a les lectures: <b>${nomPersonatge}</b></p>`;
   html += `<button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin-bottom:30px;">Canviar nom de lectura</button>`;
-
   html += `<div style="padding-top:20px; border-top:1px solid #333;"><h4 style="text-align:center; margin-bottom:15px;">Canvia d'avatar</h4><div class="emoji-grid">`;
   PERSONATGES_JUGADOR.forEach(p => {
     const seleccionat = p.id === estat.personatgeTriat;
@@ -434,7 +436,6 @@ function mostrarGremiPersonatges() {
     </div>`;
   });
   html += `</div></div>`;
-
   html += `<div id="selector-nom" style="display:none; margin-top:30px; padding-top:20px; border-top:1px solid #333;">
     <h4 style="text-align:center; margin-bottom:15px;">Tria nom per les lectures:</h4>
     <div class="emoji-grid">`;
@@ -445,7 +446,6 @@ function mostrarGremiPersonatges() {
     </div>`;
   });
   html += `</div></div></div>`;
-
   cont.innerHTML = html;
 }
 
@@ -477,9 +477,7 @@ function renderDiccionari() {
   if (!cont) return;
   let html = `<h3 style="text-align:center; margin-bottom:10px;">Biblioteca</h3>`;
   html += `<p style="text-align:center; color:#888; margin-bottom:20px; font-size:14px;">Tots els emojis disponibles. Compra packs a la Botiga per desbloquejar-los.</p>`;
-
   const BASE_INICIAL = PACK_INICIAL.map(e => quitarSkinTone(e));
-
   for (const [cat, emojis] of Object.entries(BIBLIOTECA_POR_CAT)) {
     html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
     emojis.forEach(e => {
@@ -523,9 +521,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
   let solucio = [];
   let esPrimer = true;
   for (const cat of plantilla.categories) {
-    const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase =>
-      emojisJugador.some(eJug => quitarSkinTone(eJug) === quitarSkinTone(eBase))
-    ) || [];
+    const emojisDisponibles = CATEGORIES_TOTS[cat]?.filter(eBase => emojisJugador.some(eJug => quitarSkinTone(eJug) === quitarSkinTone(eBase)) ) || [];
     if (!emojisDisponibles.length) {
       return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)], emojisJugador);
     }
@@ -536,8 +532,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const nom = emojiData?.nom_cat?.toLowerCase() || '';
       const detCorrecte = DETERMINANTS[nom] || (emojiData.genere === 'f'? 'La' : 'El');
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
-      const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-? `El/${detIncorrecte}` : `${detCorrecte}/${detIncorrecte}`;
+      const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])? `El/${detIncorrecte}` : `${detCorrecte}/${detIncorrecte}`;
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
       esPrimer = false;
     }
@@ -550,27 +545,24 @@ function generarFraseDinamica(plantilla, emojisJugador) {
 function novaFraseMinijoc() {
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0 ||!minijocInicialitzat) return;
   const emojisJugador = BIBLIOTECA_PLA
-.filter(e => {
-    const emojiNet = quitarSkinTone(e.emoji);
-    const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
-    const desbloquejatPerPack = estat.compres.some(idPack => {
-      const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
-      const pack = PACKS_BOTIGA.find(p => p.id === packId);
-      return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
-    });
-    return esBase || desbloquejatPerPack;
-  })
-.map(e => e.emoji);
-
+   .filter(e => {
+      const emojiNet = quitarSkinTone(e.emoji);
+      const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
+      const desbloquejatPerPack = estat.compres.some(idPack => {
+        const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
+        const pack = PACKS_BOTIGA.find(p => p.id === packId);
+        return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
+      });
+      return esBase || desbloquejatPerPack;
+    })
+   .map(e => e.emoji);
   if (emojisJugador.length < 2) {
     document.getElementById('minijoc-frase').textContent = "Puja de nivell per desbloquejar més emojis!";
     document.getElementById('minijoc-emojis').innerHTML = '';
     return;
   }
-
   const plantilla = FRASES_MINIJOC[Math.floor(Math.random() * FRASES_MINIJOC.length)];
   const { text, solucio } = generarFraseDinamica(plantilla, emojisJugador);
-
   minijoc.fraseObjectiu = { text, solucio };
   minijoc.emojisTriats = [];
   document.getElementById('minijoc-frase').textContent = text;
@@ -586,24 +578,22 @@ function generarOpcionsMinijoc(solucio) {
   const numOpcions = solucio.length <= 3? 16 : 20;
   const numFalsos = numOpcions - solucio.length;
   const emojisJugador = BIBLIOTECA_PLA
-.filter(e => {
-    const emojiNet = quitarSkinTone(e.emoji);
-    const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
-    const desbloquejatPerPack = estat.compres.some(idPack => {
-      const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
-      const pack = PACKS_BOTIGA.find(p => p.id === packId);
-      return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
-    });
-    return esBase || desbloquejatPerPack;
-  })
-.map(e => e.emoji);
-
+   .filter(e => {
+      const emojiNet = quitarSkinTone(e.emoji);
+      const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
+      const desbloquejatPerPack = estat.compres.some(idPack => {
+        const packId = idPack.includes('_p')? idPack.split('_p')[0] : idPack;
+        const pack = PACKS_BOTIGA.find(p => p.id === packId);
+        return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
+      });
+      return esBase || desbloquejatPerPack;
+    })
+   .map(e => e.emoji);
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
-.sort(() => 0.5 - Math.random()).slice(0, numFalsos);
+   .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
   const opcions = [...solucio,...falsos].sort(() => 0.5 - Math.random());
   minijoc.emojisDisponibles = opcions;
   grid.innerHTML = '';
-
   opcions.forEach((emoji, i) => {
     const emojiData = BIBLIOTECA_PLA.find(e => quitarSkinTone(e.emoji) === quitarSkinTone(emoji));
     const div = document.createElement('div');
@@ -631,7 +621,6 @@ function comprovarMinijoc() {
   const solucioCorrecta = minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join('');
   const triatsCorrecte = minijoc.emojisTriats.map(quitarSkinTone).join('');
   const esCorrecte = solucioCorrecta === triatsCorrecte;
-
   if (esCorrecte) {
     feedback.innerHTML = `<p style="color:#4CAF50; font-weight:bold;">Correcte! +5 🪙</p>`;
     estat.monedes += 5;
@@ -670,30 +659,24 @@ function gastarEnergia(cantidad) {
 
 function generarLectura() {
   if (!gastarEnergia(30)) return;
-
   const nivell = getCurrentLevel();
   const dataNivell = BANCO_VOCAB[nivell];
   if (!dataNivell ||!dataNivell.plantillas) {
     document.getElementById('lectura-texto').innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
     return;
   }
-
   const plantillas = dataNivell.plantillas;
   const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
-
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const tema = temes[Math.floor(Math.random() * temes.length)];
   const vocab = dataNivell[tema];
-
   lecturaActualVocab = [];
-
   function pick(arr) {
     if (!arr ||!arr.length) return '';
     const val = arr[Math.floor(Math.random() * arr.length)];
     if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
     return val;
   }
-
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       if (key === 'personatge') return nomPersonatge;
@@ -701,10 +684,8 @@ function generarLectura() {
       return pick(vocab[key]) || key;
     });
   }
-
   const titol = reemplaçar(plantilla.titol);
   let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
-
   const finalsAlternatius = [
     'la ciutat és el meu lloc preferit!',
     'm\'encanta passar temps aquí!',
@@ -713,13 +694,7 @@ function generarLectura() {
   ];
   const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
   lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
-
-  lecturaActualPreguntes = plantilla.preguntes.map(p => ({
-    q: reemplaçar(p.q),
-    opcions: p.opcions.map(o => reemplaçar(o)),
-    correcta: p.correcta
-  }));
-
+  lecturaActualPreguntes = plantilla.preguntes.map(p => ({ q: reemplaçar(p.q), opcions: p.opcions.map(o => reemplaçar(o)), correcta: p.correcta }));
   document.getElementById('lectura-texto').innerHTML = `
     <div class="lectura-card">
       <h3>${titol}</h3>
@@ -729,8 +704,7 @@ function generarLectura() {
           <div style="margin-bottom:15px;">
             <p><strong>${i+1}. ${p.q}</strong></p>
             ${p.opcions.map((op, j) => `
-              <button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;"
-                onclick="comprovarPregunta(${i}, ${j})">${op}</button>
+              <button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i}, ${j})">${op}</button>
             `).join('')}
             <div id="feedback-${i}" class="feedback"></div>
           </div>
@@ -739,7 +713,6 @@ function generarLectura() {
       <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button>
     </div>
   `;
-
   renderVocabLectura();
 }
 
@@ -843,14 +816,12 @@ let gramaticaTemaSeleccionat = null;
 function generarGramatica() {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
-
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
       <button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')" style="padding:8px 16px; font-size:14px;">Contextual</button>
       <button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')" style="padding:8px 16px; font-size:14px;">Guia</button>
     </div>
   `;
-
   if (gramaticaMode === 'contextual') {
     if (!lecturaActualText || lecturaActualVocab.length === 0) {
       container.innerHTML = html + `
@@ -861,27 +832,22 @@ function generarGramatica() {
       `;
       return;
     }
-
     const nivell = getCurrentLevel();
     const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell);
-
     html += `
       <div class="grammar-card">
         <div class="grammar-title">${grammarPoint.titol}</div>
         <div class="grammar-explanation">${grammarPoint.explicacio}</div>
-
         <div class="grammar-examples">
           <div class="grammar-examples-title">Exemples de la lectura:</div>
           ${grammarPoint.exemples.length > 0? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
         </div>
-
         <div class="grammar-exercise">
           <div class="grammar-exercise-title">Practica:</div>
           ${grammarPoint.exercici.map((frase, i) => `
             <div class="grammar-exercise-item">${i+1}. ${frase}</div>
           `).join('')}
         </div>
-
         ${grammarPoint.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${grammarPoint.tip}</div>` : ''}
       </div>
     `;
@@ -922,7 +888,6 @@ function generarGramatica() {
       `;
     }
   }
-
   container.innerHTML = html;
 }
 
@@ -948,21 +913,17 @@ function detectarPuntGramatica(texto, nivell) {
     data.exemples = extraerFrasesCon(texto, 'va ');
     return data;
   }
-
   if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
     const data = {...GRAMATICA_BANCO.estar_adjectiu};
     data.exemples = extraerFrasesCon(texto, 'estav');
     return data;
   }
-
   if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
     return GRAMATICA_BANCO.futur_simple;
   }
-
   if (texto.includes('estic') && (texto.includes('menjant') || texto.includes('estudiant') || texto.includes('jugant'))) {
     return GRAMATICA_BANCO.present_continu;
   }
-
   const data = {...GRAMATICA_BANCO.articles};
   data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
   return data;
@@ -988,7 +949,9 @@ function mostrarTipRandom() {
   }
   if (tipsUsats.length === totsElsTips.length) tipsUsats = [];
   let idx;
-  do { idx = Math.floor(Math.random() * totsElsTips.length); } while (tipsUsats.includes(idx));
+  do {
+    idx = Math.floor(Math.random() * totsElsTips.length);
+  } while (tipsUsats.includes(idx));
   tipsUsats.push(idx);
   const tip = totsElsTips[idx];
   document.getElementById('tip-text').textContent = tip.truc;
@@ -1004,10 +967,8 @@ function renderBotiga() {
     return;
   }
   cont.innerHTML = '';
-
   PACKS_BOTIGA.forEach(pack => {
     let subPacks = [];
-
     if (pack.emojis.length > 6) {
       for (let i = 0; i < pack.emojis.length; i += 6) {
         const chunk = pack.emojis.slice(i, i + 6);
@@ -1025,7 +986,6 @@ function renderBotiga() {
     } else {
       subPacks = ;
     }
-
     subPacks.forEach(sp => {
       const comprat = estat.compres.includes(sp.id);
       const card = document.createElement('div');
@@ -1037,7 +997,10 @@ function renderBotiga() {
 }
 
 function comprarPack(id, preu) {
-  if (estat.monedes < preu) { mostrarMissatge('No tens prou monedes'); return; }
+  if (estat.monedes < preu) {
+    mostrarMissatge('No tens prou monedes');
+    return;
+  }
   estat.monedes -= preu;
   estat.compres.push(id);
   NIVELL_MINIJOC.nivelActual = Math.min(NIVELL_MINIJOC.nivelActual + 1, NIVELL_MINIJOC.maxEmojis);
