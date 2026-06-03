@@ -26,7 +26,10 @@ let estat = {
     nivellActualMapa: parseInt(localStorage.getItem('cat_nivell')) || 1,
     encerts: parseInt(localStorage.getItem('cat_encerts')) || 0,
     frasesDesDeUltimNivell: parseInt(localStorage.getItem('cat_frasesContador')) || 0,
-    energia: parseInt(localStorage.getItem('cat_energia')) || 100 // <-- energía va aquí
+    energia: (() => {
+      const saved = localStorage.getItem('cat_energia');
+      return saved === null ? 100 : parseInt(saved);
+    })()
   },
   ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
   desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {}
