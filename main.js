@@ -299,7 +299,21 @@ function pintarSlide() {
   document.getElementById('intro-titol').textContent = slide.titol;
   document.getElementById('intro-text').textContent = slide.text;
   document.getElementById('intro-dots').innerHTML = INTRO_SLIDES.map((_, i) => `<span style="opacity:${i===slideActual?1:0.3}">●</span>`).join(' ');
-  document.getElementById('intro-btn').textContent = slideActual === INTRO_SLIDES.length - 1? 'Començar' : 'Següent';
+
+  const btn = document.getElementById('intro-btn');
+  btn.textContent = slideActual === INTRO_SLIDES.length - 1? 'Començar' : 'Següent';
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    seguentSlide();
+  };
+
+  const saltarBtn = document.querySelector('#intro button:last-child');
+  if (saltarBtn) {
+    saltarBtn.onclick = (e) => {
+      e.stopPropagation();
+      saltarIntro();
+    };
+  }
 }
 
 function seguentSlide() {
