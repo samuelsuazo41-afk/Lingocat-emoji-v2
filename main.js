@@ -527,14 +527,14 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-  ? `El/${detIncorrecte}`
+ ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
       esPrimer = false;
     }
 
-    text = text.replace(new RegExp(`(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), reemplazo);
+    text = text.replace(new RegExp(`\\s*(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), ` ${reemplazo}`);
     solucio.push(emojiElegit);
   }
   return { text, solucio };
