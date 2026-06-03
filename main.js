@@ -195,7 +195,7 @@ async function carregarDades() {
     dadesTips = await tipsRes.json();
   } catch(e) {
     console.error('Error carregant dades:', e);
-    alert('Error carregant dades. Revisa que els fitxers /data/ existeixin');
+    mostrarMissatge('Error carregant dades. Revisa que els fitxers /data/ existeixin');
   }
   agruparBibliotecaPorCategoria();
   construirCategories();
@@ -296,11 +296,11 @@ function renderMissio() {
   const nivellsPerB1 = Math.max(0, nivellB1 - nivell);
 
   const potRecarregar = energia < 100 && monedas >= 50;
-  const missio1 = xpFaltant > 0 ? '🎯' : '✅';
-  const missio2 = estat.compres && estat.compres.length > 0 ? '✅' : '📦';
+  const missio1 = xpFaltant > 0? '🎯' : '✅';
+  const missio2 = estat.compres && estat.compres.length > 0? '✅' : '📦';
   const missio3 = '📚';
-  const missio4 = potRecarregar ? '⚡' : '🔒';
-  const missio5 = nivellsPerB1 === 0 ? '✅' : '🏆';
+  const missio4 = potRecarregar? '⚡' : '🔒';
+  const missio5 = nivellsPerB1 === 0? '✅' : '🏆';
 
   cont.innerHTML = `
     <h3 style="text-align:center; margin-bottom:20px;">Missions</h3>
@@ -317,7 +317,7 @@ function renderMissio() {
       ${missio3} Aprèn gramàtica com un pro
     </div>
 
-    <div class="missio-item" onclick="${potRecarregar ? 'recarregarEnergia()' : ''}" style="cursor:${potRecarregar ? 'pointer' : 'not-allowed'}; opacity:${potRecarregar ? '1' : '0.5'};">
+    <div class="missio-item" onclick="${potRecarregar? 'recarregarEnergia()' : ''}" style="cursor:${potRecarregar? 'pointer' : 'not-allowed'}; opacity:${potRecarregar? '1' : '0.5'};">
       ${missio4} Recarrega la teva energia. Gasta 50 monedes per tornar a 100
     </div>
 
@@ -338,14 +338,14 @@ function renderMissio() {
 
 function recarregarEnergia() {
   if (estat.progres.energia >= 100) {
-    alert('Ja tens l\'energia al màxim!');
+    mostrarMissatge('Ja tens l\'energia al màxim!');
     return;
   }
   if (estat.monedes < 50) {
-    alert('No tens prou monedes. Necessites 50.');
+    mostrarMissatge('No tens prou monedes. Necessites 50.');
     return;
   }
-  
+
   estat.monedes -= 50;
   estat.progres.energia = 100;
   estat.ultimaRecargaEnergia = Date.now();
@@ -353,7 +353,7 @@ function recarregarEnergia() {
   actualitzarUI();
   renderMissio();
   vibrar();
-  alert('Energia recarregada a 100!');
+  mostrarMissatge('Energia recarregada a 100!');
 }
 
 // ===== GREMI - PERSONATGES =====
@@ -492,7 +492,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-     ? `El/${detIncorrecte}`
+    ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
@@ -546,7 +546,7 @@ function generarOpcionsMinijoc(solucio) {
   });
 
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
- .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
+.sort(() => 0.5 - Math.random()).slice(0, numFalsos);
 
   const opcions = [...solucio,...falsos].sort(() => 0.5 - Math.random());
   minijoc.emojisDisponibles = opcions;
@@ -590,7 +590,7 @@ function comprovarMinijoc() {
     if (estat.progres.frasesDesDeUltimNivell >= 25 && estat.progres.nivellActualMapa < 100) {
       estat.progres.nivellActualMapa++;
       estat.progres.frasesDesDeUltimNivell = 0;
-      alert(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);
+      mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);
     }
 
     NIVELL_MINIJOC.nivelActual = Math.min(NIVELL_MINIJOC.nivelActual + 1, NIVELL_MINIJOC.maxEmojis);
@@ -612,7 +612,7 @@ function getCurrentLevel() {
 
 function gastarEnergia(cost) {
   if (estat.progres.energia < cost) {
-    alert('No tens energia! Recarrega a Missió per 50 monedes');
+    mostrarMissatge('No tens energia! Recarrega a Missió per 50 monedes');
     return false;
   }
 
@@ -958,7 +958,7 @@ function renderBotiga() {
 }
 
 function comprarPack(id, preu) {
-  if (estat.monedes < preu) { alert('No tens prou monedes'); return; }
+  if (estat.monedes < preu) { mostrarMissatge('No tens prou monedes'); return; }
   estat.monedes -= preu;
   estat.compres.push(id);
   const pack = PACKS_BOTIGA.find(p => p.id === id);
@@ -978,7 +978,7 @@ function comprarPack(id, preu) {
   construirCategories();
   renderBotiga();
   renderDiccionari();
-  alert('Pack desbloquejat a la biblioteca!');
+  mostrarMissatge('Pack desbloquejat a la biblioteca!');
 }
 
 // ===== SERVICE WORKER =====
