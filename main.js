@@ -87,11 +87,11 @@ let tipsUsats = [];
 // ===== INTRO =====
 let slideActual = 0;
 const INTRO_SLIDES = [
-  {emoji: "👋", titol: "Benvingut a Cat Lingo Emoji", text: "Aprèn català jugant amb emojis"},
-  {emoji: "🎯", titol: "Missió diària", text: "Completa 25 frases per desbloquejar el següent nivell"},
-  {emoji: "🎁", titol: "Desbloqueja emojis", text: "Compra packs a la botiga i amplia vocabulari"},
-  {emoji: "📖", titol: "Generador de lectura", text: "Practica amb textos adaptats al teu nivell"},
-  {emoji: "🚀", titol: "Comencem!", text: "Prem Saltar per jugar"}
+  {emoji: "🙀", titol: "Benvingut a Cat Lingo", text: "Aprèn català en 5 minuts al dia. Tria el teu personatge i comencem."},
+  {emoji: "⛷️", titol: "Vocabulari visual", text: "Toca emojis i aprèn paraules sense traduir. Desbloqueja packs a la Botiga."},
+  {emoji: "📝", titol: "Gramàtica fàcil", text: "Explicacions curtes amb exemples reals de les teves lectures."},
+  {emoji: "📚", titol: "Lectures adaptades", text: "Textos al teu nivell A1, A2 o B1. Guanya XP i puja de nivell."},
+  {emoji: "🚀", titol: "A jugar!", text: "Prem Saltar o toca la pantalla per començar"}
 ];
 
 // ===== UTILS =====
@@ -290,6 +290,7 @@ function mostrarIntro() {
   introEl.style.display = 'flex';
   slideActual = 0;
   pintarSlide();
+  introEl.onclick = () => seguentSlide();
 }
 
 function pintarSlide() {
@@ -307,10 +308,14 @@ function seguentSlide() {
     slideActual++;
     pintarSlide();
   } else {
-    estat.introVist = true;
-    guardarEstat();
-    document.getElementById('intro').style.display = 'none';
+    saltarIntro();
   }
+}
+
+function saltarIntro() {
+  estat.introVist = true;
+  guardarEstat();
+  document.getElementById('intro').style.display = 'none';
 }
 
 // ===== MAPA - 100 NIVELLS, 25 FRASES PER NIVELL =====
