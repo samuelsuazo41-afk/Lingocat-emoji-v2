@@ -983,9 +983,9 @@ function renderBotiga() {
           emojis: chunk
         });
       }
-    } else {
-      subPacks = ;
-    }
+   } else {
+  subPacks = ;
+}
     subPacks.forEach(sp => {
       const comprat = estat.compres.includes(sp.id);
       const card = document.createElement('div');
