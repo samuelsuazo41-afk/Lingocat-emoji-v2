@@ -771,15 +771,6 @@ function comprovarPregunta(idx, resp) {
   }
 }
 
-// Auto-generar primera lectura al entrar a Lectura
-document.addEventListener('DOMContentLoaded', () => {
-  if (estat.progres.energia === undefined) estat.progres.energia = 100;
-  setTimeout(() => {
-    if (document.getElementById('lectura-texto') &&!lecturaActualText) {
-      generarLectura();
-    }
-  }, 100);
-});
 
 // ===== GRAMÀTICA =====
 const GRAMATICA_BANCO = {
