@@ -645,11 +645,15 @@ function getCurrentLevel() {
   return 'b1';
 }
 
-function gastarEnergia(cost) {
-  if (estat.progres.energia < cost) {
-    mostrarMissatge('No tens energia! Recarrega a Missió per 50 monedes');
-    return false;
-  }
+function gastarEnergia(cantidad) {
+  if (DEBUG_NO_ENERGIA) return true; // siempre permite gastar en debug
+
+  if (estat.progres.energia < cantidad) return false;
+  estat.progres.energia -= cantidad;
+  guardarEstat();
+  actualitzarUI();
+  return true;
+}
 
   if (!DEBUG_NO_ENERGIA) {
   estat.progres.energia -= cost;
