@@ -17,7 +17,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // ===== ESTADO GLOBAL =====
-const DEBUG_NO_ENERGIA = true; // ponlo en false cuando quieras volver a gastar energía
+const DEBUG_NO_ENERGIA = false; // ponlo en false cuando quieras volver a gastar energía
 
 let estat = {
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
