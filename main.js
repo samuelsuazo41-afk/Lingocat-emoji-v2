@@ -527,7 +527,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-   ? `El/${detIncorrecte}`
+  ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
@@ -543,14 +543,13 @@ function generarFraseDinamica(plantilla, emojisJugador) {
 function novaFraseMinijoc() {
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0 ||!minijocInicialitzat) return;
 
-  const emojisJugador = [...PACK_INICIAL];
-  estat.compres.forEach(idPack => {
-    const pack = PACKS_BOTIGA.find(p => p.id === idPack);
-    if (pack && pack.emojis) pack.emojis.forEach(e => emojisJugador.push(e.emoji));
-  });
+  // CANVI: agafar tots els emojis desbloquejats de biblioteca segons nivell
+  const emojisJugador = BIBLIOTECA_PLA
+  .filter(e => (e.nivellDesbloqueig || 1) <= estat.progres.nivellActualMapa)
+  .map(e => e.emoji);
 
   if (emojisJugador.length < 2) {
-    document.getElementById('minijoc-frase').textContent = "Compra més emojis per desbloquejar frases!";
+    document.getElementById('minijoc-frase').textContent = "Puja de nivell per desbloquejar més emojis!";
     document.getElementById('minijoc-emojis').innerHTML = '';
     return;
   }
@@ -563,7 +562,7 @@ function novaFraseMinijoc() {
   document.getElementById('minijoc-frase').textContent = text;
   document.getElementById('minijoc-triats').textContent = '';
   document.getElementById('minijoc-feedback').innerHTML = '';
-  document.getElementById('minijoc-nivell').textContent = `Nivell ${NIVELL_MINIJOC.nivelActual} - ${solucio.length} emojis`;
+  document.getElementById('minijoc-nivell').textContent = `Nivell ${estat.progres.nivellActualMapa} - ${solucio.length} emojis`;
   generarOpcionsMinijoc(solucio);
 }
 
@@ -574,11 +573,10 @@ function generarOpcionsMinijoc(solucio) {
   const numOpcions = solucio.length <= 3? 16 : 20;
   const numFalsos = numOpcions - solucio.length;
 
-  const emojisJugador = [...PACK_INICIAL];
-  estat.compres.forEach(idPack => {
-    const pack = PACKS_BOTIGA.find(p => p.id === idPack);
-    if (pack && pack.emojis) pack.emojis.forEach(e => emojisJugador.push(e.emoji));
-  });
+  // CANVI: agafar tots els emojis desbloquejats de biblioteca segons nivell
+  const emojisJugador = BIBLIOTECA_PLA
+  .filter(e => (e.nivellDesbloqueig || 1) <= estat.progres.nivellActualMapa)
+  .map(e => e.emoji);
 
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
 .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
