@@ -21,7 +21,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 // ===== ESTADO GLOBAL =====
 const DEBUG_NO_ENERGIA = false;
-let estat = {
+
+let estat = cargarEstat() || {};
+if (estat.energia === undefined || estat.energia === null) {
+  estat.energia = 100; // solo la primera vez
+}
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
   compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
   introVist: JSON.parse(localStorage.getItem('cat_intro')) || false,
