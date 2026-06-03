@@ -284,10 +284,6 @@ function construirTotsEmojis() {
 function mostrarIntro() {
   const introEl = document.getElementById('intro');
   if (!introEl) return;
-  if (estat.introVist) {
-    introEl.style.display = 'none';
-    return;
-  }
   introEl.style.display = 'flex';
   slideActual = 0;
   pintarSlide();
