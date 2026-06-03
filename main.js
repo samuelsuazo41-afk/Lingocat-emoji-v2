@@ -654,13 +654,7 @@ function gastarEnergia(cantidad) {
   actualitzarUI();
   return true;
 }
-
-  if (!DEBUG_NO_ENERGIA) {
-  estat.progres.energia -= cost;
-  guardarEstat();
-  actualitzarUI();
-}
-return true;
+  
 
 function generarLectura() {
   if (!gastarEnergia(30)) return;
