@@ -17,7 +17,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // ===== ESTADO GLOBAL =====
-const DEBUG_NO_ENERGIA = false; // ponlo en false cuando quieras volver a gastar energía
+const DEBUG_NO_ENERGIA = false;
 
 let estat = {
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
@@ -249,7 +249,8 @@ function agruparBibliotecaPorCategoria() {
 function construirCategories() {
   const desbloquejats = new Set(PACK_INICIAL.map(e => quitarSkinTone(e)));
   estat.compres.forEach(idPack => {
-    const pack = PACKS_BOTIGA.find(p => p.id === idPack);
+    const [packId] = idPack.split('_p');
+    const pack = PACKS_BOTIGA.find(p => p.id === packId);
     if (pack && pack.emojis) pack.emojis.forEach(e => desbloquejats.add(quitarSkinTone(e.emoji)));
   });
   CATEGORIES_DESBLOQUEJADES = {};
@@ -325,8 +326,6 @@ function renderMissio() {
   const xp = estat.progres.xp || 0;
   const xpPerNivell = nivell * 100;
   const xpFaltant = xpPerNivell - xp;
-  const energia = estat.progres.energia || 100;
-  const monedas = estat.monedes || 0;
 
   const nivellB1 = 25;
   const progresoB1 = Math.min(100, Math.max(0, (nivell / nivellB1) * 100));
@@ -468,19 +467,24 @@ function renderDiccionari() {
   if (!cont) return;
   let html = `<h3 style="text-align:center; margin-bottom:10px;">Biblioteca</h3>`;
   html += `<p style="text-align:center; color:#888; margin-bottom:20px; font-size:14px;">Tots els emojis disponibles. Compra packs a la Botiga per desbloquejar-los.</p>`;
+
+  const BASE_INICIAL = PACK_INICIAL.map(e => quitarSkinTone(e));
+
   for (const [cat, emojis] of Object.entries(BIBLIOTECA_POR_CAT)) {
     html += `<h4 style="margin:20px 0 8px; color:#4CAF50; text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;
     emojis.forEach(e => {
       const emojiNet = quitarSkinTone(e.emoji);
-      
-      // CANVI: comprova emoji per emoji si està desbloquejat per nivell o per pack comprat
-      const desbloquejatPerNivell = (e.nivellDesbloqueig || 1) <= estat.progres.nivellActualMapa;
+
+      const esBase = BASE_INICIAL.includes(emojiNet);
+
       const desbloquejatPerPack = estat.compres.some(idPack => {
-        const pack = PACKS_BOTIGA.find(p => p.id === idPack);
+        const [packId] = idPack.split('_p');
+        const pack = PACKS_BOTIGA.find(p => p.id === packId);
         return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
       });
-      const desbloquejat = desbloquejatPerNivell || desbloquejatPerPack;
-      
+
+      const desbloquejat = esBase || desbloquejatPerPack;
+
       const opacitat = desbloquejat? '1' : '0.12';
       const filtre = desbloquejat? '' : 'grayscale(1) brightness(0.4)';
       const cursor = desbloquejat? 'pointer' : 'not-allowed';
@@ -535,7 +539,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
- ? `El/${detIncorrecte}`
+? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
@@ -551,10 +555,18 @@ function generarFraseDinamica(plantilla, emojisJugador) {
 function novaFraseMinijoc() {
   if (!FRASES_MINIJOC || FRASES_MINIJOC.length === 0 ||!minijocInicialitzat) return;
 
-  // CANVI: agafar tots els emojis desbloquejats de biblioteca segons nivell
   const emojisJugador = BIBLIOTECA_PLA
-  .filter(e => (e.nivellDesbloqueig || 1) <= estat.progres.nivellActualMapa)
-  .map(e => e.emoji);
+.filter(e => {
+    const emojiNet = quitarSkinTone(e.emoji);
+    const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
+    const desbloquejatPerPack = estat.compres.some(idPack => {
+      const [packId] = idPack.split('_p');
+      const pack = PACKS_BOTIGA.find(p => p.id === packId);
+      return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
+    });
+    return esBase || desbloquejatPerPack;
+  })
+.map(e => e.emoji);
 
   if (emojisJugador.length < 2) {
     document.getElementById('minijoc-frase').textContent = "Puja de nivell per desbloquejar més emojis!";
@@ -581,10 +593,18 @@ function generarOpcionsMinijoc(solucio) {
   const numOpcions = solucio.length <= 3? 16 : 20;
   const numFalsos = numOpcions - solucio.length;
 
-  // CANVI: agafar tots els emojis desbloquejats de biblioteca segons nivell
   const emojisJugador = BIBLIOTECA_PLA
-  .filter(e => (e.nivellDesbloqueig || 1) <= estat.progres.nivellActualMapa)
-  .map(e => e.emoji);
+.filter(e => {
+    const emojiNet = quitarSkinTone(e.emoji);
+    const esBase = PACK_INICIAL.map(e => quitarSkinTone(e)).includes(emojiNet);
+    const desbloquejatPerPack = estat.compres.some(idPack => {
+      const [packId] = idPack.split('_p');
+      const pack = PACKS_BOTIGA.find(p => p.id === packId);
+      return pack && pack.emojis.some(pe => quitarSkinTone(pe.emoji) === emojiNet);
+    });
+    return esBase || desbloquejatPerPack;
+  })
+.map(e => e.emoji);
 
   const falsos = emojisJugador.filter(e =>!solucio.some(eSol => quitarSkinTone(e) === quitarSkinTone(eSol)))
 .sort(() => 0.5 - Math.random()).slice(0, numFalsos);
@@ -652,7 +672,7 @@ function getCurrentLevel() {
 }
 
 function gastarEnergia(cantidad) {
-  if (DEBUG_NO_ENERGIA) return true; // siempre permite gastar en debug
+  if (DEBUG_NO_ENERGIA) return true;
 
   if (estat.progres.energia < cantidad) return false;
   estat.progres.energia -= cantidad;
@@ -660,7 +680,6 @@ function gastarEnergia(cantidad) {
   actualitzarUI();
   return true;
 }
-  
 
 function generarLectura() {
   if (!gastarEnergia(30)) return;
@@ -697,26 +716,22 @@ function generarLectura() {
   }
 
   const titol = reemplaçar(plantilla.titol);
+  let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
 
-let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
+  const finalsAlternatius = [
+    'la ciutat és el meu lloc preferit!',
+    'm\'encanta passar temps aquí!',
+    'vull tornar aviat!',
+    'ha estat un dia genial!'
+  ];
+  const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
+  lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
 
-const finalsAlternatius = [
-  'la ciutat és el meu lloc preferit!',
-  'm\'encanta passar temps aquí!',
-  'vull tornar aviat!',
-  'ha estat un dia genial!'
-];
-
-const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
-
-// Reemplaza el final fijo por uno aleatorio
-lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
-
-lecturaActualPreguntes = plantilla.preguntes.map(p => ({
-  q: reemplaçar(p.q),
-  opcions: p.opcions.map(o => reemplaçar(o)),
-  correcta: p.correcta
-}));
+  lecturaActualPreguntes = plantilla.preguntes.map(p => ({
+    q: reemplaçar(p.q),
+    opcions: p.opcions.map(o => reemplaçar(o)),
+    correcta: p.correcta
+  }));
 
   document.getElementById('lectura-texto').innerHTML = `
     <div class="lectura-card">
@@ -1002,12 +1017,35 @@ function renderBotiga() {
     return;
   }
   cont.innerHTML = '';
+
   PACKS_BOTIGA.forEach(pack => {
-    const comprat = estat.compres.includes(pack.id);
-    const card = document.createElement('div');
-    card.className = 'capitol-card';
-    card.innerHTML = `<div class="capitol-icona">🎁</div><h3>${pack.nom}</h3><p style="color:#aaa; margin:8px 0;">${pack.descripcio}</p><p style="font-size:24px;">${pack.emojis.slice(0,6).map(e => e.emoji).join(' ')}${pack.emojis.length > 6? '...' : ''}</p><button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${pack.id}', ${pack.preu})" ${comprat? 'disabled' : ''}>${comprat? 'Desbloquejat' : `🪙 ${pack.preu}`}</button>`;
-    cont.appendChild(card);
+    let subPacks = [];
+
+    if (pack.emojis.length > 6) {
+      for (let i = 0; i < pack.emojis.length; i += 6) {
+        const chunk = pack.emojis.slice(i, i + 6);
+        const numPart = Math.floor(i / 6) + 1;
+        const totalParts = Math.ceil(pack.emojis.length / 6);
+        const preuPart = Math.ceil(pack.preu / totalParts);
+        subPacks.push({
+          id: `${pack.id}_p${numPart}`,
+          nom: `${pack.nom} ${numPart}/${totalParts}`,
+          descripcio: pack.descripcio,
+          preu: preuPart,
+          emojis: chunk
+        });
+      }
+    } else {
+      subPacks = ;
+    }
+
+    subPacks.forEach(sp => {
+      const comprat = estat.compres.includes(sp.id);
+      const card = document.createElement('div');
+      card.className = 'capitol-card';
+      card.innerHTML = `<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa; margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e => e.emoji).join(' ')}</p><button class="btn ${comprat? 'btn-sec' : ''}" onclick="comprarPack('${sp.id}', ${sp.preu})" ${comprat? 'disabled' : ''}>${comprat? 'Desbloquejat' : `🪙 ${sp.preu}`}</button>`;
+      cont.appendChild(card);
+    });
   });
 }
 
@@ -1015,17 +1053,6 @@ function comprarPack(id, preu) {
   if (estat.monedes < preu) { mostrarMissatge('No tens prou monedes'); return; }
   estat.monedes -= preu;
   estat.compres.push(id);
-  const pack = PACKS_BOTIGA.find(p => p.id === id);
-  if (pack && pack.emojis) {
-    pack.emojis.forEach(e => {
-      const emojiNet = quitarSkinTone(e.emoji);
-      const cat = e.categoria;
-      if (cat) {
-        if (!estat.desbloquejats[cat]) estat.desbloquejats[cat] = [];
-        if (!estat.desbloquejats[cat].includes(emojiNet)) estat.desbloquejats[cat].push(emojiNet);
-      }
-    });
-  }
   NIVELL_MINIJOC.nivelActual = Math.min(NIVELL_MINIJOC.nivelActual + 1, NIVELL_MINIJOC.maxEmojis);
   guardarEstat();
   actualitzarUI();
