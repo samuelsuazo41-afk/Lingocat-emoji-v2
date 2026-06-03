@@ -87,10 +87,10 @@ let tipsUsats = [];
 // ===== INTRO =====
 let slideActual = 0;
 const INTRO_SLIDES = [
-  {emoji: "🙀", titol: "Benvingut a Cat Lingo", text: "Aprèn català en 5 minuts al dia. Tria el teu personatge i comencem."},
-  {emoji: "⛷️", titol: "Vocabulari visual", text: "Toca emojis i aprèn paraules sense traduir. Desbloqueja packs a la Botiga."},
-  {emoji: "📝", titol: "Gramàtica fàcil", text: "Explicacions curtes amb exemples reals de les teves lectures."},
-  {emoji: "📚", titol: "Lectures adaptades", text: "Textos al teu nivell A1, A2 o B1. Guanya XP i puja de nivell."},
+  {emoji: "🙀", titol: "Benvingut a Cat Lingo", text: "Aprèn català en 5 minuts al dia. Tria personatge i comencem."},
+  {emoji: "⛷️", titol: "Vocabulari visual", text: "Toca emojis i aprèn paraules. Desbloqueja packs a la Botiga."},
+  {emoji: "📝", titol: "Gramàtica fàcil", text: "Explicacions curtes amb exemples de les teves lectures."},
+  {emoji: "📚", titol: "Lectures adaptades", text: "Textos al teu nivell A1, A2 o B1. Guanya XP i puja."},
   {emoji: "🚀", titol: "A jugar!", text: "Prem Saltar o toca la pantalla per començar"}
 ];
 
