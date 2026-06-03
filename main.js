@@ -28,10 +28,13 @@ let estat = {
     frasesDesDeUltimNivell: parseInt(localStorage.getItem('cat_frasesContador')) || 0,
     energia: (() => {
       const saved = localStorage.getItem('cat_energia');
-      return saved === null ? 100 : parseInt(saved);
+      return saved === null? 100 : parseInt(saved);
     })()
   },
-  ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
+  ultimaRecargaEnergia: (() => {
+    const saved = localStorage.getItem('cat_ultimaEnergia');
+    return saved === null? Date.now() : parseInt(saved);
+  })(),
   desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {}
 };
 
@@ -99,11 +102,38 @@ function actualitzarUI() {
 
   if (monedesEl) monedesEl.textContent = estat.monedes;
   if (nivellEl) nivellEl.textContent = estat.progres.nivellActualMapa;
-  if (energiaEl) energiaEl.textContent = estat.progres.energia; // <-- usa progres.energia
-  if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%'; // barra de progreso, no energía
+  if (energiaEl) energiaEl.textContent = estat.progres.energia;
+  if (barraEl) barraEl.style.width = ((estat.progres.frasesDesDeUltimNivell / 25) * 100) + '%';
 
   const personatge = PERSONATGES_JUGADOR.find(p => p.id === estat.personatgeTriat);
   if (headerPersonatge && personatge) headerPersonatge.textContent = personatge.emoji;
+}
+
+function regenerarEnergia() {
+  const ara = Date.now();
+  const diffMinuts = Math.floor((ara - estat.ultimaRecargaEnergia) / 60000);
+
+  if (diffMinuts >= 5 && estat.progres.energia < 100) {
+    const blocs = Math.floor(diffMinuts / 5);
+    const energiaRecuperada = blocs * 30;
+    estat.progres.energia = Math.min(100, estat.progres.energia + energiaRecuperada);
+    estat.ultimaRecargaEnergia = ara - ((diffMinuts % 5) * 60000);
+    guardarEstat();
+    actualitzarUI();
+  }
+}
+
+function iniciarRegeneracioAutomatica() {
+  setInterval(() => {
+    if (estat.progres.energia < 100) {
+      estat.progres.energia = Math.min(100, estat.progres.energia + 30);
+      guardarEstat();
+      actualitzarUI();
+      if (document.getElementById('tab-missio').classList.contains('active')) {
+        renderMissio();
+      }
+    }
+  }, 5 * 60 * 1000);
 }
 
 function guardarEstat() {
@@ -112,7 +142,7 @@ function guardarEstat() {
   localStorage.setItem('cat_nivell', estat.progres.nivellActualMapa);
   localStorage.setItem('cat_encerts', estat.progres.encerts);
   localStorage.setItem('cat_frasesContador', estat.progres.frasesDesDeUltimNivell);
-  localStorage.setItem('cat_energia', estat.progres.energia); // <-- guarda progres.energia
+  localStorage.setItem('cat_energia', estat.progres.energia);
   localStorage.setItem('cat_ultimaEnergia', estat.ultimaRecargaEnergia);
   localStorage.setItem('cat_intro', JSON.stringify(estat.introVist));
   localStorage.setItem('cat_desbloquejats', JSON.stringify(estat.desbloquejats));
@@ -145,6 +175,8 @@ async function carregarDadesMinijoc() {
 
 // ===== INICIALITZACIÓ =====
 document.addEventListener('DOMContentLoaded', async () => {
+  regenerarEnergia();
+  iniciarRegeneracioAutomatica();
   mostrarIntro();
   await carregarDades();
   await carregarDadesMinijoc();
@@ -495,7 +527,7 @@ function generarFraseDinamica(plantilla, emojisJugador) {
       const detIncorrecte = detCorrecte === 'La'? 'El' : 'La';
 
       const detAmbBarra = detCorrecte === "L'" &&!'aeiouàèéíòóúh'.includes(nom[0])
-    ? `El/${detIncorrecte}`
+   ? `El/${detIncorrecte}`
         : `${detCorrecte}/${detIncorrecte}`;
 
       reemplazo = `${detAmbBarra} ${emojiData.nom_cat}`;
