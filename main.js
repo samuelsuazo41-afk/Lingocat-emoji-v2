@@ -1047,7 +1047,7 @@ function comprarPack(id, preu) {
   renderBotiga();
   renderDiccionari();
   mostrarMissatge('Pack desbloquejat a la biblioteca!');
-}
+} 
 
 // ===== SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
