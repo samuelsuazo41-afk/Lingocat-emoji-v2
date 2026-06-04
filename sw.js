@@ -1,30 +1,38 @@
-const CACHE_NAME = 'lingocat-v238'; 
-const URLS_TO_CACHE = [
+const CACHE_NAME = 'guio-pro-v5';
+const urlsToCache = [
   './',
   './index.html',
+  './styles.css',
   './main.js',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './data/biblioteca_emoji.json',
-  './data/categories_emoji.json',
-  './data/botiga_emoji.json',
-  './data/minijoc_frases.json',
-  './data/minijoc_determinants.json',
+  './data/loaderjson.js',
+  './core/generadorlilibre.js',
+  './data/banco_ecenes.json',
+  './data/banco_emocions.json',
+  './data/banco_escenarios.json',
+  './data/banco_estructura.json',
+  './data/banco_generes.json',
   './data/banco_lectura.json',
-  './data/tips.json'
+  './data/banco_olors.json',
+  './data/banco_personatges.json',
+  './data/banco_sons.json',
+  './data/banco_ubicacions.json',
+  './data/determinants.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-512-maskable.png'
 ];
 
-// Instal·lació: cachejar només lo que existeix
+// Instal·lació: cachejar i activar immediatament
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(URLS_TO_CACHE))
+      .then(cache => cache.addAll(urlsToCache))
       .then(() => self.skipWaiting())
   );
 });
 
-// Activació: esborrar caches velles
+// Activació: esborrar caches velles i prendre control
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -39,20 +47,19 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: cache first per JSON, network first per HTML/JS/CSS
+// Fetch: estratègia intel·ligent
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // JSON de dades: cache first
+  // JSON de /data: cache first, perquè han de funcionar offline
   if (url.pathname.includes('/data/')) {
     event.respondWith(
-      caches.match(event.request)
-        .then(resp => resp || fetch(event.request))
+      caches.match(event.request).then(resp => resp || fetch(event.request))
     );
     return;
   }
 
-  // Resto: network first
+  // HTML/JS/CSS: network first, per agafar sempre la última versió
   event.respondWith(
     fetch(event.request)
       .then(res => {
@@ -63,4 +70,4 @@ self.addEventListener('fetch', event => {
       })
       .catch(() => caches.match('./index.html'))
   );
-});  
+});
