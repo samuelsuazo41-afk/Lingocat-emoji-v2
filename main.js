@@ -20,7 +20,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // ===== ESTADO GLOBAL =====
-const DEBUG_NO_ENERGIA = false;
+const DEBUG_NO_ENERGIA = true;
 
 let estat = {
   progres: {
