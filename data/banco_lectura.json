@@ -1,6 +1,35 @@
 {
  "personatges": ["Ana", "Pau", "Sofia", "Marc", "Laia", "Jordi", "Marta", "Oriol", "Clara", "Pol", "Berta", "Àlex", "Emma", "Guillem", "Núria", "Jan", "Aina", "David", "Claudia", "Roger"], 
 
+"regles_globals": {
+  "mantenir_genere_personatge": true,
+  "apostrofacio": {"a el": "al", "de el": "del", "per el": "pel", "a els": "als", "de els": "dels", "per els": "pels"},
+  "generes_paraules": {
+    "content": {"m": "content", "f": "contenta"},
+    "relaxat": {"m": "relaxat", "f": "relaxada"},
+    "tranquil": {"m": "tranquil", "f": "tranquil·la"},
+    "cansat": {"m": "cansat", "f": "cansada"},
+    "sorprès": {"m": "sorprès", "f": "sorpresa"},
+    "curiós": {"m": "curiós", "f": "curiosa"},
+    "feliç": {"m": "feliç", "f": "feliç"},
+    "agraït": {"m": "agraït", "f": "agraïda"},
+    "satisfet": {"m": "satisfet", "f": "satisfeta"}
+  },
+  "conjugador_perifrastic": {"jo": "vaig", "tu": "vas", "ell": "va", "ella": "va", "nosaltres": "vam", "vosaltres": "vau", "ells": "van", "elles": "van"},
+  "conjugador_present": {
+    "jugar": "juga", "menjar": "menjo", "parlar": "parla", "estar": "està", "ser": "és", 
+    "viure": "viu", "estudiar": "estudia", "treballar": "treballa", "dinar": "dino", "anar": "vaig"
+  },
+  "conjugador_futur": {
+    "jugar": "jugarà", "menjar": "menjaré", "anar": "anirà", "venir": "vindrà", 
+    "viure": "viurà", "treballar": "treballarà", "estudiar": "estudiarà"
+  },
+  "conjugador_gerundi": {
+    "jugar": "jugant", "menjar": "menjant", "parlar": "parlant", "estudiar": "estudiant",
+    "treballar": "treballant", "viure": "vivint", "anar": "anant"
+  },
+  "pronoms_febles": {"a1": [], "a2": ["hi"], "b1": ["hi", "ho", "en", "li"]}
+},
 
 "a1": {
     "plantillas": [
@@ -509,5 +538,103 @@
       "connectors": ["però", "a més", "tot i que", "per això", "finalment", "mentrestant"],
       "descripcio": ["molt interessant i cultural", "tranquil i silenciós", "divertit i animat", "modern i ben equipat", "acollidor", "entretingut"]
     }
+  },
+
+"regles_globals": {
+  "mantenir_genere_personatge": true,
+  "apostrofacio": {"a el": "al", "de el": "del", "per el": "pel", "a els": "als", "de els": "dels", "per els": "pels", "de un": "d'un", "de una": "d'una"},
+  "generes_paraules": {
+    "content": {"m": "content", "f": "contenta"}, "relaxat": {"m": "relaxat", "f": "relaxada"}, "tranquil": {"m": "tranquil", "f": "tranquil·la"}, "cansat": {"m": "cansat", "f": "cansada"}, "sorprès": {"m": "sorprès", "f": "sorpresa"}, "curiós": {"m": "curiós", "f": "curiosa"}, "feliç": {"m": "feliç", "f": "feliç"}, "agraït": {"m": "agraït", "f": "agraïda"}, "satisfet": {"m": "satisfet", "f": "satisfeta"}, "nerviós": {"m": "nerviós", "f": "nerviosa"}, "atent": {"m": "atent", "f": "atenta"}, "motivat": {"m": "motivat", "f": "motivada"}, "emocionat": {"m": "emocionat", "f": "emocionada"}, "nostàlgic": {"m": "nostàlgic", "f": "nostàlgica"}, "inspirat": {"m": "inspirat", "f": "inspirada"}, "divertit": {"m": "divertit", "f": "divertida"}, "animat": {"m": "animat", "f": "animada"}
+  },
+  "conjugador_perifrastic": {"jo": "vaig", "tu": "vas", "ell": "va", "ella": "va", "nosaltres": "vam", "vosaltres": "vau", "ells": "van", "elles": "van"},
+  "conjugador_present": {"jugar": "juga", "menjar": "menjo", "parlar": "parla", "estar": "està", "ser": "és", "viure": "viu", "estudiar": "estudia", "treballar": "treballa", "dinar": "dino", "anar": "vaig", "venir": "vinc", "llegir": "llegeix", "escriure": "escric"},
+  "conjugador_futur": {"jugar": "jugarà", "menjar": "menjaré", "anar": "anirà", "venir": "vindrà", "viure": "viurà", "treballar": "treballarà", "estudiar": "estudiarà", "tornar": "tornaré"},
+  "conjugador_gerundi": {"jugar": "jugant", "menjar": "menjant", "parlar": "parlant", "estudiar": "estudiant", "treballar": "treballant", "viure": "vivint", "anar": "anant", "venir": "venint"},
+  "pronoms_febles": {"a1": [], "a2": ["hi"], "b1": ["hi", "ho", "en", "li"]}
+},
+
+"gramatica": {
+  "nivells": {
+    "a1": ["preterit_perifrastic", "articles_determinats", "estar_adjectiu"],
+    "a2": ["present_simple", "present_continu", "estar_adjectiu"],
+    "b1": ["futur_simple", "imperfet", "connectors_causa"]
+  },
+  "guia": {
+    "preterit_perifrastic": {
+      "titol": "Pretèrit perifràstic: va + infinitiu", "nivell": "a1",
+      "explicacio": "S'usa per parlar d'accions que van passar en el passat. És el passat més comú en català parlat.",
+      "estructura": "Subjecte + va + infinitiu",
+      "exemples": ["Jo vaig menjar", "Ella va treballar", "Nosaltres vam viure"],
+      "regla_deteccio_contextual": ["va ", "vam ", "vau ", "van "],
+      "tip": "Es pronuncia 'va' curt. Ex: 'va anar' = /banar/",
+      "practica_plantilla": ["La Maria ____ a la casa de l'àvia.", "En Pau ____ un gat al jardí.", "La Marta ____ amb fruita."],
+      "verbs_suggerits_practica": ["anar", "veure", "dinar", "parlar", "córrer"]
+    },
+    "articles_determinats": {
+      "titol": "Articles determinats: el, la, els, les", "nivell": "a1",
+      "explicacio": "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
+      "estructura": "el/la/els/les + nom",
+      "exemples": ["El gos dorm", "La casa és bonica", "Els nens juguen"],
+      "regla_deteccio_contextual": [" el ", " la ", " els ", " les "],
+      "tip": "el = masculí singular, la = femení singular",
+      "practica_plantilla": ["____ gos dorm al sofà.", "____ casa és molt bonica.", "____ nens juguen al parc."],
+      "respostes_practica": ["El", "La", "Els"]
+    },
+    "estar_adjectiu": {
+      "titol": "Estar + adjectiu", "nivell": "a1",
+      "explicacio": "S'usa per descriure com se sent una persona en un moment concret.",
+      "estructura": "Subjecte + estar + adjectiu",
+      "exemples": ["Joven estava molt content", "La Laura està cansada"],
+      "regla_deteccio_contextual": ["estava ", "està ", "estan "],
+      "adjectius_estat_valids": ["content", "tranquil", "feliç", "cansat", "relaxat", "nerviós", "sorprès"],
+      "practica_plantilla": ["La Laura ____ molt contenta després de dinar.", "En Jordi ____ tranquil a casa.", "La Marta ____ feliç al parc."],
+      "verbs_suggerits_practica": ["estar"]
+    },
+    "present_simple": {
+      "titol": "Present Simple - Present d'indicatiu", "nivell": "a2",
+      "explicacio": "S'usa per accions habituals, veritats generals i rutines.",
+      "estructura": "Subjecte + verb en present",
+      "exemples": ["Jo menjo cada dia.", "Ella treballa a l'escola.", "Nosaltres vivim a Barcelona."],
+      "regla_deteccio_contextual": ["_conj_present_"],
+      "practica_plantilla": ["Jo ____ cada matí.", "La Laura ____ català.", "Nosaltres ____ al parc."],
+      "verbs_suggerits_practica": ["menjar", "parlar", "viure", "estudiar"]
+    },
+    "present_continu": {
+      "titol": "Present Continu - estar + gerundi", "nivell": "a2",
+      "explicacio": "S'usa per accions que estan passant ara mateix.",
+      "estructura": "Subjecte + estar + verb + -ant/-ent",
+      "exemples": ["Jo estic menjant.", "Ella està estudiant.", "Nosaltres estem jugant."],
+      "regla_deteccio_contextual": ["estic ", "està ", "estem ", "esteu ", "estan "],
+      "practica_plantilla": ["Jo ____ ara.", "La Laura ____ català.", "Nosaltres ____ futbol."],
+      "verbs_suggerits_practica": ["menjar", "parlar", "jugar", "estudiar"]
+    },
+    "futur_simple": {
+      "titol": "Futur Simple - Futur d'indicatiu", "nivell": "b1",
+      "explicacio": "S'usa per accions que passaran en el futur.",
+      "estructura": "Subjecte + verb en futur",
+      "exemples": ["Jo menjaré demà.", "Ella vindrà a les 5.", "Nosaltres viatjarem a Girona."],
+      "regla_deteccio_contextual": ["_conj_futur_"],
+      "practica_plantilla": ["Jo ____ demà.", "La Laura ____ a casa.", "Nosaltres ____ al cinema."],
+      "verbs_suggerits_practica": ["menjar", "anar", "venir", "viure", "tornar"]
+    },
+    "imperfet": {
+      "titol": "Pretèrit Imperfet", "nivell": "b1",
+      "explicacio": "S'usa per descriure accions habituals en el passat o descripcions.",
+      "estructura": "Subjecte + verb en imperfet",
+      "exemples": ["Quan era petit, jugava al parc.", "Abans vivia a Girona."],
+      "regla_deteccio_contextual": ["_conj_imperfet_"],
+      "practica_plantilla": ["Quan era petit, ____ al parc.", "Abans ____ a Girona."],
+      "verbs_suggerits_practica": ["jugar", "viure", "ser", "anar"]
+    },
+    "connectors_causa": {
+      "titol": "Connectors de causa: perquè, com que", "nivell": "b1",
+      "explicacio": "S'usen per explicar el motiu d'una acció.",
+      "estructura": "Frase principal + perquè/com que + frase subordinada",
+      "exemples": ["No vaig sortir perquè plovia.", "Com que estava cansat, vaig dormir."],
+      "regla_deteccio_contextual": [" perquè ", " com que "],
+      "practica_plantilla": ["No vaig anar al parc ____ plovia.", "____ estava cansat, vaig dormir."],
+      "respostes_practica": ["perquè", "Com que"]
+    }
   }
+}
 }
