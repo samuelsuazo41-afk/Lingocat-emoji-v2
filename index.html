@@ -239,6 +239,66 @@ header {
 .vocab-word { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
 .vocab-pron { font-size: 12px; color: var(--text-muted); }
 
+/* ===== GRAMÀTICA V1 ===== */
+.grammar-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+}
+
+.grammar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.grammar-explanation {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.grammar-examples-title, .grammar-exercise-title {
+  font-weight: 600;
+  color: var(--text);
+  margin: 12px 0 8px 0;
+  font-size: 15px;
+}
+
+.grammar-example {
+  background: var(--bg-elevated);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 6px 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.grammar-exercise-item {
+  background: #252525;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+  color: var(--text);
+  font-size: 14px;
+  border-left: 3px solid var(--accent);
+}
+
+.grammar-tip {
+  background: rgba(46, 204, 113, 0.1);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  color: var(--accent-soft);
+  font-size: 13px;
+}
+/* ===== FI GRAMÀTICA V1 ===== */
+
 /* Intro */
 .intro-overlay {
   position: fixed;
@@ -248,7 +308,7 @@ header {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-} 
+}
 .intro-content {
   background: var(--card);
   border-radius: 16px;
