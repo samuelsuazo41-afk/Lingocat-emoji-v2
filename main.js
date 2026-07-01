@@ -833,7 +833,21 @@ async function generarGramatica() {
   if (!container) return;
 
   const banco = await cargarBancoLectura();
-  const GRAMATICA_BANCO = banco.gramatica.guia;
+
+// Nou bloc de seguretat 👇
+if (!banco || !banco.gramatica || !banco.gramatica.guia) {
+  console.error('JSON carregat:', banco);
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">⚠️</div>
+      <p>No trobo "gramatica.guia" al banco_lectura.json</p>
+      <p style="font-size:12px; opacity:0.7;">Mira la consola F12</p>
+    </div>
+  `;
+  return;
+}
+
+const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur
 
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
