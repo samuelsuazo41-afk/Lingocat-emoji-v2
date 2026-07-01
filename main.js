@@ -227,7 +227,7 @@ function mostrarSubTab(sub) {
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
-  if (sub === 'gramatica') generarGramatica();
+    if (sub === 'gramatica') setTimeout(() => generarGramatica(), 0);
 }
 
 // ===== CARREGAR DADES =====
