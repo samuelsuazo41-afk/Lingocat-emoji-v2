@@ -662,7 +662,7 @@ let BANCO_LECTURA = null;
 
 async function cargarBancoLectura() {
   if (BANCO_LECTURA) return BANCO_LECTURA;
-  const res = await fetch('./banco_lectura.json');
+  const res = await fetch('./data/banco_lectura.json'); // <-- RUTA CORREGIDA
   BANCO_LECTURA = await res.json();
   return BANCO_LECTURA;
 }
