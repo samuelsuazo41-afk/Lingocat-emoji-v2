@@ -657,115 +657,7 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA =====
-function getCurrentLevel() {
-  if (estat.progres.nivellActualMapa <= 33) return 'a1';
-  if (estat.progres.nivellActualMapa <= 66) return 'a2';
-  return 'b1';
-}
-
-function gastarEnergia(cantidad) {
-  if (DEBUG_NO_ENERGIA) return true;
-  if (estat.progres.energia < cantidad) return false;
-  estat.progres.energia -= cantidad;
-  guardarEstat();
-  actualitzarUI();
-  return true;
-}
-
-function generarLectura() {
-  if (!gastarEnergia(30)) return;
-  const nivell = getCurrentLevel();
-  const dataNivell = BANCO_VOCAB[nivell];
-  if (!dataNivell ||!dataNivell.plantillas) {
-    document.getElementById('lectura-texto').innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
-    return;
-  }
-  const plantillas = dataNivell.plantillas;
-  const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
-  const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
-  const tema = temes[Math.floor(Math.random() * temes.length)];
-  const vocab = dataNivell[tema];
-  lecturaActualVocab = [];
-  function pick(arr) {
-    if (!arr ||!arr.length) return '';
-    const val = arr[Math.floor(Math.random() * arr.length)];
-    if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
-    return val;
-  }
-  function reemplaçar(text) {
-    return text.replace(/\$\{(\w+)\}/g, (match, key) => {
-      if (key === 'personatge') return nomPersonatge;
-      if (key === 'tema') return tema.replace(/_/g, ' ');
-      return pick(vocab[key]) || key;
-    });
-  }
-  const titol = reemplaçar(plantilla.titol);
-  let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
-  const finalsAlternatius = [
-    'la ciutat és el meu lloc preferit!',
-    'm\'encanta passar temps aquí!',
-    'vull tornar aviat!',
-    'ha estat un dia genial!'
-  ];
-  const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
-  lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
-  lecturaActualPreguntes = plantilla.preguntes.map(p => ({ q: reemplaçar(p.q), opcions: p.opcions.map(o => reemplaçar(o)), correcta: p.correcta }));
-  document.getElementById('lectura-texto').innerHTML = `
-    <div class="lectura-card">
-      <h3>${titol}</h3>
-      <p class="lectura-text">${lecturaActualText}</p>
-      <div class="lectura-preguntes">
-        ${lecturaActualPreguntes.map((p, i) => `
-          <div style="margin-bottom:15px;">
-            <p><strong>${i+1}. ${p.q}</strong></p>
-            ${p.opcions.map((op, j) => `
-              <button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i}, ${j})">${op}</button>
-            `).join('')}
-            <div id="feedback-${i}" class="feedback"></div>
-          </div>
-        `).join('')}
-      </div>
-      <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button>
-    </div>
-  `;
-  renderVocabLectura();
-}
-
-function renderVocabLectura() {
-  const cont = document.getElementById('lectura-vocab');
-  if (!cont) return;
-  if (lecturaActualVocab.length === 0) {
-    cont.innerHTML = '<div class="empty-state"><p>Genera una lectura per veure el vocabulari</p></div>';
-    return;
-  }
-  cont.innerHTML = `
-    <div class="vocab-grid">
-      ${lecturaActualVocab.map(w => `
-        <div class="vocab-card">
-          <div class="vocab-word">${w}</div>
-          <div class="vocab-pron">/${w}/</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function comprovarPregunta(idx, resp) {
-  const p = lecturaActualPreguntes[idx];
-  const fb = document.getElementById(`feedback-${idx}`);
-  if (resp === p.correcta) {
-    fb.innerHTML = '<span style="color:#4CAF50">Correcte! +0.5 XP</span>';
-    estat.progres.encerts += 0.5;
-    guardarEstat();
-    actualitzarUI();
-  } else {
-    fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
-  }
-}
-
-
-// ===== LECTURA V1 - ACTUALITZAT NOMÉS EL MOTOR =====
+// ===== LECTURA V1 - MOTOR ACTUALITZAT =====
 let BANCO_LECTURA = null;
 
 async function cargarBancoLectura() {
@@ -792,37 +684,40 @@ function gastarEnergia(cantidad) {
 
 async function generarLectura() {
   if (!gastarEnergia(30)) return;
-  
+
   const banco = await cargarBancoLectura();
   const nivell = getCurrentLevel();
   const dataNivell = banco[nivell];
   const regles = banco.regles_globals;
-  
+
   if (!dataNivell ||!dataNivell.plantillas) {
     document.getElementById('lectura-texto').innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
     return;
   }
-  
+
   const plantillas = dataNivell.plantillas;
   const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const tema = temes[Math.floor(Math.random() * temes.length)];
   const vocab = dataNivell[tema];
-  
-  // NOU: Detectar gènere del personatge
+
+  // DETECTAR GÈNERE DEL PERSONATGE - PARCHEADO
   const personatge = nomPersonatge;
-  const genere = personatge.startsWith('La ') || ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'].includes(personatge)? 'f' : 'm';
-  
+  let genere = 'f'; // Forzamos femenino para "Joven" por defecto
+  if (personatge!== 'Joven') {
+    genere = personatge.startsWith('La ') || ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'].includes(personatge)? 'f' : 'm';
+  }
+
   lecturaActualVocab = [];
-  
+
   function pick(arr) {
     if (!arr ||!arr.length) return '';
     const val = arr[Math.floor(Math.random() * arr.length)];
     if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
     return val;
   }
-  
-  // NOU: Concordar gènere
+
+  // CONCORDAR GÈNERE
   function concordarGenere(text) {
     let resultat = text;
     Object.keys(regles.generes_paraules).forEach(paraula => {
@@ -832,17 +727,22 @@ async function generarLectura() {
     });
     return resultat;
   }
-  
-  // NOU: Aplicar apostrofació
+
+  // APLICAR APOSTROFACIÓ - PARCHEADO
   function aplicarApostrofacio(text) {
     let resultat = text;
+    // Reglas del JSON
     Object.keys(regles.apostrofacio).forEach(incorrecte => {
       const correcte = regles.apostrofacio[incorrecte];
       resultat = resultat.replaceAll(incorrecte, correcte);
     });
+    // Reglas hardcodeadas para casos comunes que vi en tus capturas
+    resultat = resultat.replaceAll('a el ', 'al ');
+    resultat = resultat.replaceAll('a l ', 'a l\'');
+    resultat = resultat.replaceAll('de el ', 'del ');
     return resultat;
   }
-  
+
   function reemplaçar(text) {
     return text.replace(/\$\{(\w+)\}/g, (match, key) => {
       if (key === 'personatge') return personatge;
@@ -850,14 +750,14 @@ async function generarLectura() {
       return pick(vocab[key]) || key;
     });
   }
-  
+
   const titol = reemplaçar(plantilla.titol);
   let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
-  
-  // NOU: Aplicar regles globals
+
+  // APLICAR REGLES GLOBALS
   textBase = concordarGenere(textBase);
   textBase = aplicarApostrofacio(textBase);
-  
+
   const finalsAlternatius = [
     'la ciutat és el meu lloc preferit!',
     'm\'encanta passar temps aquí!',
@@ -866,13 +766,13 @@ async function generarLectura() {
   ];
   const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
   lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
-  
+
   lecturaActualPreguntes = plantilla.preguntes.map(p => ({ 
     q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q))), 
     opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o)))), 
     correcta: p.correcta 
   }));
-  
+
   document.getElementById('lectura-texto').innerHTML = `
     <div class="lectura-card">
       <h3>${titol}</h3>
@@ -892,10 +792,9 @@ async function generarLectura() {
     </div>
   `;
   renderVocabLectura();
-  generarGramatica(); // NOU: Actualitza gramàtica automàticament
+  generarGramatica(); // Actualitza gramàtica automàticament
 }
 
-// La resta de funcions queden IGUALS: renderVocabLectura, comprovarPregunta, etc.
 function renderVocabLectura() {
   const cont = document.getElementById('lectura-vocab');
   if (!cont) return;
@@ -1036,21 +935,21 @@ function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
     return GRAMATICA_BANCO.futur_simple;
   }
 
-  // 4. NOU: Numerals
+  // 4. Numerals
   if (/\b(dues|tres|quatre|un|una)\b/i.test(texto)) {
     const data = {...GRAMATICA_BANCO.numerals};
     data.exemples = extraerFrasesCon(texto, 'dues ').concat(extraerFrasesCon(texto, 'tres ')).concat(extraerFrasesCon(texto, 'quatre ')).slice(0,3);
     return data;
   }
 
-  // 5. NOU: Preposicions de lloc
+  // 5. Preposicions de lloc
   if (/\b(a la dreta|al costat|lluny|a l'esquerra)\b/i.test(texto)) {
     const data = {...GRAMATICA_BANCO.preposicions_lloc};
     data.exemples = extraerFrasesCon(texto, 'lluny').concat(extraerFrasesCon(texto, 'costat')).concat(extraerFrasesCon(texto, 'dreta')).slice(0,3);
     return data;
   }
 
-  // 6. NOU: Quantitatius
+  // 6. Quantitatius
   if (/\b(molts|cap|algunes|alguns|molta)\b/i.test(texto)) {
     const data = {...GRAMATICA_BANCO.quantitatius};
     data.exemples = extraerFrasesCon(texto, 'molts').concat(extraerFrasesCon(texto, 'cap')).concat(extraerFrasesCon(texto, 'algunes')).slice(0,3);
