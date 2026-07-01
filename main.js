@@ -657,12 +657,12 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA V1 - MOTOR ACTUALITZAT =====
+// ===== LECTURA V1 - MOTOR AMB JSON =====
 let BANCO_LECTURA = null;
 
 async function cargarBancoLectura() {
   if (BANCO_LECTURA) return BANCO_LECTURA;
-  const res = await fetch('./data/banco_lectura.json'); // <-- RUTA CORREGIDA
+  const res = await fetch('./data/banco_lectura.json');
   BANCO_LECTURA = await res.json();
   return BANCO_LECTURA;
 }
@@ -701,9 +701,8 @@ async function generarLectura() {
   const tema = temes[Math.floor(Math.random() * temes.length)];
   const vocab = dataNivell[tema];
 
-  // DETECTAR GÈNERE DEL PERSONATGE - PARCHEADO
   const personatge = nomPersonatge;
-  let genere = 'f'; // Forzamos femenino para "Joven" por defecto
+  let genere = 'f';
   if (personatge!== 'Joven') {
     genere = personatge.startsWith('La ') || ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'].includes(personatge)? 'f' : 'm';
   }
@@ -717,7 +716,6 @@ async function generarLectura() {
     return val;
   }
 
-  // CONCORDAR GÈNERE
   function concordarGenere(text) {
     let resultat = text;
     Object.keys(regles.generes_paraules).forEach(paraula => {
@@ -728,15 +726,12 @@ async function generarLectura() {
     return resultat;
   }
 
-  // APLICAR APOSTROFACIÓ - PARCHEADO
   function aplicarApostrofacio(text) {
     let resultat = text;
-    // Reglas del JSON
     Object.keys(regles.apostrofacio).forEach(incorrecte => {
       const correcte = regles.apostrofacio[incorrecte];
       resultat = resultat.replaceAll(incorrecte, correcte);
     });
-    // Reglas hardcodeadas para casos comunes que vi en tus capturas
     resultat = resultat.replaceAll('a el ', 'al ');
     resultat = resultat.replaceAll('a l ', 'a l\'');
     resultat = resultat.replaceAll('de el ', 'del ');
@@ -753,8 +748,6 @@ async function generarLectura() {
 
   const titol = reemplaçar(plantilla.titol);
   let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
-
-  // APLICAR REGLES GLOBALS
   textBase = concordarGenere(textBase);
   textBase = aplicarApostrofacio(textBase);
 
@@ -767,10 +760,10 @@ async function generarLectura() {
   const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
   lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
 
-  lecturaActualPreguntes = plantilla.preguntes.map(p => ({ 
-    q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q))), 
-    opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o)))), 
-    correcta: p.correcta 
+  lecturaActualPreguntes = plantilla.preguntes.map(p => ({
+    q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q))),
+    opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o)))),
+    correcta: p.correcta
   }));
 
   document.getElementById('lectura-texto').innerHTML = `
@@ -788,11 +781,11 @@ async function generarLectura() {
           </div>
         `).join('')}
       </div>
-      <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button>
+      <button class="btn-primari" onclick="generarLectura().catch(e => console.error(e))" style="margin-top:15px;">Nova lectura (-30 energia)</button>
     </div>
   `;
   renderVocabLectura();
-  generarGramatica(); // Actualitza gramàtica automàticament
+  generarGramatica();
 }
 
 function renderVocabLectura() {
@@ -827,7 +820,7 @@ function comprovarPregunta(idx, resp) {
   }
 }
 
-// ===== GRAMÀTICA V1 - ACTUALITZAT PER LLEGIR DEL JSON =====
+// ===== GRAMÀTICA V1 - LLEGEIX ELS 9 TEMES DEL JSON =====
 let gramaticaMode = 'contextual';
 let gramaticaTemaSeleccionat = null;
 
@@ -916,47 +909,34 @@ async function generarGramatica() {
 }
 
 function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
-  // 1. Pretèrit perifràstic
   if (texto.includes('va ') || texto.includes('vam ') || texto.includes('van ')) {
     const data = {...GRAMATICA_BANCO.preterit_perifrastic};
     data.exemples = extraerFrasesCon(texto, 'va ');
     return data;
   }
-
-  // 2. Estar + adjectiu
   if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
     const data = {...GRAMATICA_BANCO.estar_adjectiu};
     data.exemples = extraerFrasesCon(texto, 'estav');
     return data;
   }
-
-  // 3. Futur simple
   if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
     return GRAMATICA_BANCO.futur_simple;
   }
-
-  // 4. Numerals
   if (/\b(dues|tres|quatre|un|una)\b/i.test(texto)) {
     const data = {...GRAMATICA_BANCO.numerals};
     data.exemples = extraerFrasesCon(texto, 'dues ').concat(extraerFrasesCon(texto, 'tres ')).concat(extraerFrasesCon(texto, 'quatre ')).slice(0,3);
     return data;
   }
-
-  // 5. Preposicions de lloc
   if (/\b(a la dreta|al costat|lluny|a l'esquerra)\b/i.test(texto)) {
     const data = {...GRAMATICA_BANCO.preposicions_lloc};
     data.exemples = extraerFrasesCon(texto, 'lluny').concat(extraerFrasesCon(texto, 'costat')).concat(extraerFrasesCon(texto, 'dreta')).slice(0,3);
     return data;
   }
-
-  // 6. Quantitatius
   if (/\b(molts|cap|algunes|alguns|molta)\b/i.test(texto)) {
     const data = {...GRAMATICA_BANCO.quantitatius};
     data.exemples = extraerFrasesCon(texto, 'molts').concat(extraerFrasesCon(texto, 'cap')).concat(extraerFrasesCon(texto, 'algunes')).slice(0,3);
     return data;
   }
-
-  // 7. Default: Articles
   const data = {...GRAMATICA_BANCO.articles};
   data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
   return data;
