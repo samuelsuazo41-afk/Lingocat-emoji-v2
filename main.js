@@ -765,70 +765,187 @@ function comprovarPregunta(idx, resp) {
 }
 
 
-// ===== GRAMÀTICA =====
-const GRAMATICA_BANCO = {
-  present_simple: {
-    titol: "Present Simple - Present d'indicatiu",
-    explicacio: "S'usa per accions habituals, veritats generals i rutines.",
-    estructura: "Subjecte + verb en present",
-    exemples: ["Jo menjo cada dia.", "Ella treballa a l'escola.", "Nosaltres vivim a Barcelona."],
-    exercici: ["Jo _____ cada matí.", "La Laura _____ català.", "Nosaltres _____ al parc."],
-    tip: null
-  },
-  passat_perifras: {
-    titol: "Pretèrit perifràstic: va + infinitiu",
-    explicacio: "S'usa per parlar d'accions que van passar en el passat. Estructura: subjecte + va + verb en infinitiu.",
-    estructura: "Subjecte + va + infinitiu",
-    exemples: [],
-    exercici: ["La Maria _____ a la casa de l'àvia.", "En Pau _____ un gat al jardí.", "La Marta _____ amb fruita."],
-    tip: "Es pronuncia 'va' curt. Ex: 'va anar' = /banar/"
-  },
-  futur_simple: {
-    titol: "Futur Simple - Futur d'indicatiu",
-    explicacio: "S'usa per accions que passaran en el futur.",
-    estructura: "Subjecte + verb en futur",
-    exemples: ["Jo menjaré demà.", "Ella vindrà a les 5.", "Nosaltres viatjarem a Girona."],
-    exercici: ["Jo _____ demà.", "La Laura _____ a casa.", "Nosaltres _____ al cinema."],
-    tip: null
-  },
-  estar_adjectiu: {
-    titol: "Estar + adjectiu",
-    explicacio: "S'usa per descriure com se sent una persona en un moment concret.",
-    estructura: "Subjecte + estar + adjectiu",
-    exemples: [],
-    exercici: ["La Laura _____ molt content després de dinar.", "En Jordi _____ tranquil a casa.", "La Marta _____ feliç al parc."],
-    tip: null
-  },
-  articles: {
-    titol: "Articles determinats: el, la, els, les",
-    explicacio: "S'usen davant de noms concrets. el/la per singular, els/les per plural.",
-    estructura: "el/la/els/les + nom",
-    exemples: [],
-    exercici: ["_____ gos dorm al sofà.", "_____ casa és molt bonica.", "_____ nens juguen al parc."],
-    tip: "el = masculí singular, la = femení singular"
-  },
-  present_continu: {
-    titol: "Present Continu - estar + gerundi",
-    explicacio: "S'usa per accions que estan passant ara mateix.",
-    estructura: "Subjecte + estar + verb + -ant/-ent",
-    exemples: ["Jo estic menjant.", "Ella està estudiant.", "Nosaltres estem jugant."],
-    exercici: ["Jo _____ ara.", "La Laura _____ català.", "Nosaltres _____ futbol."],
-    tip: null
-  }
-};
+// ===== LECTURA V1 - ACTUALITZAT NOMÉS EL MOTOR =====
+let BANCO_LECTURA = null;
 
+async function cargarBancoLectura() {
+  if (BANCO_LECTURA) return BANCO_LECTURA;
+  const res = await fetch('./banco_lectura.json');
+  BANCO_LECTURA = await res.json();
+  return BANCO_LECTURA;
+}
+
+function getCurrentLevel() {
+  if (estat.progres.nivellActualMapa <= 33) return 'a1';
+  if (estat.progres.nivellActualMapa <= 66) return 'a2';
+  return 'b1';
+}
+
+function gastarEnergia(cantidad) {
+  if (DEBUG_NO_ENERGIA) return true;
+  if (estat.progres.energia < cantidad) return false;
+  estat.progres.energia -= cantidad;
+  guardarEstat();
+  actualitzarUI();
+  return true;
+}
+
+async function generarLectura() {
+  if (!gastarEnergia(30)) return;
+  
+  const banco = await cargarBancoLectura();
+  const nivell = getCurrentLevel();
+  const dataNivell = banco[nivell];
+  const regles = banco.regles_globals;
+  
+  if (!dataNivell ||!dataNivell.plantillas) {
+    document.getElementById('lectura-texto').innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
+    return;
+  }
+  
+  const plantillas = dataNivell.plantillas;
+  const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
+  const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
+  const tema = temes[Math.floor(Math.random() * temes.length)];
+  const vocab = dataNivell[tema];
+  
+  // NOU: Detectar gènere del personatge
+  const personatge = nomPersonatge;
+  const genere = personatge.startsWith('La ') || ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'].includes(personatge)? 'f' : 'm';
+  
+  lecturaActualVocab = [];
+  
+  function pick(arr) {
+    if (!arr ||!arr.length) return '';
+    const val = arr[Math.floor(Math.random() * arr.length)];
+    if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
+    return val;
+  }
+  
+  // NOU: Concordar gènere
+  function concordarGenere(text) {
+    let resultat = text;
+    Object.keys(regles.generes_paraules).forEach(paraula => {
+      const formes = regles.generes_paraules[paraula];
+      const regex = new RegExp(`\\b${paraula}\\b`, 'gi');
+      resultat = resultat.replace(regex, formes[genere]);
+    });
+    return resultat;
+  }
+  
+  // NOU: Aplicar apostrofació
+  function aplicarApostrofacio(text) {
+    let resultat = text;
+    Object.keys(regles.apostrofacio).forEach(incorrecte => {
+      const correcte = regles.apostrofacio[incorrecte];
+      resultat = resultat.replaceAll(incorrecte, correcte);
+    });
+    return resultat;
+  }
+  
+  function reemplaçar(text) {
+    return text.replace(/\$\{(\w+)\}/g, (match, key) => {
+      if (key === 'personatge') return personatge;
+      if (key === 'tema') return tema.replace(/_/g, ' ');
+      return pick(vocab[key]) || key;
+    });
+  }
+  
+  const titol = reemplaçar(plantilla.titol);
+  let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
+  
+  // NOU: Aplicar regles globals
+  textBase = concordarGenere(textBase);
+  textBase = aplicarApostrofacio(textBase);
+  
+  const finalsAlternatius = [
+    'la ciutat és el meu lloc preferit!',
+    'm\'encanta passar temps aquí!',
+    'vull tornar aviat!',
+    'ha estat un dia genial!'
+  ];
+  const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
+  lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
+  
+  lecturaActualPreguntes = plantilla.preguntes.map(p => ({ 
+    q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q))), 
+    opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o)))), 
+    correcta: p.correcta 
+  }));
+  
+  document.getElementById('lectura-texto').innerHTML = `
+    <div class="lectura-card">
+      <h3>${titol}</h3>
+      <p class="lectura-text">${lecturaActualText}</p>
+      <div class="lectura-preguntes">
+        ${lecturaActualPreguntes.map((p, i) => `
+          <div style="margin-bottom:15px;">
+            <p><strong>${i+1}. ${p.q}</strong></p>
+            ${p.opcions.map((op, j) => `
+              <button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i}, ${j})">${op}</button>
+            `).join('')}
+            <div id="feedback-${i}" class="feedback"></div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button>
+    </div>
+  `;
+  renderVocabLectura();
+  generarGramatica(); // NOU: Actualitza gramàtica automàticament
+}
+
+// La resta de funcions queden IGUALS: renderVocabLectura, comprovarPregunta, etc.
+function renderVocabLectura() {
+  const cont = document.getElementById('lectura-vocab');
+  if (!cont) return;
+  if (lecturaActualVocab.length === 0) {
+    cont.innerHTML = '<div class="empty-state"><p>Genera una lectura per veure el vocabulari</p></div>';
+    return;
+  }
+  cont.innerHTML = `
+    <div class="vocab-grid">
+      ${lecturaActualVocab.map(w => `
+        <div class="vocab-card">
+          <div class="vocab-word">${w}</div>
+          <div class="vocab-pron">/${w}/</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function comprovarPregunta(idx, resp) {
+  const p = lecturaActualPreguntes[idx];
+  const fb = document.getElementById(`feedback-${idx}`);
+  if (resp === p.correcta) {
+    fb.innerHTML = '<span style="color:#4CAF50">Correcte! +0.5 XP</span>';
+    estat.progres.encerts += 0.5;
+    guardarEstat();
+    actualitzarUI();
+  } else {
+    fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
+  }
+}
+
+// ===== GRAMÀTICA V1 - ACTUALITZAT PER LLEGIR DEL JSON =====
 let gramaticaMode = 'contextual';
 let gramaticaTemaSeleccionat = null;
 
-function generarGramatica() {
+async function generarGramatica() {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
+  
+  const banco = await cargarBancoLectura();
+  const GRAMATICA_BANCO = banco.gramatica.guia; // NOU: Llegeix del JSON
+  
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
       <button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')" style="padding:8px 16px; font-size:14px;">Contextual</button>
       <button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')" style="padding:8px 16px; font-size:14px;">Guia</button>
     </div>
   `;
+  
   if (gramaticaMode === 'contextual') {
     if (!lecturaActualText || lecturaActualVocab.length === 0) {
       container.innerHTML = html + `
@@ -840,7 +957,7 @@ function generarGramatica() {
       return;
     }
     const nivell = getCurrentLevel();
-    const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell);
+    const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell, GRAMATICA_BANCO);
     html += `
       <div class="grammar-card">
         <div class="grammar-title">${grammarPoint.titol}</div>
@@ -898,6 +1015,26 @@ function generarGramatica() {
   container.innerHTML = html;
 }
 
+function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
+  if (texto.includes('va ') || texto.includes('vam ') || texto.includes('van ')) {
+    const data = {...GRAMATICA_BANCO.preterit_perifrastic};
+    data.exemples = extraerFrasesCon(texto, 'va ');
+    return data;
+  }
+  if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
+    const data = {...GRAMATICA_BANCO.estar_adjectiu};
+    data.exemples = extraerFrasesCon(texto, 'estav');
+    return data;
+  }
+  if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
+    return GRAMATICA_BANCO.futur_simple;
+  }
+  const data = {...GRAMATICA_BANCO.articles};
+  data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
+  return data;
+}
+
+// La resta queda igual: setGramaticaMode, seleccionarTemaGramatica, tornarAGuia, extraerFrasesCon
 function setGramaticaMode(mode) {
   gramaticaMode = mode;
   gramaticaTemaSeleccionat = null;
@@ -912,28 +1049,6 @@ function seleccionarTemaGramatica(key) {
 function tornarAGuia() {
   gramaticaTemaSeleccionat = null;
   generarGramatica();
-}
-
-function detectarPuntGramatica(texto, nivell) {
-  if (texto.includes('va anar') || texto.includes('va veure') || texto.includes('va fer')) {
-    const data = {...GRAMATICA_BANCO.passat_perifras};
-    data.exemples = extraerFrasesCon(texto, 'va ');
-    return data;
-  }
-  if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
-    const data = {...GRAMATICA_BANCO.estar_adjectiu};
-    data.exemples = extraerFrasesCon(texto, 'estav');
-    return data;
-  }
-  if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
-    return GRAMATICA_BANCO.futur_simple;
-  }
-  if (texto.includes('estic') && (texto.includes('menjant') || texto.includes('estudiant') || texto.includes('jugant'))) {
-    return GRAMATICA_BANCO.present_continu;
-  }
-  const data = {...GRAMATICA_BANCO.articles};
-  data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
-  return data;
 }
 
 function extraerFrasesCon(texto, palabra) {
