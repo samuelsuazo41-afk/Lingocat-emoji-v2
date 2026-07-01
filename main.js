@@ -935,17 +935,17 @@ let gramaticaTemaSeleccionat = null;
 async function generarGramatica() {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
-  
+
   const banco = await cargarBancoLectura();
-  const GRAMATICA_BANCO = banco.gramatica.guia; // NOU: Llegeix del JSON
-  
+  const GRAMATICA_BANCO = banco.gramatica.guia;
+
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
       <button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')" style="padding:8px 16px; font-size:14px;">Contextual</button>
       <button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')" style="padding:8px 16px; font-size:14px;">Guia</button>
     </div>
   `;
-  
+
   if (gramaticaMode === 'contextual') {
     if (!lecturaActualText || lecturaActualVocab.length === 0) {
       container.innerHTML = html + `
@@ -982,6 +982,7 @@ async function generarGramatica() {
         const tema = GRAMATICA_BANCO[key];
         html += `
           <div class="emoji-item" onclick="seleccionarTemaGramatica('${key}')" style="cursor:pointer;">
+            <div class="emoji-large">${tema.emoji}</div>
             <div class="emoji-name" style="font-size:14px; font-weight:600;">${tema.titol}</div>
           </div>
         `;
@@ -1016,25 +1017,52 @@ async function generarGramatica() {
 }
 
 function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
+  // 1. Pretèrit perifràstic
   if (texto.includes('va ') || texto.includes('vam ') || texto.includes('van ')) {
     const data = {...GRAMATICA_BANCO.preterit_perifrastic};
     data.exemples = extraerFrasesCon(texto, 'va ');
     return data;
   }
+
+  // 2. Estar + adjectiu
   if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
     const data = {...GRAMATICA_BANCO.estar_adjectiu};
     data.exemples = extraerFrasesCon(texto, 'estav');
     return data;
   }
+
+  // 3. Futur simple
   if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
     return GRAMATICA_BANCO.futur_simple;
   }
+
+  // 4. NOU: Numerals
+  if (/\b(dues|tres|quatre|un|una)\b/i.test(texto)) {
+    const data = {...GRAMATICA_BANCO.numerals};
+    data.exemples = extraerFrasesCon(texto, 'dues ').concat(extraerFrasesCon(texto, 'tres ')).concat(extraerFrasesCon(texto, 'quatre ')).slice(0,3);
+    return data;
+  }
+
+  // 5. NOU: Preposicions de lloc
+  if (/\b(a la dreta|al costat|lluny|a l'esquerra)\b/i.test(texto)) {
+    const data = {...GRAMATICA_BANCO.preposicions_lloc};
+    data.exemples = extraerFrasesCon(texto, 'lluny').concat(extraerFrasesCon(texto, 'costat')).concat(extraerFrasesCon(texto, 'dreta')).slice(0,3);
+    return data;
+  }
+
+  // 6. NOU: Quantitatius
+  if (/\b(molts|cap|algunes|alguns|molta)\b/i.test(texto)) {
+    const data = {...GRAMATICA_BANCO.quantitatius};
+    data.exemples = extraerFrasesCon(texto, 'molts').concat(extraerFrasesCon(texto, 'cap')).concat(extraerFrasesCon(texto, 'algunes')).slice(0,3);
+    return data;
+  }
+
+  // 7. Default: Articles
   const data = {...GRAMATICA_BANCO.articles};
   data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
   return data;
 }
 
-// La resta queda igual: setGramaticaMode, seleccionarTemaGramatica, tornarAGuia, extraerFrasesCon
 function setGramaticaMode(mode) {
   gramaticaMode = mode;
   gramaticaTemaSeleccionat = null;
@@ -1053,7 +1081,7 @@ function tornarAGuia() {
 
 function extraerFrasesCon(texto, palabra) {
   const frases = texto.split('.');
-  return frases.filter(f => f.includes(palabra)).slice(0,3).map(f => f.trim() + '.');
+  return frases.filter(f => f.toLowerCase().includes(palabra.toLowerCase())).slice(0,3).map(f => f.trim() + '.');
 }
 
 // ===== TIPS =====
