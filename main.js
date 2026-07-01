@@ -825,7 +825,7 @@ function comprovarPregunta(idx, resp) {
 }
 
 // ===== GRAMÀTICA V1 - 9 TEMES DES DEL JSON =====
-let gramaticaMode = 'contextual';
+let gramaticaMode = 'guia';
 let gramaticaTemaSeleccionat = null;
 
 async function generarGramatica() {
