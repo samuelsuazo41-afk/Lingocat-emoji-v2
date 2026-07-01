@@ -657,7 +657,7 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA V1 - MOTOR AMB JSON =====
+// ===== LECTURA V1 - MOTOR JSON COMPLET =====
 let BANCO_LECTURA = null;
 
 async function cargarBancoLectura() {
@@ -702,7 +702,7 @@ async function generarLectura() {
   const vocab = dataNivell[tema];
 
   const personatge = nomPersonatge;
-  let genere = 'f';
+  let genere = 'f'; // Joven = femení per defecte
   if (personatge!== 'Joven') {
     genere = personatge.startsWith('La ') || ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'].includes(personatge)? 'f' : 'm';
   }
@@ -732,9 +732,13 @@ async function generarLectura() {
       const correcte = regles.apostrofacio[incorrecte];
       resultat = resultat.replaceAll(incorrecte, correcte);
     });
+    // PARCHES PER BUGS DE LES CAPTURES
     resultat = resultat.replaceAll('a el ', 'al ');
     resultat = resultat.replaceAll('a l ', 'a l\'');
     resultat = resultat.replaceAll('de el ', 'del ');
+    resultat = resultat.replaceAll('tranquil·la·la', 'tranquil·la');
+    resultat = resultat.replaceAll('Un dia a el ', 'Un dia al ');
+    resultat = resultat.replaceAll('Un dia a l ', 'Un dia a l\'');
     return resultat;
   }
 
@@ -785,7 +789,7 @@ async function generarLectura() {
     </div>
   `;
   renderVocabLectura();
-  generarGramatica();
+  await generarGramatica(); // CRÍTIC: AIXÒ PINTA LA GRID
 }
 
 function renderVocabLectura() {
@@ -820,7 +824,7 @@ function comprovarPregunta(idx, resp) {
   }
 }
 
-// ===== GRAMÀTICA V1 - LLEGEIX ELS 9 TEMES DEL JSON =====
+// ===== GRAMÀTICA V1 - 9 TEMES DES DEL JSON =====
 let gramaticaMode = 'contextual';
 let gramaticaTemaSeleccionat = null;
 
@@ -874,7 +878,7 @@ async function generarGramatica() {
         const tema = GRAMATICA_BANCO[key];
         html += `
           <div class="emoji-item" onclick="seleccionarTemaGramatica('${key}')" style="cursor:pointer;">
-            <div class="emoji-large">${tema.emoji}</div>
+            <div class="emoji-large">${tema.emoji || '📚'}</div>
             <div class="emoji-name" style="font-size:14px; font-weight:600;">${tema.titol}</div>
           </div>
         `;
