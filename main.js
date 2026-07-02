@@ -657,8 +657,12 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA V1 - MOTOR JSON COMPLET =====
+// ===== LECTURA V1.1 - MOTOR JSON COMPLET =====
 let BANCO_LECTURA = null;
+let lecturaActualVocab = [];
+let lecturaActualText = '';
+let lecturaActualPreguntes = [];
+let lecturaContext = {};
 
 async function cargarBancoLectura() {
   if (BANCO_LECTURA) return BANCO_LECTURA;
@@ -674,7 +678,7 @@ function getCurrentLevel() {
 }
 
 function gastarEnergia(cantidad) {
-  if (DEBUG_NO_ENERGIA) return true;
+  if (window.DEBUG_NO_ENERGIA) return true;
   if (estat.progres.energia < cantidad) return false;
   estat.progres.energia -= cantidad;
   guardarEstat();
@@ -682,8 +686,60 @@ function gastarEnergia(cantidad) {
   return true;
 }
 
+// --- Utils de texto catalán ---
+function pick(key, arr) {
+  if (!arr ||!arr.length) return key;
+  const val = arr[Math.floor(Math.random() * arr.length)];
+  if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
+  lecturaContext[key] = val;
+  return val;
+}
+
+function reemplaçar(text, vocab, congelar = false) {
+  return text.replace(/\$\{(\w+)\}/g, (m, key) => {
+    if (key === 'personatge') return nomPersonatge;
+    if (key === 'tema') return lecturaContext.tema_text || key;
+    // Si estamos congelando (preguntas), reutiliza lo ya elegido
+    if (congelar && lecturaContext[key]) return lecturaContext[key];
+    if (!congelar && lecturaContext[key]) return lecturaContext[key];
+    return pick(key, vocab[key]) || key;
+  });
+}
+
+function concordarGenere(text, genere) {
+  let res = text;
+  const regles = BANCO_LECTURA.regles_globals.generes_paraules || {};
+  for (const [base, formes] of Object.entries(regles)) {
+    res = res.replace(new RegExp(`\\b${base}\\b`, 'gi'), formes[genere]);
+  }
+  return res;
+}
+
+function aplicarApostrofacio(text) {
+  return text
+   .replace(/\ba el\b/gi, 'al')
+   .replace(/\bde el\b/gi, 'del')
+   .replace(/\ba l ([aeiouàèéíòóúh])/gi, "a l'$1")
+   .replace(/\bde l ([aeiouàèéíòóúh])/gi, "de l'$1")
+   .replace(/\bUn dia a l'(\w)/g, "Un dia a l'$1")
+    // fix cascada
+   .replace(/tranquil·la·la/g, 'tranquil·la');
+}
+
+function netejarTitols(text) {
+  return text
+   .replace(/\ba el\b/gi, 'al')
+   .replace(/\ba l ([aeiouàèéíòóú])/gi, "a l'$1")
+   .replace(/\s+/g, ' ')
+   .trim();
+}
+
+// --- Generar Lectura ---
 async function generarLectura() {
-  if (!gastarEnergia(30)) return;
+  if (!gastarEnergia(30)) {
+    alert('No tens energia suficient');
+    return;
+  }
 
   const banco = await cargarBancoLectura();
   const nivell = getCurrentLevel();
@@ -695,80 +751,49 @@ async function generarLectura() {
     return;
   }
 
+  lecturaActualVocab = [];
+  lecturaContext = {};
+
   const plantillas = dataNivell.plantillas;
   const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
+
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const tema = temes[Math.floor(Math.random() * temes.length)];
+  lecturaContext.tema_text = tema.replace(/_/g, ' ');
+
   const vocab = dataNivell[tema];
 
-  const personatge = nomPersonatge;
-  let genere = 'f'; // Joven = femení per defecte
+  const personatge = window.nomPersonatge || 'Joven';
+  let genere = 'f';
   if (personatge!== 'Joven') {
-    genere = personatge.startsWith('La ') || ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'].includes(personatge)? 'f' : 'm';
+    const fems = ['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria'];
+    genere = personatge.startsWith('La ') || fems.includes(personatge)? 'f' : 'm';
   }
 
-  lecturaActualVocab = [];
+  // 1. Generar texto base
+  const titol_raw = reemplaçar(plantilla.titol, vocab, false);
+  let textBase = plantilla.seq.map(l => reemplaçar(l, vocab, false)).join(' ');
 
-  function pick(arr) {
-    if (!arr ||!arr.length) return '';
-    const val = arr[Math.floor(Math.random() * arr.length)];
-    if (!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
-    return val;
-  }
-
-  function concordarGenere(text) {
-    let resultat = text;
-    Object.keys(regles.generes_paraules).forEach(paraula => {
-      const formes = regles.generes_paraules[paraula];
-      const regex = new RegExp(`\\b${paraula}\\b`, 'gi');
-      resultat = resultat.replace(regex, formes[genere]);
-    });
-    return resultat;
-  }
-
-  function aplicarApostrofacio(text) {
-    let resultat = text;
-    Object.keys(regles.apostrofacio).forEach(incorrecte => {
-      const correcte = regles.apostrofacio[incorrecte];
-      resultat = resultat.replaceAll(incorrecte, correcte);
-    });
-    // PARCHES PER BUGS DE LES CAPTURES
-    resultat = resultat.replaceAll('a el ', 'al ');
-    resultat = resultat.replaceAll('a l ', 'a l\'');
-    resultat = resultat.replaceAll('de el ', 'del ');
-    resultat = resultat.replaceAll('tranquil·la·la', 'tranquil·la');
-    resultat = resultat.replaceAll('Un dia a el ', 'Un dia al ');
-    resultat = resultat.replaceAll('Un dia a l ', 'Un dia a l\'');
-    return resultat;
-  }
-
-  function reemplaçar(text) {
-    return text.replace(/\$\{(\w+)\}/g, (match, key) => {
-      if (key === 'personatge') return personatge;
-      if (key === 'tema') return tema.replace(/_/g, ' ');
-      return pick(vocab[key]) || key;
-    });
-  }
-
-  const titol = reemplaçar(plantilla.titol);
-  let textBase = plantilla.seq.map(l => reemplaçar(l)).join(' ');
-  textBase = concordarGenere(textBase);
+  textBase = concordarGenere(textBase, genere);
   textBase = aplicarApostrofacio(textBase);
 
-  const finalsAlternatius = [
-    'la ciutat és el meu lloc preferit!',
-    'm\'encanta passar temps aquí!',
+  const finals = [
+    'és el meu lloc preferit!',
+    "m'encanta passar temps aquí!",
     'vull tornar aviat!',
     'ha estat un dia genial!'
   ];
-  const finalRandom = finalsAlternatius[Math.floor(Math.random() * finalsAlternatius.length)];
-  lecturaActualText = textBase.replace(/la ciutat és el meu lloc preferit!|m'encanta.*|vull tornar.*|ha estat.*/, finalRandom);
+  const finalRandom = finals[Math.floor(Math.random() * finals.length)];
+  lecturaActualText = textBase.replace(/és el meu lloc preferit!.*$/i, finalRandom);
 
+  // 2. Preguntas CONGELADAS al contexto de la lectura
   lecturaActualPreguntes = plantilla.preguntes.map(p => ({
-    q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q))),
-    opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o)))),
+    q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q, vocab, true)), genere),
+    opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o, vocab, true)), genere)),
     correcta: p.correcta
   }));
+
+  const titol = netejarTitols(concordarGenere(aplicarApostrofacio(titol_raw), genere));
 
   document.getElementById('lectura-texto').innerHTML = `
     <div class="lectura-card">
@@ -779,7 +804,7 @@ async function generarLectura() {
           <div style="margin-bottom:15px;">
             <p><strong>${i+1}. ${p.q}</strong></p>
             ${p.opcions.map((op, j) => `
-              <button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i}, ${j})">${op}</button>
+              <button class="btn-sec lectura-opcio" data-p="${i}" data-r="${j}" onclick="comprovarPregunta(${i}, ${j}, this)">${op}</button>
             `).join('')}
             <div id="feedback-${i}" class="feedback"></div>
           </div>
@@ -788,8 +813,9 @@ async function generarLectura() {
       <button class="btn-primari" onclick="generarLectura().catch(e => console.error(e))" style="margin-top:15px;">Nova lectura (-30 energia)</button>
     </div>
   `;
+
   renderVocabLectura();
-  await generarGramatica(); // CRÍTIC: AIXÒ PINTA LA GRID
+  await generarGramatica();
 }
 
 function renderVocabLectura() {
@@ -811,185 +837,107 @@ function renderVocabLectura() {
   `;
 }
 
-function comprovarPregunta(idx, resp) {
+function comprovarPregunta(idx, resp, btn) {
   const p = lecturaActualPreguntes[idx];
   const fb = document.getElementById(`feedback-${idx}`);
+  const buttons = btn.parentElement.querySelectorAll('.lectura-opcio');
+  buttons.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
+
   if (resp === p.correcta) {
-    fb.innerHTML = '<span style="color:#4CAF50">Correcte! +0.5 XP</span>';
+    fb.innerHTML = '<span class="glow-ok">Correcte! +0.5 XP</span>';
+    btn.classList.add('glow-ok-btn');
     estat.progres.encerts += 0.5;
     guardarEstat();
     actualitzarUI();
   } else {
-    fb.innerHTML = `<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;
+    fb.innerHTML = `<span class="glow-err">No. Era: ${p.opcions[p.correcta]}</span>`;
+    btn.classList.add('glow-err-btn');
   }
 }
 
-// ===== GRAMÀTICA V1 - 9 TEMES DES DEL JSON =====
+// ===== GRAMÀTICA V1.2 - fix taps =====
 let gramaticaMode = 'guia';
 let gramaticaTemaSeleccionat = null;
 
-async function generarGramatica() {
+function slugGramatica(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'_');
+}
+
+async function generarGramatica(forzarGrid = false) {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
-
   const banco = await cargarBancoLectura();
+  const GRAMATICA_BANCO = banco?.gramatica?.guia;
+  if (!GRAMATICA_BANCO) return;
 
-  // Bloc de seguretat
-  if (!banco ||!banco.gramatica ||!banco.gramatica.guia) {
-    console.error('JSON carregat:', banco);
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">⚠️</div>
-        <p>No trobo "gramatica.guia" al banco_lectura.json</p>
-        <p style="font-size:12px; opacity:0.7;">Mira la consola F12</p>
-      </div>
-    `;
-    return;
-  }
-
-  const GRAMATICA_BANCO = banco.gramatica.guia;
+  // construye mapa slug -> key real
+  const keys = Object.keys(GRAMATICA_BANCO);
+  const mapa = {};
+  keys.forEach(k => mapa[slugGramatica(k)] = k);
 
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
-      <button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')" style="padding:8px 16px; font-size:14px;">Contextual</button>
-      <button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')" style="padding:8px 16px; font-size:14px;">Guia</button>
+      <button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button>
+      <button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button>
     </div>
   `;
 
   if (gramaticaMode === 'contextual') {
-    if (!lecturaActualText || lecturaActualVocab.length === 0) {
-      container.innerHTML = html + `
-        <div class="empty-state">
-          <div class="empty-state-icon">📚</div>
-          <p>Genera primer una lectura per veure la gramàtica</p>
-        </div>
-      `;
-      return;
-    }
-    const nivell = getCurrentLevel();
-    const grammarPoint = detectarPuntGramatica(lecturaActualText, nivell, GRAMATICA_BANCO);
-    html += `
-      <div class="grammar-card">
-        <div class="grammar-title">${grammarPoint.titol}</div>
-        <div class="grammar-explanation">${grammarPoint.explicacio}</div>
-        <div class="grammar-examples">
-          <div class="grammar-examples-title">Exemples de la lectura:</div>
-          ${grammarPoint.exemples?.length > 0? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
-        </div>
-        <div class="grammar-exercise">
-          <div class="grammar-exercise-title">Practica:</div>
-          ${grammarPoint.exercici?.map((frase, i) => `<div class="grammar-exercise-item">${i+1}. ${frase}</div>`).join('') || ''}
-        </div>
-        ${grammarPoint.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${grammarPoint.tip}</div>` : ''}
-      </div>
-    `;
+    // ... igual que en V1.1
+    const gp = detectarPuntGramatica(lecturaActualText, getCurrentLevel(), GRAMATICA_BANCO);
+    html += `<div class="grammar-card"><div class="grammar-title">${gp.titol}</div>${gp.explicacio ? `<div class="grammar-explanation">${gp.explicacio}</div>`:''}</div>`;
   } else {
-    if (!gramaticaTemaSeleccionat) {
+    if (!gramaticaTemaSeleccionat || forzarGrid) {
       html += `<div class="emoji-grid">`;
-      Object.keys(GRAMATICA_BANCO).forEach(key => {
-        const tema = GRAMATICA_BANCO[key];
+      keys.forEach(keyReal => {
+        const t = GRAMATICA_BANCO[keyReal];
+        const slug = slugGramatica(keyReal);
         html += `
-          <div class="emoji-item" onclick="seleccionarTemaGramatica('${key}')" style="cursor:pointer;">
-            <div class="emoji-large">${tema.emoji || '📚'}</div>
-            <div class="emoji-name" style="font-size:14px; font-weight:600;">${tema.titol}</div>
-          </div>
-        `;
+          <div class="emoji-item" data-gramkey="${slug}" onclick="seleccionarTemaGramatica('${slug}')">
+            <div class="emoji-large">${t.emoji || '📚'}</div>
+            <div class="emoji-name" style="font-size:14px; font-weight:600;">${t.titol}</div>
+          </div>`;
       });
       html += `</div>`;
     } else {
-      const tema = GRAMATICA_BANCO[gramaticaTemaSeleccionat];
+      const keyReal = mapa[gramaticaTemaSeleccionat] || gramaticaTemaSeleccionat;
+      const tema = GRAMATICA_BANCO[keyReal];
+      if (!tema) { gramaticaTemaSeleccionat = null; return generarGramatica(true); }
       html += `
         <button class="btn btn-sec" onclick="tornarAGuia()" style="margin-bottom:15px;">← Tornar a la Guia</button>
         <div class="grammar-card">
           <div class="grammar-title">${tema.titol}</div>
           <div class="grammar-explanation">${tema.explicacio}</div>
-          <div style="background:#1a1a1a; padding:12px; border-radius:8px; margin:12px 0; font-family:monospace; color:#4CAF50; font-size:14px;">
-            Estructura: ${tema.estructura}
+          <div style="background:#1a1a1a; padding:12px; border-radius:8px; margin:12px 0; font-family:monospace; color:#4CAF50;">
+            ${tema.estructura || ''}
           </div>
           <div class="grammar-examples">
             <div class="grammar-examples-title">Exemples:</div>
-            ${tema.exemples?.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') || ''}
+            ${(tema.exemples||[]).map(ex => `<div class="grammar-example">• ${ex}</div>`).join('')}
           </div>
           <div class="grammar-exercise">
             <div class="grammar-exercise-title">Practica:</div>
-            ${tema.exercici?.map((frase, i) => `<div class="grammar-exercise-item">${i+1}. ${frase}</div>`).join('') || ''}
+            ${(tema.exercici||[]).map((f,i) => `<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')}
           </div>
           ${tema.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${tema.tip}</div>` : ''}
-        </div>
-      `;
+        </div>`;
     }
   }
   container.innerHTML = html;
 }
 
-function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
-  // Seguretat: comprova que existeix cada tema abans d'usar-lo
-  if ((texto.includes('va ') || texto.includes('vam ') || texto.includes('van ')) && GRAMATICA_BANCO.preterit_perifrastic) {
-    const data = {...GRAMATICA_BANCO.preterit_perifrastic};
-    data.exemples = extraerFrasesCon(texto, 'va ');
-    return data;
-  }
-  if ((texto.includes('estava') || texto.includes('està') || texto.includes('estic')) && GRAMATICA_BANCO.estar_adjectiu) {
-    const data = {...GRAMATICA_BANCO.estar_adjectiu};
-    data.exemples = extraerFrasesCon(texto, 'estav');
-    return data;
-  }
-  if ((texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) && GRAMATICA_BANCO.futur_simple) {
-    return GRAMATICA_BANCO.futur_simple;
-  }
-  if (/\b(dues|tres|quatre|un|una)\b/i.test(texto) && GRAMATICA_BANCO.numerals) {
-    const data = {...GRAMATICA_BANCO.numerals};
-    data.exemples = extraerFrasesCon(texto, 'dues ').concat(extraerFrasesCon(texto, 'tres ')).concat(extraerFrasesCon(texto, 'quatre ')).slice(0,3);
-    return data;
-  }
-  if (/\b(a la dreta|al costat|lluny|a l'esquerra)\b/i.test(texto) && GRAMATICA_BANCO.preposicions_lloc) {
-    const data = {...GRAMATICA_BANCO.preposicions_lloc};
-    data.exemples = extraerFrasesCon(texto, 'lluny').concat(extraerFrasesCon(texto, 'costat')).concat(extraerFrasesCon(texto, 'dreta')).slice(0,3);
-    return data;
-  }
-  if (/\b(molts|cap|algunes|alguns|molta)\b/i.test(texto) && GRAMATICA_BANCO.quantitatius) {
-    const data = {...GRAMATICA_BANCO.quantitatius};
-    data.exemples = extraerFrasesCon(texto, 'molts').concat(extraerFrasesCon(texto, 'cap')).concat(extraerFrasesCon(texto, 'algunes')).slice(0,3);
-    return data;
-  }
-
-  // Fallback segur
-  return GRAMATICA_BANCO.articles || {
-    titol: 'Gramàtica',
-    explicacio: 'Genera una lectura nova per veure exemples contextuals',
-    estructura: '',
-    exemples: [],
-    exercici: [],
-    tip: ''
-  };
-}
-
-function setGramaticaMode(mode) {
-  gramaticaMode = mode;
-  gramaticaTemaSeleccionat = null;
+function seleccionarTemaGramatica(slug) {
+  gramaticaTemaSeleccionat = slug;
   generarGramatica();
 }
+function tornarAGuia() { gramaticaTemaSeleccionat = null; generarGramatica(true); }
+function setGramaticaMode(mode) { gramaticaMode = mode; gramaticaTemaSeleccionat = null; generarGramatica(true); }
 
-function seleccionarTemaGramatica(key) {
-  gramaticaTemaSeleccionat = key;
-  generarGramatica();
-}
-
-function tornarAGuia() {
-  gramaticaTemaSeleccionat = null;
-  generarGramatica();
-}
-
-function extraerFrasesCon(texto, palabra) {
-  const frases = texto.split('.');
-  return frases.filter(f => f.toLowerCase().includes(palabra.toLowerCase())).slice(0,3).map(f => f.trim() + '.');
-}
-
-// Fer globals perquè l'onclick de l'HTML les trobi
+// exporta para onclick
 window.setGramaticaMode = setGramaticaMode;
 window.seleccionarTemaGramatica = seleccionarTemaGramatica;
 window.tornarAGuia = tornarAGuia;
-window.generarGramatica = generarGramatica;
 
 // ===== TIPS =====
 function carregarTips() {
