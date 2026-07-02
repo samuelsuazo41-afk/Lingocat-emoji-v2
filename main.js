@@ -657,57 +657,6 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== NAV TABS - FIX V1.2 =====
-// Esto arregla los subtabs Lectura / Vocabulari / Gramàtica
-// y el bottom-nav Mapa / Missió / Gremi / Lectura / Tips / Botiga
-function canviarTab(tab, ev) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  const target = document.getElementById('tab-' + tab);
-  if (target) target.classList.add('active');
-
-  document.querySelectorAll('.bottom-nav.nav-item').forEach(b => b.classList.remove('active'));
-  if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
-
-  // si entras a Lectura y aún no hay texto, genera uno
-  if (tab === 'lectura' && typeof lecturaActualText!== 'undefined' &&!lecturaActualText && typeof generarLectura === 'function') {
-    generarLectura().catch(console.error);
-  }
-}
-
-function mostrarSubTab(nom) {
-  const mapa = {
-    'personatges': 'gremi-personatges',
-    'biblioteca': 'gremi-biblioteca',
-    'minijoc': 'gremi-minijoc',
-    'lectura': 'gremi-lectura',
-    'vocab': 'gremi-vocab',
-    'gramatica': 'gremi-gramatica'
-  };
-  const targetId = mapa[nom];
-  if (!targetId) return;
-
-  const target = document.getElementById(targetId);
-  if (!target) return;
-
-  // oculta solo los hermanos del mismo contenedor
-  const parent = target.parentElement;
-  parent.querySelectorAll('.sub-tab-content').forEach(el => el.style.display = 'none');
-  target.style.display = 'block';
-
-  // marca el botón activo
-  const btn = Array.from(document.querySelectorAll('.sub-tab-btn'))
-   .find(b => b.getAttribute('onclick')?.includes(`'${nom}'`));
-  if (btn && btn.parentElement.classList.contains('sub-tabs')) {
-    btn.parentElement.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
-  // si abres Gramàtica, píntala
-  if (nom === 'gramatica' && typeof generarGramatica === 'function') {
-    generarGramatica();
-  }
-}
-
 // ===== LECTURA V1.2 - MOTOR JSON COMPLET =====
 let BANCO_LECTURA = null;
 let lecturaActualVocab = [];
@@ -767,19 +716,19 @@ function concordarGenere(text, genere) {
 
 function aplicarApostrofacio(text) {
   return text
-   .replace(/\ba el\b/gi, 'al')
-   .replace(/\bde el\b/gi, 'del')
-   .replace(/\ba l ([aeiouàèéíòóúh])/gi, "a l'$1")
-   .replace(/\bde l ([aeiouàèéíòóúh])/gi, "de l'$1")
-   .replace(/tranquil·la·la/g, 'tranquil·la');
+  .replace(/\ba el\b/gi, 'al')
+  .replace(/\bde el\b/gi, 'del')
+  .replace(/\ba l ([aeiouàèéíòóúh])/gi, "a l'$1")
+  .replace(/\bde l ([aeiouàèéíòóúh])/gi, "de l'$1")
+  .replace(/tranquil·la·la/g, 'tranquil·la');
 }
 
 function netejarTitols(text) {
   return text
-   .replace(/\ba el\b/gi, 'al')
-   .replace(/\ba l ([aeiouàèéíòóú])/gi, "a l'$1")
-   .replace(/\s+/g, ' ')
-   .trim();
+  .replace(/\ba el\b/gi, 'al')
+  .replace(/\ba l ([aeiouàèéíòóú])/gi, "a l'$1")
+  .replace(/\s+/g, ' ')
+  .trim();
 }
 
 // --- Generar Lectura ---
@@ -910,7 +859,7 @@ let gramaticaTemaSeleccionat = null;
 
 function slugGramatica(str) {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-   .toLowerCase().replace(/[^a-z0-9]+/g,'_');
+  .toLowerCase().replace(/[^a-z0-9]+/g,'_');
 }
 
 async function generarGramatica(forzarGrid = false) {
@@ -1020,9 +969,7 @@ function extraerFrasesCon(texto, palabra) {
   return texto.split('.').filter(f => f.toLowerCase().includes(palabra.toLowerCase())).slice(0,3).map(f => f.trim() + '.');
 }
 
-// Exporta todo para los onclick del HTML
-window.canviarTab = canviarTab;
-window.mostrarSubTab = mostrarSubTab;
+// Exporta solo Lectura/Gramática para los onclick del HTML
 window.setGramaticaMode = setGramaticaMode;
 window.seleccionarTemaGramatica = seleccionarTemaGramatica;
 window.tornarAGuia = tornarAGuia;
