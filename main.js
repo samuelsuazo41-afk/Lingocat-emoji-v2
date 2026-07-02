@@ -657,7 +657,7 @@ function comprovarMinijoc() {
   }
 }
 
-// ===== LECTURA V1.1 - MOTOR JSON COMPLET =====
+// ===== LECTURA V1.2 - MOTOR JSON COMPLET =====
 let BANCO_LECTURA = null;
 let lecturaActualVocab = [];
 let lecturaActualText = '';
@@ -697,9 +697,8 @@ function pick(key, arr) {
 
 function reemplaçar(text, vocab, congelar = false) {
   return text.replace(/\$\{(\w+)\}/g, (m, key) => {
-    if (key === 'personatge') return nomPersonatge;
+    if (key === 'personatge') return window.nomPersonatge || 'Joven';
     if (key === 'tema') return lecturaContext.tema_text || key;
-    // Si estamos congelando (preguntas), reutiliza lo ya elegido
     if (congelar && lecturaContext[key]) return lecturaContext[key];
     if (!congelar && lecturaContext[key]) return lecturaContext[key];
     return pick(key, vocab[key]) || key;
@@ -717,21 +716,19 @@ function concordarGenere(text, genere) {
 
 function aplicarApostrofacio(text) {
   return text
-   .replace(/\ba el\b/gi, 'al')
-   .replace(/\bde el\b/gi, 'del')
-   .replace(/\ba l ([aeiouàèéíòóúh])/gi, "a l'$1")
-   .replace(/\bde l ([aeiouàèéíòóúh])/gi, "de l'$1")
-   .replace(/\bUn dia a l'(\w)/g, "Un dia a l'$1")
-    // fix cascada
-   .replace(/tranquil·la·la/g, 'tranquil·la');
+  .replace(/\ba el\b/gi, 'al')
+  .replace(/\bde el\b/gi, 'del')
+  .replace(/\ba l ([aeiouàèéíòóúh])/gi, "a l'$1")
+  .replace(/\bde l ([aeiouàèéíòóúh])/gi, "de l'$1")
+  .replace(/tranquil·la·la/g, 'tranquil·la');
 }
 
 function netejarTitols(text) {
   return text
-   .replace(/\ba el\b/gi, 'al')
-   .replace(/\ba l ([aeiouàèéíòóú])/gi, "a l'$1")
-   .replace(/\s+/g, ' ')
-   .trim();
+  .replace(/\ba el\b/gi, 'al')
+  .replace(/\ba l ([aeiouàèéíòóú])/gi, "a l'$1")
+  .replace(/\s+/g, ' ')
+  .trim();
 }
 
 // --- Generar Lectura ---
@@ -744,7 +741,6 @@ async function generarLectura() {
   const banco = await cargarBancoLectura();
   const nivell = getCurrentLevel();
   const dataNivell = banco[nivell];
-  const regles = banco.regles_globals;
 
   if (!dataNivell ||!dataNivell.plantillas) {
     document.getElementById('lectura-texto').innerHTML = '<p>No hi ha lectures per aquest nivell</p>';
@@ -754,8 +750,7 @@ async function generarLectura() {
   lecturaActualVocab = [];
   lecturaContext = {};
 
-  const plantillas = dataNivell.plantillas;
-  const plantilla = plantillas[Math.floor(Math.random() * plantillas.length)];
+  const plantilla = dataNivell.plantillas[Math.floor(Math.random() * dataNivell.plantillas.length)];
 
   const temes = ['la_familia', 'la_casa', 'l_escola', 'la_ciutat', 'la_natura', 'el_temps_lliure'];
   const tema = temes[Math.floor(Math.random() * temes.length)];
@@ -770,7 +765,6 @@ async function generarLectura() {
     genere = personatge.startsWith('La ') || fems.includes(personatge)? 'f' : 'm';
   }
 
-  // 1. Generar texto base
   const titol_raw = reemplaçar(plantilla.titol, vocab, false);
   let textBase = plantilla.seq.map(l => reemplaçar(l, vocab, false)).join(' ');
 
@@ -786,7 +780,7 @@ async function generarLectura() {
   const finalRandom = finals[Math.floor(Math.random() * finals.length)];
   lecturaActualText = textBase.replace(/és el meu lloc preferit!.*$/i, finalRandom);
 
-  // 2. Preguntas CONGELADAS al contexto de la lectura
+  // Preguntas CONGELADAS al contexto de la lectura
   lecturaActualPreguntes = plantilla.preguntes.map(p => ({
     q: concordarGenere(aplicarApostrofacio(reemplaçar(p.q, vocab, true)), genere),
     opcions: p.opcions.map(o => concordarGenere(aplicarApostrofacio(reemplaçar(o, vocab, true)), genere)),
@@ -815,7 +809,11 @@ async function generarLectura() {
   `;
 
   renderVocabLectura();
-  await generarGramatica();
+
+  // Solo repinta gramática si estás en modo Contextual
+  if (gramaticaMode === 'contextual') {
+    await generarGramatica();
+  }
 }
 
 function renderVocabLectura() {
@@ -861,17 +859,20 @@ let gramaticaTemaSeleccionat = null;
 
 function slugGramatica(str) {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .toLowerCase().replace(/[^a-z0-9]+/g,'_');
+   .toLowerCase().replace(/[^a-z0-9]+/g,'_');
 }
 
 async function generarGramatica(forzarGrid = false) {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
+
   const banco = await cargarBancoLectura();
   const GRAMATICA_BANCO = banco?.gramatica?.guia;
-  if (!GRAMATICA_BANCO) return;
+  if (!GRAMATICA_BANCO) {
+    container.innerHTML = `<div class="empty-state"><p>No trobo "gramatica.guia" al banco_lectura.json</p></div>`;
+    return;
+  }
 
-  // construye mapa slug -> key real
   const keys = Object.keys(GRAMATICA_BANCO);
   const mapa = {};
   keys.forEach(k => mapa[slugGramatica(k)] = k);
@@ -884,9 +885,27 @@ async function generarGramatica(forzarGrid = false) {
   `;
 
   if (gramaticaMode === 'contextual') {
-    // ... igual que en V1.1
+    if (!lecturaActualText) {
+      html += `<div class="empty-state"><div class="empty-state-icon">📚</div><p>Genera primer una lectura</p></div>`;
+      container.innerHTML = html;
+      return;
+    }
     const gp = detectarPuntGramatica(lecturaActualText, getCurrentLevel(), GRAMATICA_BANCO);
-    html += `<div class="grammar-card"><div class="grammar-title">${gp.titol}</div>${gp.explicacio ? `<div class="grammar-explanation">${gp.explicacio}</div>`:''}</div>`;
+    html += `
+      <div class="grammar-card">
+        <div class="grammar-title">${gp.titol}</div>
+        <div class="grammar-explanation">${gp.explicacio || ''}</div>
+        <div class="grammar-examples">
+          <div class="grammar-examples-title">Exemples de la lectura:</div>
+          ${gp.exemples?.length? gp.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples</div>'}
+        </div>
+        <div class="grammar-exercise">
+          <div class="grammar-exercise-title">Practica:</div>
+          ${(gp.exercici||[]).map((f,i) => `<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')}
+        </div>
+        ${gp.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${gp.tip}</div>` : ''}
+      </div>
+    `;
   } else {
     if (!gramaticaTemaSeleccionat || forzarGrid) {
       html += `<div class="emoji-grid">`;
@@ -927,17 +946,36 @@ async function generarGramatica(forzarGrid = false) {
   container.innerHTML = html;
 }
 
-function seleccionarTemaGramatica(slug) {
-  gramaticaTemaSeleccionat = slug;
-  generarGramatica();
+function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
+  const t = (texto || '').toLowerCase();
+  const get = (k, needle) => {
+    if (!GRAMATICA_BANCO[k]) return null;
+    const d = {...GRAMATICA_BANCO[k]};
+    d.exemples = extraerFrasesCon(texto, needle);
+    return d;
+  };
+  if (/\bva\s+\w+ar\b/.test(t) && GRAMATICA_BANCO.preterit_perifrastic) return get('preterit_perifrastic','va ');
+  if (/\best(ava|à|ic)\b/.test(t) && GRAMATICA_BANCO.estar_adjectiu) return get('estar_adjectiu','est');
+  if (/\b(molts|cap|algunes|molta)\b/.test(t) && GRAMATICA_BANCO.quantitatius) return get('quantitatius','mol');
+  if (/\b(a la dreta|al costat|lluny)\b/.test(t) && GRAMATICA_BANCO.preposicions_lloc) return get('preposicions_lloc',' ');
+  return GRAMATICA_BANCO.articles || GRAMATICA_BANCO[Object.keys(GRAMATICA_BANCO)[0]] || { titol:'Gramàtica', explicacio:'Genera una lectura nova', exemples:[], exercici:[], tip:'' };
 }
-function tornarAGuia() { gramaticaTemaSeleccionat = null; generarGramatica(true); }
-function setGramaticaMode(mode) { gramaticaMode = mode; gramaticaTemaSeleccionat = null; generarGramatica(true); }
 
-// exporta para onclick
+function setGramaticaMode(mode) { gramaticaMode = mode; gramaticaTemaSeleccionat = null; generarGramatica(true); }
+function seleccionarTemaGramatica(slug) { gramaticaTemaSeleccionat = slug; generarGramatica(); }
+function tornarAGuia() { gramaticaTemaSeleccionat = null; generarGramatica(true); }
+
+function extraerFrasesCon(texto, palabra) {
+  return texto.split('.').filter(f => f.toLowerCase().includes(palabra.toLowerCase())).slice(0,3).map(f => f.trim() + '.');
+}
+
+// Exporta para onclick del HTML
 window.setGramaticaMode = setGramaticaMode;
 window.seleccionarTemaGramatica = seleccionarTemaGramatica;
 window.tornarAGuia = tornarAGuia;
+window.generarGramatica = generarGramatica;
+window.comprovarPregunta = comprovarPregunta;
+window.generarLectura = generarLectura;
 
 // ===== TIPS =====
 function carregarTips() {
