@@ -985,7 +985,7 @@ function extraerFrasesCon(texto, palabra) {
 window.setGramaticaMode = setGramaticaMode;
 window.seleccionarTemaGramatica = seleccionarTemaGramatica;
 window.tornarAGuia = tornarAGuia;
-window.generarGramatica = generarGramatica;
+window.generarGramatica = generarGramatica; 
 
 // ===== TIPS =====
 function carregarTips() {
