@@ -831,8 +831,7 @@ let gramaticaTemaSeleccionat = null;
 async function generarGramatica() {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
-
-  const banco = await cargarBancoLectura();
+const banco = await cargarBancoLectura();
 
 // Nou bloc de seguretat 👇
 if (!banco || !banco.gramatica || !banco.gramatica.guia) {
@@ -847,7 +846,7 @@ if (!banco || !banco.gramatica || !banco.gramatica.guia) {
   return;
 }
 
-const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur
+const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur // Ara sí, ja és segur
 
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
