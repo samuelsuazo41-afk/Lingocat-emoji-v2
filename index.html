@@ -17,6 +17,7 @@
   --accent: #2ECC71;      /* Verde Duolingo */
   --accent-soft: #00D4AA; /* Cyan del gradiente */
   --success: #2ECC71;
+  --error: #ff6b6b;
   --border: #2A2A2A;
   --shadow: rgba(0, 0, 0, 0.5);
 }
@@ -139,7 +140,7 @@ header {
 
 .emoji-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px;
 }
 .emoji-item {
@@ -148,6 +149,18 @@ header {
   border-radius: 8px;
   padding: 12px;
   text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s ease;
+}
+.emoji-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.emoji-item:active {
+  transform: scale(0.97);
+  border-color: var(--accent);
 }
 .emoji-large { font-size: 32px; margin-bottom: 4px; }
 .emoji-name { font-size: 12px; color: var(--text-muted); }
@@ -169,6 +182,7 @@ header {
   font-weight: bold;
   cursor: pointer;
   margin-top: 12px;
+  transition: all 0.15s ease;
 }
 .btn-primari { 
   background: linear-gradient(135deg, var(--accent), var(--accent-soft));
@@ -190,6 +204,21 @@ header {
   margin: 0 auto;
 }
 .lectura-text { line-height: 1.7; margin: 16px 0; font-size: 17px; }
+.lectura-preguntes button {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  text-align: left;
+}
+
+/* Opciones de lectura - V1.2 */
+.lectura-opcio {
+  transition: all 0.15s ease;
+}
+.lectura-opcio:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
 
 .tip-card {
   background: linear-gradient(135deg, var(--accent), var(--accent-soft));
@@ -239,7 +268,7 @@ header {
 .vocab-word { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
 .vocab-pron { font-size: 12px; color: var(--text-muted); }
 
-/* ===== GRAMÀTICA V1 ===== */
+/* ===== GRAMÀTICA V1.2 ===== */
 .grammar-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -247,28 +276,24 @@ header {
   padding: 16px;
   margin: 12px 0;
 }
-
 .grammar-title {
   font-size: 18px;
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 8px;
 }
-
 .grammar-explanation {
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.5;
   margin-bottom: 12px;
 }
-
 .grammar-examples-title, .grammar-exercise-title {
   font-weight: 600;
   color: var(--text);
   margin: 12px 0 8px 0;
   font-size: 15px;
 }
-
 .grammar-example {
   background: var(--bg-elevated);
   padding: 8px 12px;
@@ -277,7 +302,6 @@ header {
   color: var(--text);
   font-size: 14px;
 }
-
 .grammar-exercise-item {
   background: #252525;
   padding: 10px 12px;
@@ -287,7 +311,6 @@ header {
   font-size: 14px;
   border-left: 3px solid var(--accent);
 }
-
 .grammar-tip {
   background: rgba(46, 204, 113, 0.1);
   border: 1px solid var(--accent);
@@ -297,7 +320,7 @@ header {
   color: var(--accent-soft);
   font-size: 13px;
 }
-/* ===== FI GRAMÀTICA V1 ===== */
+/* ===== FI GRAMÀTICA ===== */
 
 /* Intro */
 .intro-overlay {
@@ -370,6 +393,29 @@ header {
 @keyframes slideDown {
   from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ===== LECTURA V1.2 - GLOW FEEDBACK ===== */
+.glow-ok { 
+  color: var(--accent); 
+  text-shadow: 0 0 8px rgba(46,204,113,0.5); 
+  font-weight: 600; 
+}
+.glow-err { 
+  color: var(--error); 
+  text-shadow: 0 0 8px rgba(255,107,107,0.3); 
+}
+.glow-ok-btn { 
+  box-shadow: 0 0 12px rgba(46,204,113,0.6) !important; 
+  border-color: var(--accent) !important; 
+}
+.glow-err-btn { 
+  box-shadow: 0 0 12px rgba(255,107,107,0.4) !important; 
+}
+.feedback { 
+  min-height: 24px; 
+  margin-top: 6px; 
+  font-size: 14px;
 }
 </style>
 </head>
