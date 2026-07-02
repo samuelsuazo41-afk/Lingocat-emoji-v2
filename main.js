@@ -831,22 +831,23 @@ let gramaticaTemaSeleccionat = null;
 async function generarGramatica() {
   const container = document.getElementById('lectura-gramatica');
   if (!container) return;
-const banco = await cargarBancoLectura();
 
-// Nou bloc de seguretat 👇
-if (!banco || !banco.gramatica || !banco.gramatica.guia) {
-  console.error('JSON carregat:', banco);
-  container.innerHTML = `
-    <div class="empty-state">
-      <div class="empty-state-icon">⚠️</div>
-      <p>No trobo "gramatica.guia" al banco_lectura.json</p>
-      <p style="font-size:12px; opacity:0.7;">Mira la consola F12</p>
-    </div>
-  `;
-  return;
-}
+  const banco = await cargarBancoLectura();
 
-const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur // Ara sí, ja és segur
+  // Bloc de seguretat
+  if (!banco ||!banco.gramatica ||!banco.gramatica.guia) {
+    console.error('JSON carregat:', banco);
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        <p>No trobo "gramatica.guia" al banco_lectura.json</p>
+        <p style="font-size:12px; opacity:0.7;">Mira la consola F12</p>
+      </div>
+    `;
+    return;
+  }
+
+  const GRAMATICA_BANCO = banco.gramatica.guia;
 
   let html = `
     <div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;">
@@ -873,13 +874,11 @@ const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur // Ara s�
         <div class="grammar-explanation">${grammarPoint.explicacio}</div>
         <div class="grammar-examples">
           <div class="grammar-examples-title">Exemples de la lectura:</div>
-          ${grammarPoint.exemples.length > 0? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
+          ${grammarPoint.exemples?.length > 0? grammarPoint.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') : '<div class="grammar-example">• No s\'han trobat exemples en aquesta lectura</div>'}
         </div>
         <div class="grammar-exercise">
           <div class="grammar-exercise-title">Practica:</div>
-          ${grammarPoint.exercici.map((frase, i) => `
-            <div class="grammar-exercise-item">${i+1}. ${frase}</div>
-          `).join('')}
+          ${grammarPoint.exercici?.map((frase, i) => `<div class="grammar-exercise-item">${i+1}. ${frase}</div>`).join('') || ''}
         </div>
         ${grammarPoint.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${grammarPoint.tip}</div>` : ''}
       </div>
@@ -909,13 +908,11 @@ const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur // Ara s�
           </div>
           <div class="grammar-examples">
             <div class="grammar-examples-title">Exemples:</div>
-            ${tema.exemples.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('')}
+            ${tema.exemples?.map(ex => `<div class="grammar-example">• ${ex}</div>`).join('') || ''}
           </div>
           <div class="grammar-exercise">
             <div class="grammar-exercise-title">Practica:</div>
-            ${tema.exercici.map((frase, i) => `
-              <div class="grammar-exercise-item">${i+1}. ${frase}</div>
-            `).join('')}
+            ${tema.exercici?.map((frase, i) => `<div class="grammar-exercise-item">${i+1}. ${frase}</div>`).join('') || ''}
           </div>
           ${tema.tip? `<div class="grammar-tip">💡 <strong>Tip:</strong> ${tema.tip}</div>` : ''}
         </div>
@@ -926,37 +923,45 @@ const GRAMATICA_BANCO = banco.gramatica.guia; // Ara sí, ja és segur // Ara s�
 }
 
 function detectarPuntGramatica(texto, nivell, GRAMATICA_BANCO) {
-  if (texto.includes('va ') || texto.includes('vam ') || texto.includes('van ')) {
+  // Seguretat: comprova que existeix cada tema abans d'usar-lo
+  if ((texto.includes('va ') || texto.includes('vam ') || texto.includes('van ')) && GRAMATICA_BANCO.preterit_perifrastic) {
     const data = {...GRAMATICA_BANCO.preterit_perifrastic};
     data.exemples = extraerFrasesCon(texto, 'va ');
     return data;
   }
-  if (texto.includes('estava') || texto.includes('està') || texto.includes('estic')) {
+  if ((texto.includes('estava') || texto.includes('està') || texto.includes('estic')) && GRAMATICA_BANCO.estar_adjectiu) {
     const data = {...GRAMATICA_BANCO.estar_adjectiu};
     data.exemples = extraerFrasesCon(texto, 'estav');
     return data;
   }
-  if (texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) {
+  if ((texto.includes('menjarà') || texto.includes('vindrà') || texto.includes('faré')) && GRAMATICA_BANCO.futur_simple) {
     return GRAMATICA_BANCO.futur_simple;
   }
-  if (/\b(dues|tres|quatre|un|una)\b/i.test(texto)) {
+  if (/\b(dues|tres|quatre|un|una)\b/i.test(texto) && GRAMATICA_BANCO.numerals) {
     const data = {...GRAMATICA_BANCO.numerals};
     data.exemples = extraerFrasesCon(texto, 'dues ').concat(extraerFrasesCon(texto, 'tres ')).concat(extraerFrasesCon(texto, 'quatre ')).slice(0,3);
     return data;
   }
-  if (/\b(a la dreta|al costat|lluny|a l'esquerra)\b/i.test(texto)) {
+  if (/\b(a la dreta|al costat|lluny|a l'esquerra)\b/i.test(texto) && GRAMATICA_BANCO.preposicions_lloc) {
     const data = {...GRAMATICA_BANCO.preposicions_lloc};
     data.exemples = extraerFrasesCon(texto, 'lluny').concat(extraerFrasesCon(texto, 'costat')).concat(extraerFrasesCon(texto, 'dreta')).slice(0,3);
     return data;
   }
-  if (/\b(molts|cap|algunes|alguns|molta)\b/i.test(texto)) {
+  if (/\b(molts|cap|algunes|alguns|molta)\b/i.test(texto) && GRAMATICA_BANCO.quantitatius) {
     const data = {...GRAMATICA_BANCO.quantitatius};
     data.exemples = extraerFrasesCon(texto, 'molts').concat(extraerFrasesCon(texto, 'cap')).concat(extraerFrasesCon(texto, 'algunes')).slice(0,3);
     return data;
   }
-  const data = {...GRAMATICA_BANCO.articles};
-  data.exemples = extraerFrasesCon(texto, 'el ').concat(extraerFrasesCon(texto, 'la ')).slice(0,3);
-  return data;
+
+  // Fallback segur
+  return GRAMATICA_BANCO.articles || {
+    titol: 'Gramàtica',
+    explicacio: 'Genera una lectura nova per veure exemples contextuals',
+    estructura: '',
+    exemples: [],
+    exercici: [],
+    tip: ''
+  };
 }
 
 function setGramaticaMode(mode) {
@@ -979,6 +984,12 @@ function extraerFrasesCon(texto, palabra) {
   const frases = texto.split('.');
   return frases.filter(f => f.toLowerCase().includes(palabra.toLowerCase())).slice(0,3).map(f => f.trim() + '.');
 }
+
+// Fer globals perquè l'onclick de l'HTML les trobi
+window.setGramaticaMode = setGramaticaMode;
+window.seleccionarTemaGramatica = seleccionarTemaGramatica;
+window.tornarAGuia = tornarAGuia;
+window.generarGramatica = generarGramatica;
 
 // ===== TIPS =====
 function carregarTips() {
