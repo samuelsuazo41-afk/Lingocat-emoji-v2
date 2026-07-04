@@ -444,7 +444,7 @@ header {
     <p id="intro-text" class="intro-text">Text</p>
     <div id="intro-dots" class="intro-dots">●</div>
     <button id="intro-btn" class="btn btn-primari" onclick="seguentSlide()">Següent</button>
-    <button class="btn btn-sec" onclick="tancarIntro()" style="margin-top:8px;">Saltar</button>
+    <button class="btn btn-sec" onclick="saltarIntro()" style="margin-top:8px;">Saltar</button>
   </div>
 </div>
 
@@ -484,8 +484,8 @@ header {
 <div id="tab-lectura" class="tab-content">
   <div class="sub-tabs">
     <button class="sub-tab-btn active" onclick="mostrarSubTab('lectura')">Lectura</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">Vocabulari</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">Gramàtica</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">Vocabulari</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">Gramàtica</button>
   </div>
   <div id="lectura-contenidor">
     <div id="gremi-lectura" class="sub-tab-content" style="display:block;">
@@ -546,17 +546,6 @@ header {
 <!-- Contenedor para mensajes flotantes -->
 <div id="app-message" style="display:none;"></div>
 
-<script>
-function mostrarMissatge(text) {
-  const msg = document.getElementById('app-message');
-  msg.textContent = text;
-  msg.className = 'app-message';
-  msg.style.display = 'block';
-  setTimeout(() => {
-    msg.style.display = 'none';
-  }, 2000);
-}
-</script>
 <script src="./main.js"></script>
 </body>
-</html> 
+</html>
