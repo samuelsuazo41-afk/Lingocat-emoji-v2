@@ -443,7 +443,7 @@ header {
     <h2 id="intro-titol" class="intro-titol">Benvingut</h2>
     <p id="intro-text" class="intro-text">Text</p>
     <div id="intro-dots" class="intro-dots">●</div>
-    <button id="intro-btn" class="btn btn-primari" onclick="seguentSlide()">Següent</button>
+    <button id="intro-btn" class="btn btn-primari">Següent</button>
     <button class="btn btn-sec" onclick="saltarIntro()" style="margin-top:8px;">Saltar</button>
   </div>
 </div>
@@ -480,21 +480,21 @@ header {
   </div>
 </div>
 
-<!-- TAB LECTURA - NUEVAS 3 SUBTUBS -->
+<!-- TAB LECTURA - 3 SUBTABS -->
 <div id="tab-lectura" class="tab-content">
   <div class="sub-tabs">
     <button class="sub-tab-btn active" onclick="mostrarSubTab('lectura')">Lectura</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">Vocabulari</button>
-    <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">Gramàtica</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">Vocabulari</button>
+    <button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">Gramàtica</button>
   </div>
   <div id="lectura-contenidor">
-    <div id="gremi-lectura" class="sub-tab-content" style="display:block;">
+    <div id="lectura-text-content" class="sub-tab-content" style="display:block;">
       <div id="lectura-texto"></div>
     </div>
-    <div id="gremi-vocab" class="sub-tab-content" style="display:none;">
+    <div id="lectura-vocab-content" class="sub-tab-content" style="display:none;">
       <div id="lectura-vocab"></div>
     </div>
-    <div id="gremi-gramatica" class="sub-tab-content" style="display:none;">
+    <div id="lectura-gramatica-content" class="sub-tab-content" style="display:none;">
       <div id="lectura-gramatica"></div>
     </div>
   </div>
