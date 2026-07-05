@@ -221,13 +221,24 @@ function canviarTab(tab, e) {
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('gremi-' + sub).style.display = 'block';
+  
+  // Detecta si estem al tab Gremi o al tab Lectura
+  const enTabLectura = document.getElementById('tab-lectura').classList.contains('active');
+  const idPrefix = enTabLectura ? 'lectura-' : 'gremi-';
+  const idSufix = enTabLectura ? '-content' : '';
+  
+  const target = document.getElementById(idPrefix + sub + idSufix);
+  if (target) target.style.display = 'block';
+  
   const btn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
   if(btn) btn.classList.add('active');
+  
+  // Accions específiques per sub-tab
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
-    if (sub === 'gramatica') setTimeout(() => generarGramatica(), 0);
+  if (sub === 'gramatica') setTimeout(() => generarGramatica(), 0);
+  if (sub === 'vocab') renderVocabLectura();
 }
 
 // ===== CARREGAR DADES =====
