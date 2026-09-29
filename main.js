@@ -560,4 +560,4 @@ function comprarPack(id,preu){
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(err=>console.log('SW error:',err)); });
-}
+} 
