@@ -1,5 +1,5 @@
-// main.js - Lingocat Emoji v3 REPARADO - CLEAN PARA GITHUB PAGES - FIX VOCAB/GRAMATICA
-// Estructura Croniques + Mapa 100 nivells + 25 frases per nivell
+// main.js - Lingocat Emoji v3 REPARADO - HOTFIX FINAL - SIN PANTALLA NEGRA
+// Fix: vocabulario y gramatica persistentes + compatible con index.html nuevo y viejo
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -27,11 +27,11 @@ let estat = {
     xp: parseInt(localStorage.getItem('cat_xp')) || 0
   },
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
-  compres: JSON.parse(localStorage.getItem('cat_compres')) || '[]'),
-  introVist: JSON.parse(localStorage.getItem('cat_intro')) || false,
+  compres: JSON.parse(localStorage.getItem('cat_compres') || '[]'),
+  introVist: JSON.parse(localStorage.getItem('cat_intro') || 'false'),
   personatgeTriat: localStorage.getItem('cat_personatge') || 'joven',
   ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
-  desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || '{}'
+  desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats') || '{}')
 };
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
@@ -59,10 +59,10 @@ let dadesTips = {};
 let BANCO_LECTURA = null;
 let lecturaActualVocab = [];
 let lecturaActualText = '';
-let lecturaActualHTML = ''; // FIX: guardamos HTML completo para no perderlo
+let lecturaActualHTML = ''; // FIX: guardamos HTML para que no se borre al volver
 let lecturaActualPreguntes = [];
 let lecturaContext = {};
-let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc')) || 1};
+let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc') || '1')};
 let minijoc = {fraseObjectiu: null, emojisTriats: [], emojisDisponibles: []};
 let minijocInicialitzat = false;
 let totsElsTips = [];
@@ -75,7 +75,7 @@ const INTRO_SLIDES = [
   {emoji: "📚", titol: "Lectures adaptades", text: "Textos al teu nivell A1, A2 o B1. Guanya XP i puja."},
   {emoji: "🚀", titol: "A jugar!", text: "Prem Saltar o toca la pantalla per començar"}
 ];
-let gramaticaMode = 'guia';
+let gramaticaMode = 'contextual'; // FIX: contextual por defecto para que se vea
 let gramaticaTemaSeleccionat = null;
 
 function quitarSkinTone(emoji) { return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ''); }
@@ -218,10 +218,11 @@ function canviarTab(tab, e) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+tab)?.classList.add('active');
   if(e && e.target) e.target.closest('.nav-item')?.classList.add('active');
+  else document.querySelector(`.nav-item[onclick*="'${tab}'"]`)?.classList.add('active');
   if(tab === 'mapa') renderMapa();
   if(tab === 'missio') renderMissio();
   if(tab === 'gremi') mostrarSubTab('biblioteca');
-  if(tab === 'lectura') {
+  if(tab === 'lectura'){
     mostrarSubTab('lectura');
     if(!lecturaActualHTML) generarLectura();
   }
@@ -229,51 +230,47 @@ function canviarTab(tab, e) {
   if(tab === 'botiga') renderBotiga();
 }
 
-// ===== FIX DEFINITIU VOCABULARI / GRAMATICA =====
+// ===== FIX CRITICO - ESTA ES LA CLAVE =====
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
 
   const enTabLectura = document.getElementById('tab-lectura')?.classList.contains('active');
-
-  // Busca en todos los IDs posibles para compatibilidad con index.html viejo y nuevo
+  // Busca en TODOS los IDs posibles (viejo y nuevo index.html)
   const idsPosibles = enTabLectura? [
     `lectura-${sub}`,
     `lectura-${sub}-inner`,
-    `lectura-${sub}-content`,
     `gremi-${sub}`,
-    `${sub}`
+    `lectura-${sub}-content`,
+    `lectura-${sub}-texto`,
+    sub
   ] : [
     `gremi-${sub}`,
     `lectura-${sub}`,
-    `lectura-${sub}-inner`,
-    `${sub}`
+    `lectura-${sub}-inner`
   ];
 
   let target = null;
-  for (let id of idsPosibles) {
+  for(let id of idsPosibles){
     target = document.getElementById(id);
-    if (target) break;
+    if(target){ break; }
   }
 
-  if (target) {
+  if (target){
     target.style.display = 'block';
-    // Si es el inner, también mostrar el padre
-    if(target.id.includes('-inner') || target.id.includes('-content')){
-      const padre = target.closest('.sub-tab-content');
-      if(padre) padre.style.display = 'block';
-    }
+    // Si es un inner, mostrar también el padre
+    const padre = target.closest('.sub-tab-content');
+    if(padre) padre.style.display = 'block';
   }
 
-  // Activar botón correcto
   document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));
 
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
-  if (sub === 'gramatica') setTimeout(() => generarGramatica(), 0);
-  if (sub === 'vocab') setTimeout(() => renderVocabLectura(), 0);
-  if (sub === 'lectura') {
+  if (sub === 'gramatica') setTimeout(() => generarGramatica(), 10);
+  if (sub === 'vocab') setTimeout(() => renderVocabLectura(), 10);
+  if (sub === 'lectura'){
     const c = document.getElementById('lectura-texto');
     if(c && lecturaActualHTML &&!c.innerHTML.trim()){
       c.innerHTML = lecturaActualHTML;
@@ -412,7 +409,9 @@ function generarFraseDinamica(plantilla, emojisJugador){
       const emojiData=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emojiElegit));
       const nom=emojiData?.nom_cat?.toLowerCase()||'';
       const detCorrecte=DETERMINANTS[nom]||(emojiData?.genere==='f'?'La':'El');
-      reemplazo=`${detCorrecte} ${emojiData.nom_cat}`; esPrimer=false;
+      const detIncorrecte=detCorrecte==='La'?'El':'La';
+      const detAmbBarra=detCorrecte==="L'" &&!'aeiouàèéíòóúh'.includes(nom[0])?`El/${detIncorrecte}`:`${detCorrecte}/${detIncorrecte}`;
+      reemplazo=`${detAmbBarra} ${emojiData.nom_cat}`; esPrimer=false;
     }
     text=text.replace(new RegExp(`\\s*(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), ` ${reemplazo}`);
     solucio.push(emojiElegit);
@@ -480,7 +479,7 @@ function comprovarMinijoc(){
     if(estat.progres.frasesDesDeUltimNivell>=25 && estat.progres.nivellActualMapa<100){
       estat.progres.nivellActualMapa++; estat.progres.frasesDesDeUltimNivell=0; mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);
     }
-    NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1, NIVELL_MINIJOC.maxEmojis);
+    NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1, 5);
     guardarEstat(); actualitzarUI(); setTimeout(()=>novaFraseMinijoc(),1500);
   } else {
     feedback.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;
@@ -503,7 +502,7 @@ async function generarLectura(){
   let genere='f'; if(personatge!=='Joven'){ const fems=['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria']; genere=personatge.startsWith('La ')||fems.includes(personatge)?'f':'m'; }
   function pick(key,arr){ if(!arr||!arr.length) return key; if(lecturaContext[key]) return lecturaContext[key]; const val=arr[Math.floor(Math.random()*arr.length)]; if(!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val); lecturaContext[key]=val; return val; }
   function reemplaçar(text,congelar=false){ return text.replace(/\$\{(\w+)\}/g,(match,key)=>{ if(key==='personatge') return personatge; if(key==='tema') return lecturaContext.tema_text||key; if(congelar && lecturaContext[key]) return lecturaContext[key]; return pick(key,vocab[key])||key; }); }
-  function concordarGenere(text){ let resultat=text; Object.keys(regles.generes_paraules).forEach(paraula=>{ const formes=regles.generes_paraules[paraula]; const regex=new RegExp(`\\b${paraula}\\b`,'gi'); resultat=resultat.replace(regex,formes[genere]); }); return resultat; }
+  function concordarGenere(text){ let resultat=text; if(!regles?.generes_paraules) return text; Object.keys(regles.generes_paraules).forEach(paraula=>{ const formes=regles.generes_paraules[paraula]; const regex=new RegExp(`\\b${paraula}\\b`,'gi'); resultat=resultat.replace(regex,formes[genere]); }); return resultat; }
   function aplicarApostrofacio(text){ return text.replace(/\ba el\b/gi,'al').replace(/\bde el\b/gi,'del').replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1").replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1").replace(/tranquil·la·la/g,'tranquil·la'); }
   const titol_raw=reemplaçar(plantilla.titol,false);
   let textBase=plantilla.seq.map(l=>reemplaçar(l,false)).join(' '); textBase=concordarGenere(textBase); textBase=aplicarApostrofacio(textBase);
@@ -511,7 +510,7 @@ async function generarLectura(){
   lecturaActualText=textBase.replace(/és el meu lloc preferit!.*$/i, finalsAlternatius[Math.floor(Math.random()*finalsAlternatius.length)]);
   lecturaActualPreguntes=plantilla.preguntes.map(p=>({ q:concordarGenere(aplicarApostrofacio(reemplaçar(p.q,true))), opcions:p.opcions.map(o=>concordarGenere(aplicarApostrofacio(reemplaçar(o,true)))), correcta:p.correcta }));
   const titol=aplicarApostrofacio(concordarGenere(titol_raw)).replace(/\s+/g,' ').trim();
-  const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
+  const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
   lecturaActualHTML = htmlFinal;
   const contTexto = document.getElementById('lectura-texto');
   if(contTexto) contTexto.innerHTML = htmlFinal;
@@ -519,12 +518,12 @@ async function generarLectura(){
   if(gramaticaMode==='contextual') await generarGramatica();
 }
 
-// ===== FIX RENDER VOCAB - SOPORTA TODOS LOS IDS =====
+// FIX: soporta todos los IDs
 function renderVocabLectura(){
   const cont = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab') || document.getElementById('gremi-vocab') || document.getElementById('lectura-vocab-content');
   if(!cont) return;
   if(lecturaActualVocab.length===0){
-    cont.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6">Genera una lectura per veure el vocabulari<br><button class="btn btn-primari" onclick="mostrarSubTab(\'lectura\');generarLectura()">Generar ara</button></div>';
+    cont.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura per veure el vocabulari</p><button class="btn btn-primari" onclick="mostrarSubTab(\'lectura\');generarLectura()">Generar</button></div>';
     return;
   }
   cont.innerHTML=`<div class="vocab-grid">${lecturaActualVocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div><div class="vocab-pron">/${w}/</div></div>`).join('')}</div>`;
@@ -539,13 +538,13 @@ async function generarGramatica(){
   const container = document.getElementById('lectura-gramatica-inner') || document.getElementById('lectura-gramatica') || document.getElementById('gremi-gramatica') || document.getElementById('lectura-gramatica-content');
   if(!container) return;
   const banco=await cargarBancoLectura();
-  if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`; return; }
+  if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia - revisa data/banco_lectura.json</p></div>`; return; }
   const GRAMATICA_BANCO=banco.gramatica.guia; const keys=Object.keys(GRAMATICA_BANCO); const mapa={}; keys.forEach(k=>mapa[slugGramatica(k)]=k);
   let html=`<div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;
   if(gramaticaMode==='contextual'){
     if(!lecturaActualText||lecturaActualVocab.length===0){ container.innerHTML=html+`<div style="padding:20px;opacity:0.6"><p>Genera primer una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab('lectura');generarLectura()">Generar lectura</button></div>`; return; }
     const grammarPoint=detectarPuntGramatica(lecturaActualText,getCurrentLevel(),GRAMATICA_BANCO);
-    html+=`<div class="grammar-card"><div class="grammar-title">${grammarPoint.titol}</div><div class="grammar-explanation">${grammarPoint.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples:</div>${grammarPoint.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${grammarPoint.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${grammarPoint.tip?`<div class="grammar-tip">💡 ${grammarPoint.tip}</div>`:''}</div>`;
+    html+=`<div class="grammar-card"><div class="grammar-title">${grammarPoint.titol}</div><div class="grammar-explanation">${grammarPoint.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples del teu text:</div>${grammarPoint.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${grammarPoint.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${grammarPoint.tip?`<div class="grammar-tip">💡 ${grammarPoint.tip}</div>`:''}</div>`;
   } else {
     if(!gramaticaTemaSeleccionat){
       html+=`<div class="emoji-grid">`;
@@ -604,7 +603,7 @@ function renderBotiga(){
 function comprarPack(id,preu){
   if(estat.monedes<preu){ mostrarMissatge('No tens prou monedes'); return; }
   estat.monedes-=preu; estat.compres.push(id);
-  NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1, NIVELL_MINIJOC.maxEmojis);
+  NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1, 5);
   guardarEstat(); actualitzarUI(); construirCategories(); renderBotiga(); renderDiccionari(); mostrarMissatge('Pack desbloquejat!');
 }
 if('serviceWorker' in navigator){
