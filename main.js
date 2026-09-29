@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v3 REPARADO - CLEAN PARA GITHUB PAGES
+// main.js - Lingocat Emoji v3 REPARADO - CLEAN PARA GITHUB PAGES - FIX VOCAB/GRAMATICA
 // Estructura Croniques + Mapa 100 nivells + 25 frases per nivell
 
 let deferredPrompt;
@@ -27,11 +27,11 @@ let estat = {
     xp: parseInt(localStorage.getItem('cat_xp')) || 0
   },
   monedes: parseInt(localStorage.getItem('cat_monedes')) || 0,
-  compres: JSON.parse(localStorage.getItem('cat_compres')) || [],
+  compres: JSON.parse(localStorage.getItem('cat_compres')) || '[]'),
   introVist: JSON.parse(localStorage.getItem('cat_intro')) || false,
   personatgeTriat: localStorage.getItem('cat_personatge') || 'joven',
   ultimaRecargaEnergia: parseInt(localStorage.getItem('cat_ultimaEnergia')) || Date.now(),
-  desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || {}
+  desbloquejats: JSON.parse(localStorage.getItem('cat_desbloquejats')) || '{}'
 };
 
 const PACK_INICIAL = ["😀","😊","😂","👨","👩","🐶","🐱","🏠","🍎","🚗","⚽","📱","💻","🎵","❤️"];
@@ -59,6 +59,7 @@ let dadesTips = {};
 let BANCO_LECTURA = null;
 let lecturaActualVocab = [];
 let lecturaActualText = '';
+let lecturaActualHTML = ''; // FIX: guardamos HTML completo para no perderlo
 let lecturaActualPreguntes = [];
 let lecturaContext = {};
 let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc')) || 1};
@@ -220,26 +221,66 @@ function canviarTab(tab, e) {
   if(tab === 'mapa') renderMapa();
   if(tab === 'missio') renderMissio();
   if(tab === 'gremi') mostrarSubTab('biblioteca');
-  if(tab === 'lectura') generarLectura();
+  if(tab === 'lectura') {
+    mostrarSubTab('lectura');
+    if(!lecturaActualHTML) generarLectura();
+  }
   if(tab === 'tips') carregarTips();
   if(tab === 'botiga') renderBotiga();
 }
+
+// ===== FIX DEFINITIU VOCABULARI / GRAMATICA =====
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+
   const enTabLectura = document.getElementById('tab-lectura')?.classList.contains('active');
-  const idPrefix = enTabLectura? 'lectura-' : 'gremi-';
-  const idSufix = enTabLectura? '-content' : '';
-  const target = document.getElementById(idPrefix + sub + idSufix);
-  if (target) target.style.display = 'block';
-  const btn = document.querySelector(`.sub-tab-btn[onclick="mostrarSubTab('${sub}')"]`);
-  if(btn) btn.classList.add('active');
+
+  // Busca en todos los IDs posibles para compatibilidad con index.html viejo y nuevo
+  const idsPosibles = enTabLectura? [
+    `lectura-${sub}`,
+    `lectura-${sub}-inner`,
+    `lectura-${sub}-content`,
+    `gremi-${sub}`,
+    `${sub}`
+  ] : [
+    `gremi-${sub}`,
+    `lectura-${sub}`,
+    `lectura-${sub}-inner`,
+    `${sub}`
+  ];
+
+  let target = null;
+  for (let id of idsPosibles) {
+    target = document.getElementById(id);
+    if (target) break;
+  }
+
+  if (target) {
+    target.style.display = 'block';
+    // Si es el inner, también mostrar el padre
+    if(target.id.includes('-inner') || target.id.includes('-content')){
+      const padre = target.closest('.sub-tab-content');
+      if(padre) padre.style.display = 'block';
+    }
+  }
+
+  // Activar botón correcto
+  document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));
+
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
   if (sub === 'gramatica') setTimeout(() => generarGramatica(), 0);
-  if (sub === 'vocab') renderVocabLectura();
+  if (sub === 'vocab') setTimeout(() => renderVocabLectura(), 0);
+  if (sub === 'lectura') {
+    const c = document.getElementById('lectura-texto');
+    if(c && lecturaActualHTML &&!c.innerHTML.trim()){
+      c.innerHTML = lecturaActualHTML;
+    }
+  }
 }
+
 function mostrarIntro() {
   const introEl = document.getElementById('intro');
   if (!introEl) return;
@@ -371,9 +412,7 @@ function generarFraseDinamica(plantilla, emojisJugador){
       const emojiData=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emojiElegit));
       const nom=emojiData?.nom_cat?.toLowerCase()||'';
       const detCorrecte=DETERMINANTS[nom]||(emojiData?.genere==='f'?'La':'El');
-      const detIncorrecte=detCorrecte==='La'?'El':'La';
-      const detAmbBarra=detCorrecte==="L'" &&!'aeiouàèéíòóúh'.includes(nom[0])?`El/${detIncorrecte}`:`${detCorrecte}/${detIncorrecte}`;
-      reemplazo=`${detAmbBarra} ${emojiData.nom_cat}`; esPrimer=false;
+      reemplazo=`${detCorrecte} ${emojiData.nom_cat}`; esPrimer=false;
     }
     text=text.replace(new RegExp(`\\s*(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'), ` ${reemplazo}`);
     solucio.push(emojiElegit);
@@ -472,13 +511,22 @@ async function generarLectura(){
   lecturaActualText=textBase.replace(/és el meu lloc preferit!.*$/i, finalsAlternatius[Math.floor(Math.random()*finalsAlternatius.length)]);
   lecturaActualPreguntes=plantilla.preguntes.map(p=>({ q:concordarGenere(aplicarApostrofacio(reemplaçar(p.q,true))), opcions:p.opcions.map(o=>concordarGenere(aplicarApostrofacio(reemplaçar(o,true)))), correcta:p.correcta }));
   const titol=aplicarApostrofacio(concordarGenere(titol_raw)).replace(/\s+/g,' ').trim();
-  document.getElementById('lectura-texto').innerHTML=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
+  const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
+  lecturaActualHTML = htmlFinal;
+  const contTexto = document.getElementById('lectura-texto');
+  if(contTexto) contTexto.innerHTML = htmlFinal;
   renderVocabLectura();
   if(gramaticaMode==='contextual') await generarGramatica();
 }
+
+// ===== FIX RENDER VOCAB - SOPORTA TODOS LOS IDS =====
 function renderVocabLectura(){
-  const cont=document.getElementById('lectura-vocab'); if(!cont) return;
-  if(lecturaActualVocab.length===0){ cont.innerHTML='<div class="empty-state"><p>Genera una lectura</p></div>'; return; }
+  const cont = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab') || document.getElementById('gremi-vocab') || document.getElementById('lectura-vocab-content');
+  if(!cont) return;
+  if(lecturaActualVocab.length===0){
+    cont.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6">Genera una lectura per veure el vocabulari<br><button class="btn btn-primari" onclick="mostrarSubTab(\'lectura\');generarLectura()">Generar ara</button></div>';
+    return;
+  }
   cont.innerHTML=`<div class="vocab-grid">${lecturaActualVocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div><div class="vocab-pron">/${w}/</div></div>`).join('')}</div>`;
 }
 function comprovarPregunta(idx,resp){
@@ -488,13 +536,14 @@ function comprovarPregunta(idx,resp){
 }
 function slugGramatica(str){ return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_'); }
 async function generarGramatica(){
-  const container=document.getElementById('lectura-gramatica'); if(!container) return;
+  const container = document.getElementById('lectura-gramatica-inner') || document.getElementById('lectura-gramatica') || document.getElementById('gremi-gramatica') || document.getElementById('lectura-gramatica-content');
+  if(!container) return;
   const banco=await cargarBancoLectura();
-  if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div class="empty-state"><p>No trobo gramatica.guia</p></div>`; return; }
+  if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`; return; }
   const GRAMATICA_BANCO=banco.gramatica.guia; const keys=Object.keys(GRAMATICA_BANCO); const mapa={}; keys.forEach(k=>mapa[slugGramatica(k)]=k);
   let html=`<div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;
   if(gramaticaMode==='contextual'){
-    if(!lecturaActualText||lecturaActualVocab.length===0){ container.innerHTML=html+`<div class="empty-state"><p>Genera primer una lectura</p></div>`; return; }
+    if(!lecturaActualText||lecturaActualVocab.length===0){ container.innerHTML=html+`<div style="padding:20px;opacity:0.6"><p>Genera primer una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab('lectura');generarLectura()">Generar lectura</button></div>`; return; }
     const grammarPoint=detectarPuntGramatica(lecturaActualText,getCurrentLevel(),GRAMATICA_BANCO);
     html+=`<div class="grammar-card"><div class="grammar-title">${grammarPoint.titol}</div><div class="grammar-explanation">${grammarPoint.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples:</div>${grammarPoint.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${grammarPoint.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${grammarPoint.tip?`<div class="grammar-tip">💡 ${grammarPoint.tip}</div>`:''}</div>`;
   } else {
@@ -560,4 +609,4 @@ function comprarPack(id,preu){
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(err=>console.log('SW error:',err)); });
-} 
+}
