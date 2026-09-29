@@ -13,7 +13,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   document.body.appendChild(btn);
 });
 
-const DEBUG_NO_ENERGIA = false;
+const DEBUG_NO_ENERGIA = true;
 
 let estat = {
   progres: {
