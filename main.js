@@ -1,5 +1,5 @@
-// main.js - Lingocat Emoji v3 REPARADO - HOTFIX FINAL - SIN PANTALLA NEGRA
-// Fix: vocabulario y gramatica persistentes + compatible con index.html nuevo y viejo
+// main.js - Lingocat Emoji v4 - MOTOR LECTURA + MINIJOC AMB CONECTORS
+// Fix: vocabulario y gramatica persistentes + conectores ortografia en lectura
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -59,7 +59,7 @@ let dadesTips = {};
 let BANCO_LECTURA = null;
 let lecturaActualVocab = [];
 let lecturaActualText = '';
-let lecturaActualHTML = ''; // FIX: guardamos HTML para que no se borre al volver
+let lecturaActualHTML = '';
 let lecturaActualPreguntes = [];
 let lecturaContext = {};
 let NIVELL_MINIJOC = {minEmojis: 2, maxEmojis: 5, nivelActual: parseInt(localStorage.getItem('cat_nivell_minijoc') || '1')};
@@ -75,8 +75,12 @@ const INTRO_SLIDES = [
   {emoji: "📚", titol: "Lectures adaptades", text: "Textos al teu nivell A1, A2 o B1. Guanya XP i puja."},
   {emoji: "🚀", titol: "A jugar!", text: "Prem Saltar o toca la pantalla per començar"}
 ];
-let gramaticaMode = 'contextual'; // FIX: contextual por defecto para que se vea
+let gramaticaMode = 'contextual';
 let gramaticaTemaSeleccionat = null;
+
+// === NOU v4: CONECTORS D'ORTOGRAFIA PER LECTURA I MINIJOC ===
+const CONECTORS_LECTURA = ["Després", "Més tard", "Mentrestant", "De sobte", "Al final", "Aleshores", "Però"];
+const CONECTORS_MINIJOC = ["i després", "mentre", "però", "perquè", "quan"];
 
 function quitarSkinTone(emoji) { return emoji.replace(/[\u{1F3FB}-\u{1F3FF}]/gu, ''); }
 function vibrar() { if (navigator.vibrate) navigator.vibrate(50); }
@@ -230,13 +234,10 @@ function canviarTab(tab, e) {
   if(tab === 'botiga') renderBotiga();
 }
 
-// ===== FIX CRITICO - ESTA ES LA CLAVE =====
 function mostrarSubTab(sub) {
   document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-
   const enTabLectura = document.getElementById('tab-lectura')?.classList.contains('active');
-  // Busca en TODOS los IDs posibles (viejo y nuevo index.html)
   const idsPosibles = enTabLectura? [
     `lectura-${sub}`,
     `lectura-${sub}-inner`,
@@ -249,22 +250,17 @@ function mostrarSubTab(sub) {
     `lectura-${sub}`,
     `lectura-${sub}-inner`
   ];
-
   let target = null;
   for(let id of idsPosibles){
     target = document.getElementById(id);
     if(target){ break; }
   }
-
   if (target){
     target.style.display = 'block';
-    // Si es un inner, mostrar también el padre
     const padre = target.closest('.sub-tab-content');
     if(padre) padre.style.display = 'block';
   }
-
   document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));
-
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
@@ -398,8 +394,18 @@ function obtenirArticle(emoji){
   if(det==="L'" &&!'aeiouàèéíòóúh'.includes(nom[0])) det="El";
   return `${det} ${emojiData.nom_cat}`;
 }
+
+// === FIX MINIJOC AMB CONECTORS ===
 function generarFraseDinamica(plantilla, emojisJugador){
-  let text=plantilla.text; let solucio=[]; let esPrimer=true;
+  let text=plantilla.text;
+  let solucio=[];
+  let esPrimer=true;
+  // Injecta conector aleatori si la plantilla és llarga
+  if(text.split(' ').length > 6 && Math.random() > 0.5){
+    const con = CONECTORS_MINIJOC[Math.floor(Math.random()*CONECTORS_MINIJOC.length)];
+    // Insereix abans del segon placeholder
+    text = text.replace(/\{/, `${con} {`);
+  }
   for(const cat of plantilla.categories){
     const disp=CATEGORIES_TOTS[cat]?.filter(eBase=>emojisJugador.some(eJug=>quitarSkinTone(eJug)===quitarSkinTone(eBase)))||[];
     if(!disp.length) return generarFraseDinamica(FRASES_MINIJOC[Math.floor(Math.random()*FRASES_MINIJOC.length)], emojisJugador);
@@ -418,6 +424,7 @@ function generarFraseDinamica(plantilla, emojisJugador){
   }
   return {text,solucio};
 }
+
 function novaFraseMinijoc(){
   if(!FRASES_MINIJOC.length||!minijocInicialitzat) return;
   const emojisJugador=BIBLIOTECA_PLA.filter(e=>{
@@ -490,27 +497,108 @@ async function cargarBancoLectura(){
   if(BANCO_LECTURA && BANCO_LECTURA.regles_globals) return BANCO_LECTURA;
   const res=await fetch('./data/banco_lectura.json'); BANCO_LECTURA=await res.json(); return BANCO_LECTURA;
 }
+
+// === FIX CRITIC LECTURA v4 AMB CONECTORS ===
 async function generarLectura(){
   if(!gastarEnergia(30)){ alert('No tens energia suficient'); return; }
-  const banco=await cargarBancoLectura(); const nivell=getCurrentLevel(); const dataNivell=banco[nivell]; const regles=banco.regles_globals;
+  const banco=await cargarBancoLectura();
+  const nivell=getCurrentLevel();
+  const dataNivell=banco[nivell];
+  const regles=banco.regles_globals;
   if(!dataNivell||!dataNivell.plantillas){ document.getElementById('lectura-texto').innerHTML='<p>No hi ha lectures</p>'; return; }
+
   lecturaActualVocab=[]; lecturaContext={};
-  const plantillas=dataNivell.plantillas; const plantilla=plantillas[Math.floor(Math.random()*plantillas.length)];
+  const plantillas=dataNivell.plantillas;
+  const plantilla=plantillas[Math.floor(Math.random()*plantillas.length)];
   const temes=['la_familia','la_casa','l_escola','la_ciutat','la_natura','el_temps_lliure'];
-  const tema=temes[Math.floor(Math.random()*temes.length)]; lecturaContext.tema_text=tema.replace(/_/g,' ');
-  const vocab=dataNivell[tema]; const personatge=nomPersonatge||'Joven';
-  let genere='f'; if(personatge!=='Joven'){ const fems=['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria']; genere=personatge.startsWith('La ')||fems.includes(personatge)?'f':'m'; }
-  function pick(key,arr){ if(!arr||!arr.length) return key; if(lecturaContext[key]) return lecturaContext[key]; const val=arr[Math.floor(Math.random()*arr.length)]; if(!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val); lecturaContext[key]=val; return val; }
-  function reemplaçar(text,congelar=false){ return text.replace(/\$\{(\w+)\}/g,(match,key)=>{ if(key==='personatge') return personatge; if(key==='tema') return lecturaContext.tema_text||key; if(congelar && lecturaContext[key]) return lecturaContext[key]; return pick(key,vocab[key])||key; }); }
-  function concordarGenere(text){ let resultat=text; if(!regles?.generes_paraules) return text; Object.keys(regles.generes_paraules).forEach(paraula=>{ const formes=regles.generes_paraules[paraula]; const regex=new RegExp(`\\b${paraula}\\b`,'gi'); resultat=resultat.replace(regex,formes[genere]); }); return resultat; }
-  function aplicarApostrofacio(text){ return text.replace(/\ba el\b/gi,'al').replace(/\bde el\b/gi,'del').replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1").replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1").replace(/tranquil·la·la/g,'tranquil·la'); }
+  const tema=temes[Math.floor(Math.random()*temes.length)];
+  lecturaContext.tema_text=tema.replace(/_/g,' ');
+  const vocab=dataNivell[tema];
+  const personatge=nomPersonatge||'Joven';
+
+  let genere='m';
+  if(personatge!=='Joven'){
+    const fems=['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria','Jova','Noia','Dona'];
+    genere=fems.includes(personatge) || personatge.startsWith('La ')?'f':'m';
+  }
+
+  function pick(key,arr){
+    if(!arr||!arr.length) return key;
+    if(lecturaContext[key]) return lecturaContext[key];
+    const val=arr[Math.floor(Math.random()*arr.length)];
+    if(!lecturaActualVocab.includes(val)) lecturaActualVocab.push(val);
+    lecturaContext[key]=val;
+    return val;
+  }
+  function reemplaçar(text,congelar=false){
+    return text.replace(/\$\{(\w+)\}/g,(match,key)=>{
+      if(key==='personatge') return personatge;
+      if(key==='tema') return lecturaContext.tema_text||key;
+      if(congelar && lecturaContext[key]) return lecturaContext[key];
+      return pick(key,vocab[key])||key;
+    });
+  }
+  function concordarGenere(text){
+    let resultat=text;
+    if(!regles?.generes_paraules) return text;
+    Object.keys(regles.generes_paraules).forEach(paraula=>{
+      const formes=regles.generes_paraules[paraula];
+      const regex=new RegExp(`\\b${paraula}\\b`,'gi');
+      resultat=resultat.replace(regex,formes[genere]);
+    });
+    return resultat;
+  }
+  function aplicarApostrofacio(text){
+    return text.replace(/\ba el\b/gi,'al')
+   .replace(/\bde el\b/gi,'del')
+   .replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1")
+   .replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1")
+   .replace(/tranquil·la·la/g,'tranquil·la');
+  }
+
   const titol_raw=reemplaçar(plantilla.titol,false);
-  let textBase=plantilla.seq.map(l=>reemplaçar(l,false)).join(' '); textBase=concordarGenere(textBase); textBase=aplicarApostrofacio(textBase);
+
+  // NOU SISTEMA AMB CONECTORS
+  let frasesProcessades = plantilla.seq.map((l,i)=>{
+    let frase = reemplaçar(l,false);
+    frase = concordarGenere(frase);
+    frase = aplicarApostrofacio(frase);
+
+    // 1. Evitar repetició Joven Joven
+    if(i>0 && frase.includes(personatge)){
+       if(Math.random()>0.5){
+         const pronom = genere==='f'? 'ella' : 'ell';
+         frase = frase.replace(personatge, pronom);
+       }
+    }
+    // 2. Afegir conector
+    if(i>0){
+      const conector = CONECTORS_LECTURA[(i-1) % CONECTORS_LECTURA.length];
+      // No repetir conector si ja hi és
+      if(!frase.toLowerCase().startsWith(conector.toLowerCase())){
+        if(i===1) frase = `${conector}, ${frase.charAt(0).toLowerCase() + frase.slice(1)}`;
+        else if(i===plantilla.seq.length-1) frase = `${CONECTORS_LECTURA[4]}, ${frase.charAt(0).toLowerCase() + frase.slice(1)}`;
+        else if(Math.random()>0.3) frase = `${conector}, ${frase.charAt(0).toLowerCase() + frase.slice(1)}`;
+      }
+    }
+    return frase;
+  });
+
+  let textBase=frasesProcessades.join(' ');
+  textBase=aplicarApostrofacio(textBase);
+
   const finalsAlternatius=['és el meu lloc preferit!',"m'encanta passar temps aquí!",'vull tornar aviat!','ha estat un dia genial!'];
   lecturaActualText=textBase.replace(/és el meu lloc preferit!.*$/i, finalsAlternatius[Math.floor(Math.random()*finalsAlternatius.length)]);
-  lecturaActualPreguntes=plantilla.preguntes.map(p=>({ q:concordarGenere(aplicarApostrofacio(reemplaçar(p.q,true))), opcions:p.opcions.map(o=>concordarGenere(aplicarApostrofacio(reemplaçar(o,true)))), correcta:p.correcta }));
+
+  lecturaActualPreguntes=plantilla.preguntes.map(p=>({
+    q:concordarGenere(aplicarApostrofacio(reemplaçar(p.q,true))),
+    opcions:p.opcions.map(o=>concordarGenere(aplicarApostrofacio(reemplaçar(o,true)))),
+    correcta:p.correcta
+  }));
+
   const titol=aplicarApostrofacio(concordarGenere(titol_raw)).replace(/\s+/g,' ').trim();
   const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
+
   lecturaActualHTML = htmlFinal;
   const contTexto = document.getElementById('lectura-texto');
   if(contTexto) contTexto.innerHTML = htmlFinal;
@@ -518,7 +606,6 @@ async function generarLectura(){
   if(gramaticaMode==='contextual') await generarGramatica();
 }
 
-// FIX: soporta todos los IDs
 function renderVocabLectura(){
   const cont = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab') || document.getElementById('gremi-vocab') || document.getElementById('lectura-vocab-content');
   if(!cont) return;
