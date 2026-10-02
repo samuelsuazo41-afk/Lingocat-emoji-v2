@@ -1,6 +1,5 @@
-// main.js - Lingocat Emoji v15.3 FINAL - FIX BLANK LECTURA + GRAMATICAL
-// Fix blank: mostrarSubTab ya no oculta todo, solo el tab activo
-// Fixes gramaticales: "El seu amic van" -> "va", "Quan," -> "Aleshores", "tornar classe" -> "tornar a classe"
+// main.js - Lingocat Emoji v16.0 FINAL - BASE ESTABLE + FIX BLANK + TEMPS VERBALS
+// Base: tu V15.2 que funciona + integra present continu, futur, imperfet, perfet continu en motor lectura
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -212,11 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarDadesMinijoc();
   actualitzarUI();
   canviarTab('mapa', null);
-  // precarga lectura para que no quede negro
-  setTimeout(() => {
-    const c = document.getElementById('lectura-texto') || document.getElementById('lectura-lectura') || document.querySelector('#tab-lectura');
-    if (c &&!lecturaActualText) generarLectura();
-  }, 500);
+  setTimeout(() => { if(!lecturaActualText) generarLectura(); }, 500);
 });
 
 function canviarTab(tab, e) {
@@ -236,52 +231,37 @@ function canviarTab(tab, e) {
   if(tab === 'botiga') renderBotiga();
 }
 
-// === FIX BLANK LECTURA V15.3 ===
+// FIX BLANK LECTURA V16
 function mostrarSubTab(sub) {
   const tabActiva = document.querySelector('.tab-content.active');
   if (!tabActiva) return;
-
-  // solo oculta los sub-tabs del tab activo, no de toda la app
   tabActiva.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
 
-  // lista ampliada de IDs posibles (tu HTML usa diferentes)
   const idsPosibles = [
-    `lectura-${sub}`,
-    `lectura-${sub}-inner`,
-    `gremi-${sub}`,
-    `lectura-${sub}-content`,
-    `lectura-${sub}-texto`,
-    `lectura-texto`,
-    `gremi-${sub}-inner`,
-    sub
+    `lectura-${sub}`, `lectura-${sub}-inner`, `gremi-${sub}`,
+    `lectura-${sub}-content`, `lectura-${sub}-texto`, `lectura-texto`,
+    `gremi-${sub}-inner`, sub
   ];
 
   let target = null;
   for(let id of idsPosibles){
     target = document.getElementById(id);
-    if(target && tabActiva.contains(target)){ break; }
-    if(target && sub==='lectura'){ break; } // para lectura permite fuera también
+    if(target && (tabActiva.contains(target) || sub==='lectura')){ break; }
   }
-  // fallback: si no encuentra por ID, busca el primer.sub-tab-content dentro del tab
   if (!target) {
     const todos = tabActiva.querySelectorAll('.sub-tab-content');
-    // intenta por data o por clase
     if (sub === 'lectura' && todos[0]) target = todos[0];
     if (sub === 'vocab' && todos[1]) target = todos[1];
     if (sub === 'gramatica' && todos[2]) target = todos[2];
   }
-
   if (target){
     target.style.display = 'block';
     const padre = target.closest('.sub-tab-content');
     if(padre) padre.style.display = 'block';
-    // si el target es el contenedor de texto mismo, asegura visible
     if(target.id==='lectura-texto') target.style.display='block';
   }
-
   document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));
-
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
@@ -289,10 +269,7 @@ function mostrarSubTab(sub) {
   if (sub === 'vocab') setTimeout(() => renderVocabLectura(), 10);
   if (sub === 'lectura'){
     const c = document.getElementById('lectura-texto');
-    if(c && lecturaActualHTML &&!c.innerHTML.trim()){
-      c.innerHTML = lecturaActualHTML;
-    }
-    // fuerza visible
+    if(c && lecturaActualHTML &&!c.innerHTML.trim()) c.innerHTML = lecturaActualHTML;
     if(c) c.style.display='block';
     const contenedorPadre = document.getElementById('lectura-lectura');
     if(contenedorPadre) contenedorPadre.style.display='block';
@@ -518,6 +495,7 @@ async function cargarBancoLectura(){
   const res=await fetch('./data/banco_lectura.json'); BANCO_LECTURA=await res.json(); return BANCO_LECTURA;
 }
 
+// === MOTOR LECTURA V16 - TEMPS VERBALS + FIX GRAMATICAL ===
 function esSingular(grup) {
   if(!grup) return false;
   const t = grup.trim().toLowerCase();
@@ -527,29 +505,61 @@ function esGrupPlural(grup){
   if(!grup) return false;
   return /companys|amics|germans/i.test(grup) || grup.toLowerCase().includes(' i ') || grup.toLowerCase().includes(',');
 }
-function conjugarImperfet(accio) {
+
+// NOU: CONJUGADORS COMPLETS PER A TOTS ELS TEMPS
+const CONJUGACIONS = {
+  imperfet: {
+    "anar": "anava", "ser": "era", "estar": "estava", "fer": "feia", "tenir": "tenia",
+    "escoltar": "escoltava", "jugar": "jugava", "mirar": "mirava", "parlar": "parlava",
+    "caminar": "caminava", "estudiar": "estudiava", "treballar": "treballava", "menjar": "menjava",
+    "tornar": "tornava", "dinar": "dinava", "berenar": "berenava", "rentar": "rentava",
+    "tocar": "tocava", "regar": "regava", "collir": "collia", "descansar": "descansava",
+    "passejar": "passejava", "observar": "observava", "llegir": "llegia", "dormir": "dormia",
+    "fer fotos": "feia fotos", "fer el llit": "feia el llit", "rentar plats": "rentava plats"
+  },
+  present_continu: {
+    "jugar": "està jugant", "menjar": "està menjant", "mirar": "està mirant", "parlar": "està parlant",
+    "estudiar": "està estudiant", "treballar": "està treballant", "llegir": "està llegint", "escoltar": "està escoltant",
+    "caminar": "està caminant", "fer": "està fent", "anar": "està anant", "venir": "està venint",
+    "collir flors": "està collint flors", "fer fotos": "està fent fotos", "regar plantes": "està regant plantes"
+  },
+  futur: {
+    "anar": "anirà", "ser": "serà", "estar": "estarà", "fer": "farà", "tenir": "tindrà",
+    "jugar": "jugarà", "menjar": "menjarà", "mirar": "mirarà", "parlar": "parlarà",
+    "tornar": "tornarà", "dinar": "dinarà", "berenar": "berenarà", "estudiar": "estudiarà",
+    "treballar": "treballarà", "passejar": "passejarà", "descansar": "descansarà",
+    "llegir": "llegirà", "escriure": "escriurà", "venir": "vindrà", "sortir": "sortirà",
+    "agafar": "agafarà", "comprar": "comprarà", "fer fotos": "farà fotos"
+  },
+  perfet: {
+    "anar": "ha anat", "ser": "ha estat", "estar": "ha estat", "fer": "ha fet",
+    "jugar": "ha jugat", "menjar": "ha menjat", "mirar": "ha mirat", "parlar": "ha parlat",
+    "tornar": "ha tornat", "dinar": "ha dinat", "berenar": "ha berenat", "llegir": "ha llegit"
+  },
+  perfet_continu: {
+    "jugar": "ha estat jugant", "menjar": "ha estat menjant", "estudiar": "ha estat estudiant",
+    "treballar": "ha estat treballant", "llegir": "ha estat llegint", "mirar": "ha estat mirant",
+    "caminar": "ha estat caminant", "fer fotos": "ha estat fent fotos", "escoltar": "ha estat escoltant"
+  },
+  gerundi: {
+    "jugar": "jugant", "menjar": "menjant", "parlar": "parlant", "estudiar": "estudiant",
+    "treballar": "treballant", "viure": "vivint", "anar": "anant", "fer": "fent", "venir": "venint",
+    "llegir": "llegint", "escriure": "escrivint", "mirar": "mirant", "caminar": "caminant"
+  }
+};
+
+function conjugarTemps(accio, temps) {
   if(!accio) return accio;
-  const mapa = {
-    "escoltar": "escoltava", "jugar": "jugava", "mirar": "mirava",
-    "preguntar": "preguntava", "esperar": "esperava", "caminar": "caminava",
-    "parlar": "parlava", "fer fotos": "feia fotos", "tocar piano": "tocava el piano",
-    "regar plantes": "regava les plantes", "mirar fotos": "mirava fotos",
-    "llegir": "llegia", "dormir": "dormia", "fer el llit": "feia el llit",
-    "rentar plats": "rentava plats", "tornar classe": "tornava a classe",
-    "tornar a classe": "tornava a classe", "tornar": "tornava", "dinar": "dinava",
-    "berenar": "berenava", "descansar": "descansava", "escriure": "escrivia",
-    "estudiar": "estudiava", "treballar": "treballava", "córrer": "corria",
-    "passejar": "passejava", "mirar quadres": "mirava quadres"
-  };
   const key = accio.toLowerCase().trim();
-  if(mapa[key]) return mapa[key];
-  if(key.includes("tornar classe")) return "tornava a classe";
-  if(key.includes("tornar lliure")) return "tornava a casa";
-  if(key.includes("tornar llibre")) return "tornava a casa";
-  if(key.includes("tornar")) return "tornava a casa";
-  if(key.includes("descansar")) return "descansava";
-  return accio;
+  if (CONJUGACIONS[temps] && CONJUGACIONS[temps][key]) return CONJUGACIONS[temps][key];
+  // fallback per frases llargues que contenen verb
+  for (let verb in (CONJUGACIONS[temps]||{})) {
+    if (key.includes(verb)) return key.replace(verb, CONJUGACIONS[temps][verb]);
+  }
+  return accio; // si no troba, deixa infinitiu i el fixer ja ho arreglarà
 }
+
+function conjugarImperfet(accio){ return conjugarTemps(accio,'imperfet'); }
 
 async function generarLectura(){
   if(!gastarEnergia(30)){ alert('No tens energia suficient'); return; }
@@ -580,6 +590,7 @@ async function generarLectura(){
   if(fems.includes(personatge)) genere='f';
   const pronom = genere==='f'? 'ella' : 'ell';
   const Pronom = genere==='f'? 'Ella' : 'Ell';
+
   const conectoresDisponibles = regles?.connectors_ortografia || CONECTORS_LECTURA;
   let ultimsConnectors=[];
   const getConectorUnic = () => {
@@ -598,6 +609,17 @@ async function generarLectura(){
   lecturaContext['conector3'] = getConectorUnic();
   lecturaContext['pronom'] = pronom;
   lecturaContext['Pronom'] = Pronom;
+
+  // NOU: TRIA DE TEMPS VERBAL SEGONS NIVELL
+  let tempsVerbal = 'perifrastic'; // a1 per defecte
+  if (nivell === 'a2') {
+    const opcions = ['perifrastic', 'present_continu', 'present_continu'];
+    tempsVerbal = opcions[Math.floor(Math.random()*opcions.length)];
+  } else if (nivell === 'b1') {
+    const opcions = ['imperfet', 'futur', 'perfet_continu', 'present_continu', 'perifrastic'];
+    tempsVerbal = opcions[Math.floor(Math.random()*opcions.length)];
+  }
+  lecturaContext.temps_verbal = tempsVerbal;
 
   function pick(key,arr){
     if(!arr||!arr.length) return key;
@@ -676,22 +698,49 @@ async function generarLectura(){
       });
     }
     return t.replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1")
-    .replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1")
-    .replace(/tranquil·la·la/g,'tranquil·la')
-    .replace(/\s+/g,' ').trim();
+   .replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1")
+   .replace(/tranquil·la·la/g,'tranquil·la')
+   .replace(/\s+/g,' ').trim();
   }
 
   const titol_raw=reemplaçar(plantilla.titol,false);
   let frasesProcessades = plantilla.seq.map((l,i)=>{
     let frase = reemplaçar(l,false);
     frase = concordarGenere(frase);
-    if(frase.toLowerCase().includes("mentre")){
+
+    // APLICA TEMPS VERBAL TRIAT
+    if (tempsVerbal!== 'perifrastic') {
+      const accioRaw = lecturaContext.accio_prota || lecturaContext.accio_grup || lecturaContext.accio_final;
+      if (accioRaw && i>1) { // no toca la primera frase de "va anar a..."
+        const conjugada = conjugarTemps(accioRaw, tempsVerbal);
+        if (frase.includes(accioRaw) && conjugada!== accioRaw) {
+          frase = frase.replace(accioRaw, conjugada);
+        } else if (frase.toLowerCase().includes("mentre") && tempsVerbal==='imperfet') {
+          // per "mentre" sempre imperfet
+          const imp = conjugarTemps(accioRaw, 'imperfet');
+          frase = frase.replace(accioRaw, imp);
+        }
+      }
+      // si és present continu, canvia "va" per "està" quan cal
+      if (tempsVerbal === 'present_continu' && frase.includes("va "+lecturaContext.accio_prota)) {
+         const pc = conjugarTemps(lecturaContext.accio_prota, 'present_continu');
+         frase = frase.replace("va "+lecturaContext.accio_prota, pc);
+      }
+      // si és futur
+      if (tempsVerbal === 'futur' && frase.includes("va "+lecturaContext.accio_final)) {
+         const fut = conjugarTemps(lecturaContext.accio_final, 'futur');
+         frase = frase.replace("va "+lecturaContext.accio_final, fut);
+      }
+    }
+
+    if(frase.toLowerCase().includes("mentre") &&!frase.includes("escoltava") &&!frase.includes("jugava")){
       const accioRaw = lecturaContext.accio_prota;
-      if(accioRaw &&!frase.toLowerCase().includes("escoltava") &&!frase.toLowerCase().includes("jugava") &&!frase.toLowerCase().includes("mirava")){
-        const conj = conjugarImperfet(accioRaw);
+      if(accioRaw){
+        const conj = conjugarTemps(accioRaw,'imperfet');
         if(frase.includes(accioRaw)) frase = frase.replace(accioRaw, conj);
       }
     }
+
     frase = aplicarFixesGramaticals(frase);
     if(i>0 && frase.includes(personatge) &&!l.includes('${pronom}')){
        if(Math.random()>0.3){
@@ -722,10 +771,9 @@ async function generarLectura(){
     correcta:p.correcta
   }));
   const titol=aplicarFixesGramaticals(concordarGenere(titol_raw)).replace(/\s+/g,' ').trim();
-  const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
+  const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p style="font-size:11px; color:#22c55e; text-transform:uppercase;">Temps: ${tempsVerbal} • Nivell: ${nivell.toUpperCase()}</p><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
 
   lecturaActualHTML = htmlFinal;
-  // BUSCA TODOS LOS CONTENEDORES POSIBLES Y PINTA
   const ids = ['lectura-texto','lectura-lectura','lectura-lectura-inner','tab-lectura'];
   let pintado = false;
   for(let id of ids){
@@ -739,7 +787,6 @@ async function generarLectura(){
       }
     }
   }
-  // si no hay lectura-texto, crea uno dentro de tab-lectura
   if(!pintado){
     const tab = document.getElementById('tab-lectura');
     if(tab){
@@ -777,13 +824,13 @@ async function generarGramatica(){
   const container = document.getElementById('lectura-gramatica-inner') || document.getElementById('lectura-gramatica') || document.getElementById('gremi-gramatica') || document.getElementById('lectura-gramatica-content') || document.getElementById('lectura-gramatica');
   if(!container) return;
   const banco=await cargarBancoLectura();
-  if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia - revisa data/banco_lectura.json</p></div>`; return; }
+  if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`; return; }
   const GRAMATICA_BANCO=banco.gramatica.guia; const keys=Object.keys(GRAMATICA_BANCO); const mapa={}; keys.forEach(k=>mapa[slugGramatica(k)]=k);
   let html=`<div style="display:flex; gap:8px; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:12px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;
   if(gramaticaMode==='contextual'){
     if(!lecturaActualText||lecturaActualVocab.length===0){ container.innerHTML=html+`<div style="padding:20px;opacity:0.6"><p>Genera primer una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab('lectura');generarLectura()">Generar lectura</button></div>`; return; }
     const grammarPoint=detectarPuntGramatica(lecturaActualText,getCurrentLevel(),GRAMATICA_BANCO);
-    html+=`<div class="grammar-card"><div class="grammar-title">${grammarPoint.titol}</div><div class="grammar-explanation">${grammarPoint.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples del teu text:</div>${grammarPoint.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${grammarPoint.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${grammarPoint.tip?`<div class="grammar-tip">💡 ${grammarPoint.tip}</div>`:''}</div>`;
+    html+=`<div class="grammar-card"><div class="grammar-title">${grammarPoint.titol} - [${lecturaContext.temps_verbal||''}]</div><div class="grammar-explanation">${grammarPoint.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples del teu text:</div>${grammarPoint.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${grammarPoint.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${grammarPoint.tip?`<div class="grammar-tip">💡 ${grammarPoint.tip}</div>`:''}</div>`;
   } else {
     if(!gramaticaTemaSeleccionat){
       html+=`<div class="emoji-grid">`;
@@ -798,7 +845,17 @@ async function generarGramatica(){
   container.innerHTML=html;
 }
 function detectarPuntGramatica(texto,nivell,GRAMATICA_BANCO){
+  if(texto.includes('està jugant') || texto.includes('està mirant') || texto.includes('està fent')) {
+    return {...(GRAMATICA_BANCO.present_continu || GRAMATICA_BANCO.present_simple), exemples: extraerFrasesCon(texto,'està'), titol: 'Present continu: està + gerundi'};
+  }
+  if(texto.includes('ha estat')) {
+    return {titol:'Perfet continu: ha estat + gerundi', explicacio:'Acció que va començar en el passat i continua ara.', estructura:'ha estat + gerundi', exemples: extraerFrasesCon(texto,'ha estat'), exercici:['Ell ____ jugant tot el dia','He estat ____'], tip:'Molt usat en B1'};
+  }
+  if(texto.includes('anirà') || texto.includes('farà') || texto.includes('jugarà')) {
+    return {...(GRAMATICA_BANCO.futur_simple), exemples: extraerFrasesCon(texto,'arà'), titol: 'Futur simple'};
+  }
   if((texto.includes('va ')||texto.includes('vam ')||texto.includes('van ')) && GRAMATICA_BANCO.preterit_perifrastic){ const d={...GRAMATICA_BANCO.preterit_perifrastic}; d.exemples=extraerFrasesCon(texto,'va '); return d; }
+  if((texto.includes('estava')||texto.includes('jugava')) && GRAMATICA_BANCO.imperfet){ const d={...GRAMATICA_BANCO.imperfet}; d.exemples=extraerFrasesCon(texto,'ava'); return d; }
   if((texto.includes('estava')||texto.includes('està')||texto.includes('estic')) && GRAMATICA_BANCO.estar_adjectiu){ const d={...GRAMATICA_BANCO.estar_adjectiu}; d.exemples=extraerFrasesCon(texto,'estav'); return d; }
   return GRAMATICA_BANCO.articles || GRAMATICA_BANCO[Object.keys(GRAMATICA_BANCO)[0]] || {titol:'Gramàtica', explicacio:'Genera lectura', estructura:'', exemples:[], exercici:[], tip:''};
 }
