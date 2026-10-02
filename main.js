@@ -1,7 +1,6 @@
-// main.js - Lingocat Emoji v15.2 FINAL - FIX INTEGRAT V14.6 + V15.1
-// Fixes: "El seu amic van estudiar" -> "va estudiar", "Quan, el seu" -> "Aleshores",
-// "tornar classe/lliure/llibre" -> "tornar a classe/a casa", "descansar amb galetes" -> "berenar", "mentre ell escoltar" -> "escoltava"
-// Conserva: mapa, missio, gremi, lectura, tips, botiga, energia, personatges
+// main.js - Lingocat Emoji v15.3 FINAL - FIX BLANK LECTURA + GRAMATICAL
+// Fix blank: mostrarSubTab ya no oculta todo, solo el tab activo
+// Fixes gramaticales: "El seu amic van" -> "va", "Quan," -> "Aleshores", "tornar classe" -> "tornar a classe"
 
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -213,9 +212,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   await carregarDadesMinijoc();
   actualitzarUI();
   canviarTab('mapa', null);
+  // precarga lectura para que no quede negro
   setTimeout(() => {
-    if (document.getElementById('lectura-texto') &&!lecturaActualText) generarLectura();
-  }, 300);
+    const c = document.getElementById('lectura-texto') || document.getElementById('lectura-lectura') || document.querySelector('#tab-lectura');
+    if (c &&!lecturaActualText) generarLectura();
+  }, 500);
 });
 
 function canviarTab(tab, e) {
@@ -229,39 +230,58 @@ function canviarTab(tab, e) {
   if(tab === 'gremi') mostrarSubTab('biblioteca');
   if(tab === 'lectura'){
     mostrarSubTab('lectura');
-    if(!lecturaActualHTML) generarLectura();
+    if(!lecturaActualHTML) setTimeout(()=>generarLectura(),100);
   }
   if(tab === 'tips') carregarTips();
   if(tab === 'botiga') renderBotiga();
 }
 
+// === FIX BLANK LECTURA V15.3 ===
 function mostrarSubTab(sub) {
-  document.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
+  const tabActiva = document.querySelector('.tab-content.active');
+  if (!tabActiva) return;
+
+  // solo oculta los sub-tabs del tab activo, no de toda la app
+  tabActiva.querySelectorAll('.sub-tab-content').forEach(t => t.style.display = 'none');
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  const enTabLectura = document.getElementById('tab-lectura')?.classList.contains('active');
-  const idsPosibles = enTabLectura? [
+
+  // lista ampliada de IDs posibles (tu HTML usa diferentes)
+  const idsPosibles = [
     `lectura-${sub}`,
     `lectura-${sub}-inner`,
     `gremi-${sub}`,
     `lectura-${sub}-content`,
     `lectura-${sub}-texto`,
+    `lectura-texto`,
+    `gremi-${sub}-inner`,
     sub
-  ] : [
-    `gremi-${sub}`,
-    `lectura-${sub}`,
-    `lectura-${sub}-inner`
   ];
+
   let target = null;
   for(let id of idsPosibles){
     target = document.getElementById(id);
-    if(target){ break; }
+    if(target && tabActiva.contains(target)){ break; }
+    if(target && sub==='lectura'){ break; } // para lectura permite fuera también
   }
+  // fallback: si no encuentra por ID, busca el primer.sub-tab-content dentro del tab
+  if (!target) {
+    const todos = tabActiva.querySelectorAll('.sub-tab-content');
+    // intenta por data o por clase
+    if (sub === 'lectura' && todos[0]) target = todos[0];
+    if (sub === 'vocab' && todos[1]) target = todos[1];
+    if (sub === 'gramatica' && todos[2]) target = todos[2];
+  }
+
   if (target){
     target.style.display = 'block';
     const padre = target.closest('.sub-tab-content');
     if(padre) padre.style.display = 'block';
+    // si el target es el contenedor de texto mismo, asegura visible
+    if(target.id==='lectura-texto') target.style.display='block';
   }
+
   document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));
+
   if (sub === 'personatges') mostrarGremiPersonatges();
   if (sub === 'biblioteca') renderDiccionari();
   if (sub === 'minijoc') setTimeout(() => novaFraseMinijoc(), 50);
@@ -272,6 +292,10 @@ function mostrarSubTab(sub) {
     if(c && lecturaActualHTML &&!c.innerHTML.trim()){
       c.innerHTML = lecturaActualHTML;
     }
+    // fuerza visible
+    if(c) c.style.display='block';
+    const contenedorPadre = document.getElementById('lectura-lectura');
+    if(contenedorPadre) contenedorPadre.style.display='block';
   }
 }
 
@@ -494,7 +518,6 @@ async function cargarBancoLectura(){
   const res=await fetch('./data/banco_lectura.json'); BANCO_LECTURA=await res.json(); return BANCO_LECTURA;
 }
 
-// === MOTOR LECTURA V15.2 - FIX FOTOS 22:44 / 21:54 ===
 function esSingular(grup) {
   if(!grup) return false;
   const t = grup.trim().toLowerCase();
@@ -504,7 +527,6 @@ function esGrupPlural(grup){
   if(!grup) return false;
   return /companys|amics|germans/i.test(grup) || grup.toLowerCase().includes(' i ') || grup.toLowerCase().includes(',');
 }
-
 function conjugarImperfet(accio) {
   if(!accio) return accio;
   const mapa = {
@@ -535,7 +557,11 @@ async function generarLectura(){
   const nivell=getCurrentLevel();
   const dataNivell=banco[nivell];
   const regles=banco.regles_globals;
-  if(!dataNivell||!dataNivell.plantillas){ document.getElementById('lectura-texto').innerHTML='<p>No hi ha lectures</p>'; return; }
+  if(!dataNivell||!dataNivell.plantillas){
+    const c = document.getElementById('lectura-texto');
+    if(c) c.innerHTML='<p>No hi ha lectures - revisa banco_lectura.json</p><button class="btn btn-primari" onclick="generarLectura()">Reintentar</button>';
+    return;
+  }
 
   lecturaActualVocab=[]; lecturaContext={};
   const plantilla=dataNivell.plantillas[Math.floor(Math.random()*dataNivell.plantillas.length)];
@@ -543,31 +569,30 @@ async function generarLectura(){
   const tema=temes[Math.floor(Math.random()*temes.length)];
   lecturaContext.tema_text=tema.replace(/_/g,' ');
   const vocab=dataNivell[tema];
-  if(!vocab){ document.getElementById('lectura-texto').innerHTML='<p>Tema no trobat</p>'; return; }
+  if(!vocab){
+    const c = document.getElementById('lectura-texto');
+    if(c) c.innerHTML=`<p>Tema no trobat: ${tema}</p>`;
+    return;
+  }
   const personatge=nomPersonatge||'Joven';
-
   let genere='m';
   const fems=['Ana','Sofia','Laia','Marta','Clara','Berta','Emma','Núria','Aina','Claudia','Laura','Maria','Jova','Noia','Dona','Rita'];
   if(fems.includes(personatge)) genere='f';
-
   const pronom = genere==='f'? 'ella' : 'ell';
   const Pronom = genere==='f'? 'Ella' : 'Ell';
-
-  // Conectors únics sense repetir
   const conectoresDisponibles = regles?.connectors_ortografia || CONECTORS_LECTURA;
   let ultimsConnectors=[];
   const getConectorUnic = () => {
     let c, tries=0;
     do {
       c = conectoresDisponibles[Math.floor(Math.random()*conectoresDisponibles.length)];
-      if(c==="Quan") c="Aleshores"; // evita "Quan," orfe
+      if(c==="Quan") c="Aleshores";
       tries++;
     } while(ultimsConnectors.includes(c) && tries<20);
     ultimsConnectors.push(c);
     if(ultimsConnectors.length>3) ultimsConnectors.shift();
     return c;
   };
-
   lecturaContext['conector1'] = getConectorUnic();
   lecturaContext['conector2'] = getConectorUnic();
   lecturaContext['conector3'] = getConectorUnic();
@@ -582,7 +607,6 @@ async function generarLectura(){
     lecturaContext[key]=val;
     return val;
   }
-
   function reemplaçar(text,congelar=false){
     return text.replace(/\$\{(\w+)\}/g,(match,key)=>{
       if(key==='personatge') return personatge;
@@ -598,7 +622,6 @@ async function generarLectura(){
       return lecturaContext[key] || key;
     });
   }
-
   function concordarGenere(text){
     let resultat=text;
     if(!regles?.generes_paraules) return text;
@@ -610,10 +633,8 @@ async function generarLectura(){
     });
     return resultat;
   }
-
   function aplicarFixesGramaticals(text){
     let t = text;
-    // FIX 1: tornar + preposició - FOTOS 21:54
     t = t.replace(/\bva tornar classe\b/gi, "va tornar a classe");
     t = t.replace(/\bva tornar lliure\b/gi, "va tornar a casa");
     t = t.replace(/\bva tornar llibre\b/gi, "va tornar a casa");
@@ -624,8 +645,6 @@ async function generarLectura(){
     t = t.replace(/\bI escola ha estat\b/g, "L'escola ha estat");
     t = t.replace(/\bI escola és\b/g, "L'escola és");
     t = t.replace(/\bl escola\b/gi, "l'escola");
-
-    // FIX 2: Singular vs Plural - "El seu amic van" -> "va"
     if(lecturaContext.companys && esSingular(lecturaContext.companys) &&!esGrupPlural(lecturaContext.companys)){
       t = t.replace(/\bvan estudiar\b/gi, "va estudiar");
       t = t.replace(/\bvan jugar\b/gi, "va jugar");
@@ -636,28 +655,20 @@ async function generarLectura(){
       t = t.replace(/\bvan caminar\b/gi, "va caminar");
       t = t.replace(/\bvan pintar\b/gi, "va pintar");
     }
-
-    // FIX 3: Conector orfe "Quan," -> "Aleshores" - FOTO 22:44
     t = t.replace(/^Quan, el seu\b/gm, "Aleshores, el seu");
     t = t.replace(/\.\s*Quan, el seu\b/g, ". Aleshores, el seu");
     t = t.replace(/\bQuan va descansar amb\b/gi, "Després va berenar amb");
     t = t.replace(/\bQuan, el seu amic va mirar\b/gi, "Aleshores, el seu amic va mirar");
-
-    // FIX 4: descansar amb menjar -> berenar
     t = t.replace(/\bva descansar amb galetes\b/gi, "va berenar amb galetes");
     t = t.replace(/\bva descansar amb pa\b/gi, "va berenar amb pa");
     t = t.replace(/\bva descansar amb fruita\b/gi, "va berenar amb fruita");
     t = t.replace(/\bva descansar amb suc\b/gi, "va berenar amb suc");
     t = t.replace(/\bAmb què va descansar\b/g, "Amb què va berenar");
-
-    // FIX 5: mentre ell infinitiu -> imperfet
     t = t.replace(/\bmentre ell escoltar\b/gi, "mentre ell escoltava");
     t = t.replace(/\bmentre ell jugar\b/gi, "mentre ell jugava");
     t = t.replace(/\bmentre ell mirar\b/gi, "mentre ell mirava");
     t = t.replace(/\bmentre ell preguntar\b/gi, "mentre ell preguntava");
     t = t.replace(/\bmentre ella escoltar\b/gi, "mentre ella escoltava");
-
-    // FIX 6: Apostrofacio general del banc
     if(regles?.apostrofacio){
       Object.entries(regles.apostrofacio).forEach(([k,v])=>{
         const re = new RegExp(`\\b${k}\\b`, 'gi');
@@ -665,29 +676,23 @@ async function generarLectura(){
       });
     }
     return t.replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1")
-     .replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1")
-     .replace(/tranquil·la·la/g,'tranquil·la')
-     .replace(/\s+/g,' ').trim();
+    .replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1")
+    .replace(/tranquil·la·la/g,'tranquil·la')
+    .replace(/\s+/g,' ').trim();
   }
 
   const titol_raw=reemplaçar(plantilla.titol,false);
-
   let frasesProcessades = plantilla.seq.map((l,i)=>{
     let frase = reemplaçar(l,false);
     frase = concordarGenere(frase);
-
-    // Fix imperfet abans d'apostrofar - per "mentre ell escoltava"
     if(frase.toLowerCase().includes("mentre")){
       const accioRaw = lecturaContext.accio_prota;
       if(accioRaw &&!frase.toLowerCase().includes("escoltava") &&!frase.toLowerCase().includes("jugava") &&!frase.toLowerCase().includes("mirava")){
         const conj = conjugarImperfet(accioRaw);
-        // només reemplaça si encara està en infinitiu
         if(frase.includes(accioRaw)) frase = frase.replace(accioRaw, conj);
       }
     }
-
     frase = aplicarFixesGramaticals(frase);
-
     if(i>0 && frase.includes(personatge) &&!l.includes('${pronom}')){
        if(Math.random()>0.3){
          frase = frase.replace(new RegExp(`\\b${personatge}\\b`, 'g'), pronom);
@@ -706,33 +711,55 @@ async function generarLectura(){
 
   let textBase=frasesProcessades.join(' ');
   textBase=aplicarFixesGramaticals(textBase);
-
   const finalsAlternatius=['és el meu lloc preferit!','m\'encanta passar temps aquí!','vull tornar aviat!','ha estat un dia genial!'];
-  // només canvia final si és el genèric antic
   if(textBase.includes('és el meu lloc preferit!') && Math.random()>0.5){
     textBase=textBase.replace(/és el meu lloc preferit!.*$/i, finalsAlternatius[Math.floor(Math.random()*finalsAlternatius.length)]);
   }
-
   lecturaActualText=textBase;
-
   lecturaActualPreguntes=plantilla.preguntes.map(p=>({
     q:concordarGenere(aplicarFixesGramaticals(reemplaçar(p.q,true))),
     opcions:p.opcions.map(o=>concordarGenere(aplicarFixesGramaticals(reemplaçar(o,true)))),
     correcta:p.correcta
   }));
-
   const titol=aplicarFixesGramaticals(concordarGenere(titol_raw)).replace(/\s+/g,' ').trim();
   const htmlFinal=`<div class="lectura-card"><h3>${titol}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block; width:100%; margin:5px 0; text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
 
   lecturaActualHTML = htmlFinal;
-  const contTexto = document.getElementById('lectura-texto');
-  if(contTexto) contTexto.innerHTML = htmlFinal;
+  // BUSCA TODOS LOS CONTENEDORES POSIBLES Y PINTA
+  const ids = ['lectura-texto','lectura-lectura','lectura-lectura-inner','tab-lectura'];
+  let pintado = false;
+  for(let id of ids){
+    const el = document.getElementById(id);
+    if(el){
+      if(id==='lectura-texto' || id==='lectura-lectura' || id==='lectura-lectura-inner'){
+        el.innerHTML = htmlFinal;
+        el.style.display='block';
+        pintado = true;
+        break;
+      }
+    }
+  }
+  // si no hay lectura-texto, crea uno dentro de tab-lectura
+  if(!pintado){
+    const tab = document.getElementById('tab-lectura');
+    if(tab){
+      let cont = tab.querySelector('.lectura-contenedor-dinamico');
+      if(!cont){
+        cont = document.createElement('div');
+        cont.className='lectura-contenedor-dinamico';
+        cont.id='lectura-texto';
+        tab.appendChild(cont);
+      }
+      cont.innerHTML=htmlFinal;
+      cont.style.display='block';
+    }
+  }
   renderVocabLectura();
   if(gramaticaMode==='contextual') await generarGramatica();
 }
 
 function renderVocabLectura(){
-  const cont = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab') || document.getElementById('gremi-vocab') || document.getElementById('lectura-vocab-content');
+  const cont = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab') || document.getElementById('gremi-vocab') || document.getElementById('lectura-vocab-content') || document.getElementById('lectura-vocabular') || document.getElementById('lectura-vocabulari');
   if(!cont) return;
   if(lecturaActualVocab.length===0){
     cont.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura per veure el vocabulari</p><button class="btn btn-primari" onclick="mostrarSubTab(\'lectura\');generarLectura()">Generar</button></div>';
@@ -747,7 +774,7 @@ function comprovarPregunta(idx,resp){
 }
 function slugGramatica(str){ return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_'); }
 async function generarGramatica(){
-  const container = document.getElementById('lectura-gramatica-inner') || document.getElementById('lectura-gramatica') || document.getElementById('gremi-gramatica') || document.getElementById('lectura-gramatica-content');
+  const container = document.getElementById('lectura-gramatica-inner') || document.getElementById('lectura-gramatica') || document.getElementById('gremi-gramatica') || document.getElementById('lectura-gramatica-content') || document.getElementById('lectura-gramatica');
   if(!container) return;
   const banco=await cargarBancoLectura();
   if(!banco||!banco.gramatica||!banco.gramatica.guia){ container.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia - revisa data/banco_lectura.json</p></div>`; return; }
@@ -780,7 +807,6 @@ function seleccionarTemaGramatica(slug){ gramaticaTemaSeleccionat=slug; generarG
 function tornarAGuia(){ gramaticaTemaSeleccionat=null; generarGramatica(); }
 function extraerFrasesCon(texto,palabra){ return texto.split('.').filter(f=>f.toLowerCase().includes(palabra.toLowerCase())).slice(0,3).map(f=>f.trim()+'.'); }
 window.setGramaticaMode=setGramaticaMode; window.seleccionarTemaGramatica=seleccionarTemaGramatica; window.tornarAGuia=tornarAGuia; window.generarGramatica=generarGramatica;
-
 function carregarTips(){
   const nivell=getCurrentLevel(); if(totsElsTips.length===0) totsElsTips=dadesTips[nivell]||[]; mostrarTipRandom();
 }
@@ -821,4 +847,4 @@ function comprarPack(id,preu){
 }
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(err=>console.log('SW error:',err)); });
-} 
+}
