@@ -10,7 +10,6 @@ const URLS_TO_CACHE = [
   './data/categories_emoji.json',
   './data/botiga_emoji.json',
   './data/minijoc_frases.json',
-  './data/minijoc_determinants.json',
   './data/banco_lectura.json',
   './data/tips.json'
 ];
