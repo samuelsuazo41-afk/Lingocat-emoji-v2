@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v19 FINAL - BADGE GÈNERE + ROTACIÓ + FIX DUPLICATS
+// main.js - Lingocat Emoji v20 FINAL - DETERMINANT INCORPORAT + ROTACIÓ + BADGE GÈNERE
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -44,7 +44,7 @@ function getCurrentLevel(){if(estat.progres.nivellActualMapa<=33)return'a1';if(e
 function gastarEnergia(c){if(DEBUG_NO_ENERGIA)return true;if(estat.progres.energia<c)return false;estat.progres.energia-=c;guardarEstat();actualitzarUI();return true;}
 async function carregarDadesMinijoc(){try{const[fr,det]=await Promise.all([fetch('./data/minijoc_frases.json'),fetch('./data/minijoc_determinants.json')]);if(!fr.ok||!det.ok)throw new Error('HTTP');const d=await fr.json();FRASES_MINIJOC=Array.isArray(d)?d:(d.frases||[]);DETERMINANTS=await det.json();minijocInicialitzat=true;}catch(e){console.error(e);}}
 async function carregarDades(){try{const[cat,bib,bot,lec,tip]=await Promise.all([fetch('./data/categories_emoji.json'),fetch('./data/biblioteca_emoji.json'),fetch('./data/botiga_emoji.json'),fetch('./data/banco_lectura.json'),fetch('./data/tips.json')]);CATEGORIES_TOTS=cat.ok?await cat.json():{};BIBLIOTECA_PLA=bib.ok?await bib.json():[];PACKS_BOTIGA=bot.ok?await bot.json():[];BANCO_VOCAB=lec.ok?await lec.json():{};BANCO_LECTURA=BANCO_VOCAB;dadesTips=tip.ok?await tip.json():{};}catch(e){console.error(e);}agruparBibliotecaPorCategoria();construirCategories();construirTotsEmojis();inicialitzarNomPersonatgeDefault();}
-function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["Laia","Pau","Mercè","Biel","Ona","Roc","Júlia","Nil","En Joan","Na Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
+function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc","La Júlia","En Nil","En Joan","Na Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
 function construirCategories(){const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));estat.compres.forEach(id=>{const pId=id.includes('_p')?id.split('_p')[0]:id;const p=PACKS_BOTIGA.find(x=>x.id===pId);if(p&&p.emojis)p.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji)));});CATEGORIES_DESBLOQUEJADES={};Object.keys(CATEGORIES_TOTS).forEach(c=>{CATEGORIES_DESBLOQUEJADES[c]=CATEGORIES_TOTS[c].filter(e=>d.has(quitarSkinTone(e)));});estat.desbloquejats=CATEGORIES_DESBLOQUEJADES;}
 function construirTotsEmojis(){TOTS_EMOJIS=BIBLIOTECA_PLA.map(e=>({...e}));}
@@ -59,21 +59,20 @@ function renderMapa(){const c=document.getElementById('mapa-contenidor');if(!c)r
 function jugarNivell(n){if(n>estat.progres.nivellActualMapa)return;canviarTab('gremi',null);mostrarSubTab('minijoc');}
 function renderMissio(){const c=document.getElementById('missio-contenidor');if(!c)return;const n=estat.progres.nivellActualMapa||1,xp=n*100,xpF=xp-(estat.progres.xp||0),nB1=25,pB1=Math.min(100,Math.max(0,(n/nB1)*100)),fB1=Math.max(0,nB1-n);c.innerHTML=`<h3 style="text-align:center;margin-bottom:20px;">Missions</h3><div class="missio-item" onclick="canviarTab('gremi',null);mostrarSubTab('minijoc');" style="cursor:pointer;">${xpF>0?'🎯':'✅'} Et falten ${xpF} acerts per pujar de nivell</div><div class="missio-item" onclick="canviarTab('botiga',null);" style="cursor:pointer;">📦 Desbloqueja tota la biblioteca</div><div class="missio-item" onclick="canviarTab('lectura',null);setTimeout(()=>mostrarSubTab('gramatica'),100);" style="cursor:pointer;">📚 Aprèn gramàtica</div><div class="missio-item" onclick="recarregarEnergia()" style="cursor:pointer;">⚡ Recarrega energia per 50 🪙</div><div class="missio-item"><div style="display:flex;gap:12px;margin-bottom:8px;"><span style="font-size:32px;">${fB1===0?'✅':'🏆'}</span><div style="flex:1;"><div style="font-weight:700;">Arriba al nivell B1</div><div style="font-size:13px;color:#aaa;">Nivell ${n} de ${nB1} - Falten ${fB1}</div></div></div><div style="width:100%;height:8px;background:#333;border-radius:4px;"><div style="width:${pB1}%;height:100%;background:#22c55e;"></div></div></div>`;}
 function recarregarEnergia(){if(estat.progres.energia>=100){mostrarMissatge('Ja tens l\'energia al màxim!');return;}if(estat.monedes<50){mostrarMissatge('Necessites 50 monedes');return;}estat.monedes-=50;estat.progres.energia=100;estat.ultimaRecargaEnergia=Date.now();guardarEstat();actualitzarUI();renderMissio();vibrar();mostrarMissatge('Energia recarregada!');}
-
-// V19 - MOSTRA PERSONATGES AMB BADGE M/F + EMOJI
 function mostrarGremiPersonatges(){
   const c=document.getElementById('gremi-personatges');if(!c)return;
-  const noms=new Set(BANCO_LECTURA?.personatges || []);if(noms.size===0)['Ana','Pau','Sofia','Marc','Laia','Jordi'].forEach(n=>noms.add(n));
+  const noms=new Set(BANCO_LECTURA?.personatges || []);
   const detall = BANCO_LECTURA?.personatges_detall || {};
   const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);
-  let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b> - Rotació activa</p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;
+  let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b> - Rotació amb determinant</p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;
   PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});
-  h+=`</div></div><div id="selector-nom" style="display:none;margin-top:20px;border-top:1px solid #333;padding-top:20px;"><h4>Tria preferit - amb gènere:</h4><div class="emoji-grid">`;
+  h+=`</div></div><div id="selector-nom" style="display:none;margin-top:20px;border-top:1px solid #333;padding-top:20px;"><h4>Tria preferit - ja amb En/La/L':</h4><div class="emoji-grid">`;
   [...noms].sort().forEach(nom=>{
-    const gen = detall[nom] || 'm';
-    const badge = gen==='f'? '🔴 fem' : '🔵 masc';
+    let gen = detall[nom];
+    if(typeof gen === 'object') gen = gen.g || gen.genere || 'm';
+    gen = gen || 'm';
+    const badge = gen==='f'? '🔴 FEM' : '🔵 MASC';
     const emoji = gen==='f'? '👧' : '👦';
-    if(nom.startsWith('En ') || nom.startsWith("L'avi")) { /* masc */ }
     const s=nom===nomPersonatge;
     h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="setNomPersonatge('${nom.replace(/'/g,"\\'")}')"><div class="emoji-large">${emoji}</div><div class="emoji-name">${nom}</div><div style="font-size:10px;color:${gen==='f'?'#ff6b9d':'#4da6ff'}">${badge}</div></div>`;
   });
@@ -105,15 +104,15 @@ async function generarLectura(){
   if(!gastarEnergia(30)){alert('No tens energia');return;}
   const banco=await cargarBancoLectura(),nivell=getCurrentLevel(),data=banco[nivell],regles=banco.regles_globals;
   if(!data||!data.plantillas){const c=document.getElementById('lectura-texto');if(c)c.innerHTML='<p>No hi ha lectures</p><button class="btn btn-primari" onclick="generarLectura()">Reintentar</button>';return;}
-  const llistaPersonatges = banco.personatges || ["Laia","Pau","Mercè","Biel","Ona","Roc","Júlia","Nil","En Joan","Na Maria","L'avi Pere","La iaia Montse"];
+  const llistaPersonatges = banco.personatges;
   let personatgeTriatLectura;
   const preferit = localStorage.getItem('cat_nom_personatge');
-  if(preferit && Math.random() < 0.3){ personatgeTriatLectura = preferit; } else { personatgeTriatLectura = llistaPersonatges[Math.floor(Math.random()*llistaPersonatges.length)]; }
+  if(preferit && llistaPersonatges.includes(preferit) && Math.random() < 0.3){ personatgeTriatLectura = preferit; } else { personatgeTriatLectura = llistaPersonatges[Math.floor(Math.random()*llistaPersonatges.length)]; }
   nomPersonatge = personatgeTriatLectura;
   const personatge = personatgeTriatLectura;
-  let genere='m';
-  if(banco.personatges_detall && banco.personatges_detall[personatge]) genere = banco.personatges_detall[personatge];
-  else { const lower = personatge.toLowerCase(); if(lower.startsWith('na ')||lower.includes('iaia')||lower.includes('mercè')) genere='f'; if(lower.startsWith('en ')||lower.startsWith("l'avi")) genere='m'; }
+  let genere = banco.personatges_detall[personatge];
+  if(typeof genere === 'object') genere = genere.g || genere.genere || 'm';
+  genere = genere || 'm';
   const pronom=genere==='f'?'ella':'ell',Pronom=genere==='f'?'Ella':'Ell';
   lecturaActualVocab=[]; lecturaContext={};
   const plantilla=data.plantillas[Math.floor(Math.random()*data.plantillas.length)],temes=['la_familia','la_casa','l_escola','la_ciutat','la_natura','el_temps_lliure'],tema=temes[Math.floor(Math.random()*temes.length)];
@@ -139,12 +138,9 @@ async function generarLectura(){
     if(idx>=0) correcta = idx;
     return {q:concordarGenere(aplicarFixes(reemplaçar(p.q,true))), opcions:ops, correcta};
   });
-
-  // V19 - BADGE GÈNERE AMB PUNT VERMELL/BLAU + EMOJI
-  const badgeGenere = genere==='f'? '🔴 fem' : '🔵 masc';
+  const badgeGenere = genere==='f'? '🔴 FEM' : '🔵 MASC';
   const emojiGenere = genere==='f'? '👩' : '👨';
   const tipusEmoji = genere==='f'? '👧' : '👦';
-
   const tit=aplicarFixes(concordarGenere(tit_raw)).replace(/\s+/g,' ').trim();
   const html=`<div class="lectura-card"><h3>${tit}</h3><p style="font-size:11px;color:#22c55e;text-transform:uppercase;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">TEMPS: ${temps} • NIVELL: ${nivell.toUpperCase()} • <span style="background:${genere==='f'?'#ff6b9d':'#4da6ff'};color:#000;padding:2px 6px;border-radius:10px;font-weight:800;">${emojiGenere} ${personatge} • ${badgeGenere} ${tipusEmoji}</span></p><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
   lecturaActualHTML=html;const ids=['lectura-texto','lectura-lectura','lectura-lectura-inner'];let pint=false;for(let id of ids){const el=document.getElementById(id);if(el){el.innerHTML=html;el.style.display='block';pint=true;break;}}if(!pint){const tab=document.getElementById('tab-lectura');if(tab){let c=tab.querySelector('.lectura-contenedor-dinamico');if(!c){c=document.createElement('div');c.id='lectura-texto';tab.appendChild(c);}c.innerHTML=html;c.style.display='block';}}renderVocabLectura();if(gramaticaMode==='contextual')await generarGramatica();
