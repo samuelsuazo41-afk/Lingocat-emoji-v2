@@ -42,7 +42,16 @@ function iniciarRegeneracioAutomatica(){setInterval(()=>{if(estat.progres.energi
 function guardarEstat(){localStorage.setItem('cat_monedes',estat.monedes);localStorage.setItem('cat_compres',JSON.stringify(estat.compres));localStorage.setItem('cat_nivell',estat.progres.nivellActualMapa);localStorage.setItem('cat_encerts',estat.progres.encerts);localStorage.setItem('cat_frasesContador',estat.progres.frasesDesDeUltimNivell);localStorage.setItem('cat_energia',estat.progres.energia);localStorage.setItem('cat_ultimaEnergia',estat.ultimaRecargaEnergia);localStorage.setItem('cat_intro',JSON.stringify(estat.introVist));localStorage.setItem('cat_desbloquejats',JSON.stringify(estat.desbloquejats));localStorage.setItem('cat_nivell_minijoc',NIVELL_MINIJOC.nivelActual);localStorage.setItem('cat_personatge',estat.personatgeTriat);localStorage.setItem('cat_xp',estat.progres.xp);}
 function getCurrentLevel(){if(estat.progres.nivellActualMapa<=33)return'a1';if(estat.progres.nivellActualMapa<=66)return'a2';return'b1';}
 function gastarEnergia(c){if(DEBUG_NO_ENERGIA)return true;if(estat.progres.energia<c)return false;estat.progres.energia-=c;guardarEstat();actualitzarUI();return true;}
-async function carregarDadesMinijoc(){try{const[fr,det]=await Promise.all([fetch('./data/minijoc_frases.json'),fetch('./data/minijoc_determinants.json')]);if(!fr.ok||!det.ok)throw new Error('HTTP');const d=await fr.json();FRASES_MINIJOC=Array.isArray(d)?d:(d.frases||[]);DETERMINANTS=await det.json();minijocInicialitzat=true;}catch(e){console.error(e);}}
+async function carregarDadesMinijoc(){
+  try{
+    const fr = await fetch('./data/minijoc_frases.json');
+    if(!fr.ok) throw new Error('No frases');
+    const d = await fr.json();
+    FRASES_MINIJOC = Array.isArray(d) ? d : (d.frases || []);
+    try{ const det = await fetch('./data/minijoc_determinants.json'); if(det.ok) DETERMINANTS = await det.json(); }catch(e){}
+    minijocInicialitzat = true;
+  }catch(e){ console.error(e); minijocInicialitzat = true; }
+}
 async function carregarDades(){try{const[cat,bib,bot,lec,tip]=await Promise.all([fetch('./data/categories_emoji.json'),fetch('./data/biblioteca_emoji.json'),fetch('./data/botiga_emoji.json'),fetch('./data/banco_lectura.json'),fetch('./data/tips.json')]);CATEGORIES_TOTS=cat.ok?await cat.json():{};BIBLIOTECA_PLA=bib.ok?await bib.json():[];PACKS_BOTIGA=bot.ok?await bot.json():[];BANCO_VOCAB=lec.ok?await lec.json():{};BANCO_LECTURA=BANCO_VOCAB;dadesTips=tip.ok?await tip.json():{};}catch(e){console.error(e);}agruparBibliotecaPorCategoria();construirCategories();construirTotsEmojis();inicialitzarNomPersonatgeDefault();}
 function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc","La Júlia","En Nil","En Joan","La Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
