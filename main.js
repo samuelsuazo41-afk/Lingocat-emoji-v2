@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v18 FINAL - ROTACIÓ PERSONATGES + FIX DUPLICATS
+// main.js - Lingocat Emoji v19 FINAL - BADGE GÈNERE + ROTACIÓ + FIX DUPLICATS
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -44,13 +44,7 @@ function getCurrentLevel(){if(estat.progres.nivellActualMapa<=33)return'a1';if(e
 function gastarEnergia(c){if(DEBUG_NO_ENERGIA)return true;if(estat.progres.energia<c)return false;estat.progres.energia-=c;guardarEstat();actualitzarUI();return true;}
 async function carregarDadesMinijoc(){try{const[fr,det]=await Promise.all([fetch('./data/minijoc_frases.json'),fetch('./data/minijoc_determinants.json')]);if(!fr.ok||!det.ok)throw new Error('HTTP');const d=await fr.json();FRASES_MINIJOC=Array.isArray(d)?d:(d.frases||[]);DETERMINANTS=await det.json();minijocInicialitzat=true;}catch(e){console.error(e);}}
 async function carregarDades(){try{const[cat,bib,bot,lec,tip]=await Promise.all([fetch('./data/categories_emoji.json'),fetch('./data/biblioteca_emoji.json'),fetch('./data/botiga_emoji.json'),fetch('./data/banco_lectura.json'),fetch('./data/tips.json')]);CATEGORIES_TOTS=cat.ok?await cat.json():{};BIBLIOTECA_PLA=bib.ok?await bib.json():[];PACKS_BOTIGA=bot.ok?await bot.json():[];BANCO_VOCAB=lec.ok?await lec.json():{};BANCO_LECTURA=BANCO_VOCAB;dadesTips=tip.ok?await tip.json():{};}catch(e){console.error(e);}agruparBibliotecaPorCategoria();construirCategories();construirTotsEmojis();inicialitzarNomPersonatgeDefault();}
-function inicialitzarNomPersonatgeDefault(){
-  if(nomPersonatge) return;
-  const llista = BANCO_LECTURA?.personatges || ["Laia","Pau","Mercè","Biel","Ona","Roc","Júlia","Nil","En Joan","Na Maria","L'avi Pere","La iaia Montse"];
-  const triat = llista[Math.floor(Math.random()*llista.length)];
-  nomPersonatge = triat;
-  localStorage.setItem('cat_nom_personatge', triat);
-}
+function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["Laia","Pau","Mercè","Biel","Ona","Roc","Júlia","Nil","En Joan","Na Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
 function construirCategories(){const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));estat.compres.forEach(id=>{const pId=id.includes('_p')?id.split('_p')[0]:id;const p=PACKS_BOTIGA.find(x=>x.id===pId);if(p&&p.emojis)p.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji)));});CATEGORIES_DESBLOQUEJADES={};Object.keys(CATEGORIES_TOTS).forEach(c=>{CATEGORIES_DESBLOQUEJADES[c]=CATEGORIES_TOTS[c].filter(e=>d.has(quitarSkinTone(e)));});estat.desbloquejats=CATEGORIES_DESBLOQUEJADES;}
 function construirTotsEmojis(){TOTS_EMOJIS=BIBLIOTECA_PLA.map(e=>({...e}));}
@@ -65,7 +59,26 @@ function renderMapa(){const c=document.getElementById('mapa-contenidor');if(!c)r
 function jugarNivell(n){if(n>estat.progres.nivellActualMapa)return;canviarTab('gremi',null);mostrarSubTab('minijoc');}
 function renderMissio(){const c=document.getElementById('missio-contenidor');if(!c)return;const n=estat.progres.nivellActualMapa||1,xp=n*100,xpF=xp-(estat.progres.xp||0),nB1=25,pB1=Math.min(100,Math.max(0,(n/nB1)*100)),fB1=Math.max(0,nB1-n);c.innerHTML=`<h3 style="text-align:center;margin-bottom:20px;">Missions</h3><div class="missio-item" onclick="canviarTab('gremi',null);mostrarSubTab('minijoc');" style="cursor:pointer;">${xpF>0?'🎯':'✅'} Et falten ${xpF} acerts per pujar de nivell</div><div class="missio-item" onclick="canviarTab('botiga',null);" style="cursor:pointer;">📦 Desbloqueja tota la biblioteca</div><div class="missio-item" onclick="canviarTab('lectura',null);setTimeout(()=>mostrarSubTab('gramatica'),100);" style="cursor:pointer;">📚 Aprèn gramàtica</div><div class="missio-item" onclick="recarregarEnergia()" style="cursor:pointer;">⚡ Recarrega energia per 50 🪙</div><div class="missio-item"><div style="display:flex;gap:12px;margin-bottom:8px;"><span style="font-size:32px;">${fB1===0?'✅':'🏆'}</span><div style="flex:1;"><div style="font-weight:700;">Arriba al nivell B1</div><div style="font-size:13px;color:#aaa;">Nivell ${n} de ${nB1} - Falten ${fB1}</div></div></div><div style="width:100%;height:8px;background:#333;border-radius:4px;"><div style="width:${pB1}%;height:100%;background:#22c55e;"></div></div></div>`;}
 function recarregarEnergia(){if(estat.progres.energia>=100){mostrarMissatge('Ja tens l\'energia al màxim!');return;}if(estat.monedes<50){mostrarMissatge('Necessites 50 monedes');return;}estat.monedes-=50;estat.progres.energia=100;estat.ultimaRecargaEnergia=Date.now();guardarEstat();actualitzarUI();renderMissio();vibrar();mostrarMissatge('Energia recarregada!');}
-function mostrarGremiPersonatges(){const c=document.getElementById('gremi-personatges');if(!c)return;const noms=new Set(BANCO_LECTURA?.personatges || []);if(noms.size===0)['Ana','Pau','Sofia','Marc','Laia','Jordi'].forEach(n=>noms.add(n));const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Nom lectures: <b>${nomPersonatge || 'aleatori'}</b></p><p style="font-size:12px;color:#aaa;">Les lectures roten soles. Si tries un aquí, sortirà més sovint.</p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar nom preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});h+=`</div></div><div id="selector-nom" style="display:none;margin-top:20px;border-top:1px solid #333;padding-top:20px;"><h4>Tria nom preferit (rotació aleatòria activa):</h4><div class="emoji-grid">`;[...noms].sort().forEach(nom=>{const s=nom===nomPersonatge;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="setNomPersonatge('${nom.replace(/'/g,"\\'")}')"><div class="emoji-name">${nom}</div></div>`;});h+=`</div></div></div>`;c.innerHTML=h;}
+
+// V19 - MOSTRA PERSONATGES AMB BADGE M/F + EMOJI
+function mostrarGremiPersonatges(){
+  const c=document.getElementById('gremi-personatges');if(!c)return;
+  const noms=new Set(BANCO_LECTURA?.personatges || []);if(noms.size===0)['Ana','Pau','Sofia','Marc','Laia','Jordi'].forEach(n=>noms.add(n));
+  const detall = BANCO_LECTURA?.personatges_detall || {};
+  const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);
+  let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b> - Rotació activa</p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;
+  PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});
+  h+=`</div></div><div id="selector-nom" style="display:none;margin-top:20px;border-top:1px solid #333;padding-top:20px;"><h4>Tria preferit - amb gènere:</h4><div class="emoji-grid">`;
+  [...noms].sort().forEach(nom=>{
+    const gen = detall[nom] || 'm';
+    const badge = gen==='f'? '🔴 fem' : '🔵 masc';
+    const emoji = gen==='f'? '👧' : '👦';
+    if(nom.startsWith('En ') || nom.startsWith("L'avi")) { /* masc */ }
+    const s=nom===nomPersonatge;
+    h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="setNomPersonatge('${nom.replace(/'/g,"\\'")}')"><div class="emoji-large">${emoji}</div><div class="emoji-name">${nom}</div><div style="font-size:10px;color:${gen==='f'?'#ff6b9d':'#4da6ff'}">${badge}</div></div>`;
+  });
+  h+=`</div></div></div>`;c.innerHTML=h;
+}
 function mostrarSelectorNom(){const el=document.getElementById('selector-nom');if(el)el.style.display=el.style.display==='none'?'block':'none';}
 function setNomPersonatge(n){nomPersonatge=n;localStorage.setItem('cat_nom_personatge', n);mostrarGremiPersonatges();vibrar();if(document.getElementById('tab-lectura')?.classList.contains('active'))generarLectura();}
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
@@ -92,33 +105,19 @@ async function generarLectura(){
   if(!gastarEnergia(30)){alert('No tens energia');return;}
   const banco=await cargarBancoLectura(),nivell=getCurrentLevel(),data=banco[nivell],regles=banco.regles_globals;
   if(!data||!data.plantillas){const c=document.getElementById('lectura-texto');if(c)c.innerHTML='<p>No hi ha lectures</p><button class="btn btn-primari" onclick="generarLectura()">Reintentar</button>';return;}
-
-  // --- V18: ROTACIÓ ALEATÒRIA DE PERSONATGE ---
   const llistaPersonatges = banco.personatges || ["Laia","Pau","Mercè","Biel","Ona","Roc","Júlia","Nil","En Joan","Na Maria","L'avi Pere","La iaia Montse"];
   let personatgeTriatLectura;
   const preferit = localStorage.getItem('cat_nom_personatge');
-  if(preferit && Math.random() < 0.3){
-    personatgeTriatLectura = preferit; // 30% respecta preferit
-  } else {
-    personatgeTriatLectura = llistaPersonatges[Math.floor(Math.random()*llistaPersonatges.length)];
-  }
-  nomPersonatge = personatgeTriatLectura; // actualitza per UI
+  if(preferit && Math.random() < 0.3){ personatgeTriatLectura = preferit; } else { personatgeTriatLectura = llistaPersonatges[Math.floor(Math.random()*llistaPersonatges.length)]; }
+  nomPersonatge = personatgeTriatLectura;
   const personatge = personatgeTriatLectura;
-
   let genere='m';
   if(banco.personatges_detall && banco.personatges_detall[personatge]) genere = banco.personatges_detall[personatge];
-  else {
-    const femsBase = banco.personatges_detall? Object.keys(banco.personatges_detall).filter(k=>banco.personatges_detall[k]==='f') : ["Laia","Mercè","Ona","Júlia","Maria","Montse","Bruna","Cèlia","Sílvia","Aina","Clara","Anna"];
-    const lower = personatge.toLowerCase();
-    if(femsBase.includes(personatge) || lower.startsWith('na ') || lower.includes('iaia') || lower.includes('mercè') || lower.includes('montse')) genere='f';
-    if(lower.startsWith('en ') || lower.startsWith("l'avi")) genere='m';
-  }
+  else { const lower = personatge.toLowerCase(); if(lower.startsWith('na ')||lower.includes('iaia')||lower.includes('mercè')) genere='f'; if(lower.startsWith('en ')||lower.startsWith("l'avi")) genere='m'; }
   const pronom=genere==='f'?'ella':'ell',Pronom=genere==='f'?'Ella':'Ell';
-
   lecturaActualVocab=[]; lecturaContext={};
   const plantilla=data.plantillas[Math.floor(Math.random()*data.plantillas.length)],temes=['la_familia','la_casa','l_escola','la_ciutat','la_natura','el_temps_lliure'],tema=temes[Math.floor(Math.random()*temes.length)];
   lecturaContext.tema_text=tema.replace(/_/g,' ');const vocab=data[tema];if(!vocab){const c=document.getElementById('lectura-texto');if(c)c.innerHTML=`<p>Tema no trobat: ${tema}</p>`;return;}
-
   const cons=regles?.connectors_ortografia||CONECTORS_LECTURA;let ult=[];const getCon=()=>{let c,tr=0;do{c=cons[Math.floor(Math.random()*cons.length)];if(c==="Quan")c="Aleshores";tr++;}while(ult.includes(c)&&tr<20);ult.push(c);if(ult.length>3)ult.shift();return c;};
   lecturaContext.conector1=getCon();lecturaContext.conector2=getCon();lecturaContext.conector3=getCon();lecturaContext.pronom=pronom;lecturaContext.Pronom=Pronom;
   let temps='perifrastic';if(nivell==='a2'){const o=['perifrastic','present_continu','present_continu'];temps=o[Math.floor(Math.random()*o.length)];}else if(nivell==='b1'){const o=['imperfet','futur','perfet_continu','present_continu','perifrastic'];temps=o[Math.floor(Math.random()*o.length)];}lecturaContext.temps_verbal=temps;
@@ -126,34 +125,14 @@ async function generarLectura(){
   function reemplaçar(t,cong=false){return t.replace(/\$\{(\w+)\}/g,(m,k)=>{if(k==='personatge')return personatge;if(k==='tema')return lecturaContext.tema_text||k;if(k==='pronom')return pronom;if(k==='Pronom')return Pronom;if(k.startsWith('conector')){if(!lecturaContext[k])lecturaContext[k]=getCon();return lecturaContext[k];}if(cong&&lecturaContext[k])return lecturaContext[k];if(vocab[k])return pick(k,vocab[k]);return lecturaContext[k]||k;});}
   function concordarGenere(t){let r=t;if(!regles?.generes_paraules)return t;Object.keys(regles.generes_paraules).forEach(p=>{const f=regles.generes_paraules[p];if(!f)return;const re=new RegExp(`\\b${p}\\b`,'gi');r=r.replace(re,f[genere]||p);});return r;}
   function aplicarFixes(t){let x=t;x=x.replace(/\bva tornar classe\b/gi,"va tornar a classe").replace(/\bva tornar lliure\b/gi,"va tornar a casa").replace(/\bva tornar llibre\b/gi,"va tornar a casa").replace(/\bva tornar escola\b/gi,"va tornar a l'escola").replace(/\bva tancar finestra\b/gi,"va tancar la finestra").replace(/\btornar classe\b/gi,"tornar a classe").replace(/\btornar lliure\b/gi,"tornar a casa").replace(/\btornar llibre\b/gi,"tornar a casa").replace(/\bI escola ha estat\b/g,"L'escola ha estat").replace(/\bI escola és\b/g,"L'escola és").replace(/\bl escola\b/gi,"l'escola").replace(/\.\s*ell estava\b/g,". Ell estava").replace(/^ell estava\b/gm,"Ell estava").replace(/\bva menjar fruita amb fruita\b/gi,"va berenar amb fruita").replace(/\bmenjar fruita amb fruita\b/gi,"berenar amb fruita");if(lecturaContext.companys&&esSingular(lecturaContext.companys)&&!esGrupPlural(lecturaContext.companys)){x=x.replace(/\bvan estudiar\b/gi,"va estudiar").replace(/\bvan jugar\b/gi,"va jugar").replace(/\bvan parlar\b/gi,"va parlar").replace(/\bvan riure\b/gi,"va riure").replace(/\bvan mirar\b/gi,"va mirar").replace(/\bvan caminar\b/gi,"va caminar").replace(/\bvan pintar\b/gi,"va pintar");}x=x.replace(/^Quan, el seu\b/gm,"Aleshores, el seu").replace(/\.\s*Quan, el seu\b/g,". Aleshores, el seu").replace(/\bQuan va descansar amb\b/gi,"Després va berenar amb").replace(/\bva descansar amb galetes\b/gi,"va berenar amb galetes").replace(/\bmentre ell escoltar\b/gi,"mentre ell escoltava").replace(/\bmentre ell comprar\b/gi,"mentre ell comprava").replace(/\bmentre ell ordenar\b/gi,"mentre ell ordenava").replace(/\bmentre ell jugar\b/gi,"mentre ell jugava").replace(/\bmentre ell mirar\b/gi,"mentre ell mirava").replace(/\bmentre ella escoltar\b/gi,"mentre ella escoltava");if(regles?.apostrofacio){Object.entries(regles.apostrofacio).forEach(([k,v])=>{const re=new RegExp(`\\b${k}\\b`,'gi');x=x.replace(re,v);});}return x.replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1").replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1").replace(/tranquil·la·la/g,'tranquil·la').replace(/\s+/g,' ').trim();}
-
-  // Helper per evitar duplicats a les preguntes
-  function opcionsSenseDuplicats(arr){
-    const net = []; const vist = new Set();
-    arr.forEach(op=>{
-      const low = op.toLowerCase().trim();
-      if(!vist.has(low) && low){ vist.add(low); net.push(op); }
-    });
-    const extres = ["content","tranquil","feliç","cansat","sorprès","relaxat","atent","curiós"];
-    let i=0;
-    while(net.length < 3 && i < 20){
-      const cand = extres[Math.floor(Math.random()*extres.length)];
-      if(!vist.has(cand)){ vist.add(cand); net.push(cand); }
-      i++;
-    }
-    return net.slice(0,3);
-  }
-
+  function opcionsSenseDuplicats(arr){const net=[];const vist=new Set();arr.forEach(op=>{const low=op.toLowerCase().trim();if(!vist.has(low)&&low){vist.add(low);net.push(op);}});const extres=["content","tranquil","feliç","cansat","sorprès","relaxat","atent","curiós"];let i=0;while(net.length<3&&i<20){const cand=extres[Math.floor(Math.random()*extres.length)];if(!vist.has(cand)){vist.add(cand);net.push(cand);}i++;}return net.slice(0,3);}
   const tit_raw=reemplaçar(plantilla.titol,false);
   let frases=plantilla.seq.map((l,i)=>{let f=reemplaçar(l,false);f=concordarGenere(f);if(temps!=='perifrastic'){const raw=lecturaContext.accio_prota||lecturaContext.accio_grup||lecturaContext.accio_final;if(raw&&i>1){const conj=conjugarTemps(raw,temps);if(f.includes(raw)&&conj!==raw)f=f.replace(raw,conj);else if(f.toLowerCase().includes("mentre")&&temps==='imperfet'){const imp=conjugarTemps(raw,'imperfet');f=f.replace(raw,imp);}}if(temps==='present_continu'&&f.includes("va "+lecturaContext.accio_prota)){const pc=conjugarTemps(lecturaContext.accio_prota,'present_continu');f=f.replace("va "+lecturaContext.accio_prota,pc);}if(temps==='futur'&&f.includes("va "+lecturaContext.accio_final)){const fu=conjugarTemps(lecturaContext.accio_final,'futur');f=f.replace("va "+lecturaContext.accio_final,fu);}}if(f.toLowerCase().includes("mentre")&&!f.includes("escoltava")&&!f.includes("jugava")&&!f.includes("comprava")){const raw=lecturaContext.accio_prota;if(raw){const conj=conjugarTemps(raw,'imperfet');if(f.includes(raw))f=f.replace(raw,conj);}}f=aplicarFixes(f);if(i>0&&f.includes(personatge)&&!l.includes('${pronom}')){if(Math.random()>0.3){f=f.replace(new RegExp(`\\b${personatge.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'g'),pronom);}}if(i>0&&!l.toLowerCase().includes('conector')&&!l.match(/^(Després|Més tard|Mentrestant|Al final|De sobte|Aleshores|Però|A més|Tot i això)/i)){if(Math.random()>0.5){const co=getCon();if(!f.toLowerCase().startsWith(co.toLowerCase())){f=`${co}, ${f.charAt(0).toLowerCase()+f.slice(1)}`;}}}return f;});
   let textBase=frases.join(' ');textBase=aplicarFixes(textBase);const finals=['és el meu lloc preferit!','m\'encanta passar temps aquí!','vull tornar aviat!','ha estat un dia genial!'];if(textBase.includes('és el meu lloc preferit!')&&Math.random()>0.5){textBase=textBase.replace(/és el meu lloc preferit!.*$/i,finals[Math.floor(Math.random()*finals.length)]);}
   lecturaActualText=textBase;
-
-  // FIX DUPLICATS PREGUNTES V18
   lecturaActualPreguntes=plantilla.preguntes.map(p=>{
     let ops = p.opcions.map(o=>concordarGenere(aplicarFixes(reemplaçar(o,true))));
     ops = opcionsSenseDuplicats(ops);
-    // Assegura que la correcta encara hi és després de deduplicar
     let correcta = 0;
     const correctaText = concordarGenere(aplicarFixes(reemplaçar(p.opcions[p.correcta],true))).toLowerCase();
     const idx = ops.findIndex(o=>o.toLowerCase()===correctaText);
@@ -161,23 +140,20 @@ async function generarLectura(){
     return {q:concordarGenere(aplicarFixes(reemplaçar(p.q,true))), opcions:ops, correcta};
   });
 
+  // V19 - BADGE GÈNERE AMB PUNT VERMELL/BLAU + EMOJI
+  const badgeGenere = genere==='f'? '🔴 fem' : '🔵 masc';
+  const emojiGenere = genere==='f'? '👩' : '👨';
+  const tipusEmoji = genere==='f'? '👧' : '👦';
+
   const tit=aplicarFixes(concordarGenere(tit_raw)).replace(/\s+/g,' ').trim();
-  const html=`<div class="lectura-card"><h3>${tit}</h3><p style="font-size:11px;color:#22c55e;text-transform:uppercase;">Temps: ${temps} • Nivell: ${nivell.toUpperCase()} • ${personatge}</p><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
+  const html=`<div class="lectura-card"><h3>${tit}</h3><p style="font-size:11px;color:#22c55e;text-transform:uppercase;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">TEMPS: ${temps} • NIVELL: ${nivell.toUpperCase()} • <span style="background:${genere==='f'?'#ff6b9d':'#4da6ff'};color:#000;padding:2px 6px;border-radius:10px;font-weight:800;">${emojiGenere} ${personatge} • ${badgeGenere} ${tipusEmoji}</span></p><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
   lecturaActualHTML=html;const ids=['lectura-texto','lectura-lectura','lectura-lectura-inner'];let pint=false;for(let id of ids){const el=document.getElementById(id);if(el){el.innerHTML=html;el.style.display='block';pint=true;break;}}if(!pint){const tab=document.getElementById('tab-lectura');if(tab){let c=tab.querySelector('.lectura-contenedor-dinamico');if(!c){c=document.createElement('div');c.id='lectura-texto';tab.appendChild(c);}c.innerHTML=html;c.style.display='block';}}renderVocabLectura();if(gramaticaMode==='contextual')await generarGramatica();
 }
 function renderVocabLectura(){const c=document.getElementById('lectura-vocab-inner')||document.getElementById('lectura-vocab')||document.getElementById('gremi-vocab')||document.getElementById('lectura-vocab-content');if(!c)return;if(lecturaActualVocab.length===0){c.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab(\'lectura\');generarLectura()">Generar</button></div>';return;}c.innerHTML=`<div class="vocab-grid">${lecturaActualVocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div></div>`).join('')}</div>`;}
 function comprovarPregunta(i,r){const p=lecturaActualPreguntes[i],fb=document.getElementById(`feedback-${i}`);if(r===p.correcta){fb.innerHTML='<span style="color:#4CAF50">Correcte! +0.5 XP</span>';estat.progres.encerts+=0.5;guardarEstat();actualitzarUI();}else fb.innerHTML=`<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;}
 function slugGramatica(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_');}
 async function generarGramatica(){const cont=document.getElementById('lectura-gramatica-inner')||document.getElementById('lectura-gramatica')||document.getElementById('gremi-gramatica');if(!cont)return;const banco=await cargarBancoLectura();if(!banco||!banco.gramatica||!banco.gramatica.guia){cont.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`;return;}const G=banco.gramatica.guia,keys=Object.keys(G),mapa={};keys.forEach(k=>mapa[slugGramatica(k)]=k);let h=`<div style="display:flex;gap:8px;margin-bottom:15px;border-bottom:1px solid #333;padding-bottom:12px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;if(gramaticaMode==='contextual'){if(!lecturaActualText||lecturaActualVocab.length===0){cont.innerHTML=h+`<div style="padding:20px;opacity:0.6"><p>Genera primer una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab('lectura');generarLectura()">Generar lectura</button></div>`;return;}const gp=detectarPuntGramatica(lecturaActualText,getCurrentLevel(),G);h+=`<div class="grammar-card"><div class="grammar-title">${gp.titol} - [${lecturaContext.temps_verbal||''}]</div><div class="grammar-explanation">${gp.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples del teu text:</div>${gp.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${gp.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${gp.tip?`<div class="grammar-tip">💡 ${gp.tip}</div>`:''}</div>`;}else{if(!gramaticaTemaSeleccionat){h+=`<div class="emoji-grid">`;keys.forEach(k=>{const t=G[k];h+=`<div class="emoji-item" onclick="seleccionarTemaGramatica('${slugGramatica(k)}')" style="cursor:pointer;"><div class="emoji-large">${t.emoji||'📚'}</div><div class="emoji-name">${t.titol}</div></div>`;});h+=`</div>`;}else{const kr=mapa[gramaticaTemaSeleccionat]||gramaticaTemaSeleccionat,t=G[kr];if(!t){gramaticaTemaSeleccionat=null;return generarGramatica();}h+=`<button class="btn btn-sec" onclick="tornarAGuia()" style="margin-bottom:15px;">← Tornar</button><div class="grammar-card"><div class="grammar-title">${t.titol}</div><div class="grammar-explanation">${t.explicacio}</div><div style="background:#1a1a1a;padding:12px;border-radius:8px;margin:12px 0;font-family:monospace;color:#4CAF50;">Estructura: ${t.estructura}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples:</div>${t.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${t.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${t.tip?`<div class="grammar-tip">💡 ${t.tip}</div>`:''}</div>`;}}cont.innerHTML=h;}
-function detectarPuntGramatica(txt,niv,G){
-  if(txt.includes('està jugant')||txt.includes('està mirant')||txt.includes('està comprant')||txt.includes('està fent')){return{...(G.present_continu||G.present_simple),exemples:extraerFrasesCon(txt,'està'),titol:'Present continu: està + gerundi'};}
-  if(txt.includes('ha estat')){return{titol:'Perfet continu: ha estat + gerundi',explicacio:'Acció que va començar en passat i continua ara.',estructura:'ha estat + gerundi',exemples:extraerFrasesCon(txt,'ha estat'),exercici:['Ell ____ jugant tot el dia','He estat ____'],tip:'Molt usat en B1'};}
-  if(txt.includes('anirà')||txt.includes('farà')||txt.includes('comprarà')){return{...(G.futur_simple),exemples:extraerFrasesCon(txt,'arà'),titol:'Futur simple'};}
-  if((txt.includes('va ')||txt.includes('vam '))&&G.preterit_perifrastic){const d={...G.preterit_perifrastic};d.exemples=extraerFrasesCon(txt,'va ');return d;}
-  if((txt.includes('estava')||txt.includes('jugava')||txt.includes('comprava'))&&G.imperfet){const d={...G.imperfet};d.exemples=extraerFrasesCon(txt,'ava');return d;}
-  if((txt.includes('estava')||txt.includes('està'))&&G.estar_adjectiu){const d={...G.estar_adjectiu};d.exemples=extraerFrasesCon(txt,'estav');return d;}
-  return G[Object.keys(G)[0]]||{titol:'Gramàtica',explicacio:'Genera lectura',estructura:'',exemples:[],exercici:[],tip:''};
-}
+function detectarPuntGramatica(txt,niv,G){if(txt.includes('està jugant')||txt.includes('està mirant')||txt.includes('està comprant')||txt.includes('està fent')){return{...(G.present_continu||G.present_simple),exemples:extraerFrasesCon(txt,'està'),titol:'Present continu: està + gerundi'};}if(txt.includes('ha estat')){return{titol:'Perfet continu: ha estat + gerundi',explicacio:'Acció que va començar en passat i continua ara.',estructura:'ha estat + gerundi',exemples:extraerFrasesCon(txt,'ha estat'),exercici:['Ell ____ jugant tot el dia','He estat ____'],tip:'Molt usat en B1'};}if(txt.includes('anirà')||txt.includes('farà')||txt.includes('comprarà')){return{...(G.futur_simple),exemples:extraerFrasesCon(txt,'arà'),titol:'Futur simple'};}if((txt.includes('va ')||txt.includes('vam '))&&G.preterit_perifrastic){const d={...G.preterit_perifrastic};d.exemples=extraerFrasesCon(txt,'va ');return d;}if((txt.includes('estava')||txt.includes('jugava')||txt.includes('comprava'))&&G.imperfet){const d={...G.imperfet};d.exemples=extraerFrasesCon(txt,'ava');return d;}if((txt.includes('estava')||txt.includes('està'))&&G.estar_adjectiu){const d={...G.estar_adjectiu};d.exemples=extraerFrasesCon(txt,'estav');return d;}return G[Object.keys(G)[0]]||{titol:'Gramàtica',explicacio:'Genera lectura',estructura:'',exemples:[],exercici:[],tip:''};}
 function setGramaticaMode(m){gramaticaMode=m;gramaticaTemaSeleccionat=null;generarGramatica();}
 function seleccionarTemaGramatica(s){gramaticaTemaSeleccionat=s;generarGramatica();}
 function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
