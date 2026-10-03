@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v20 FINAL - DETERMINANT INCORPORAT + ROTACIÓ + BADGE GÈNERE
+// main.js - Lingocat Emoji v22 FINAL - FIX ELLA + JUNTS/JUNTES + En/La/L'
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -44,7 +44,7 @@ function getCurrentLevel(){if(estat.progres.nivellActualMapa<=33)return'a1';if(e
 function gastarEnergia(c){if(DEBUG_NO_ENERGIA)return true;if(estat.progres.energia<c)return false;estat.progres.energia-=c;guardarEstat();actualitzarUI();return true;}
 async function carregarDadesMinijoc(){try{const[fr,det]=await Promise.all([fetch('./data/minijoc_frases.json'),fetch('./data/minijoc_determinants.json')]);if(!fr.ok||!det.ok)throw new Error('HTTP');const d=await fr.json();FRASES_MINIJOC=Array.isArray(d)?d:(d.frases||[]);DETERMINANTS=await det.json();minijocInicialitzat=true;}catch(e){console.error(e);}}
 async function carregarDades(){try{const[cat,bib,bot,lec,tip]=await Promise.all([fetch('./data/categories_emoji.json'),fetch('./data/biblioteca_emoji.json'),fetch('./data/botiga_emoji.json'),fetch('./data/banco_lectura.json'),fetch('./data/tips.json')]);CATEGORIES_TOTS=cat.ok?await cat.json():{};BIBLIOTECA_PLA=bib.ok?await bib.json():[];PACKS_BOTIGA=bot.ok?await bot.json():[];BANCO_VOCAB=lec.ok?await lec.json():{};BANCO_LECTURA=BANCO_VOCAB;dadesTips=tip.ok?await tip.json():{};}catch(e){console.error(e);}agruparBibliotecaPorCategoria();construirCategories();construirTotsEmojis();inicialitzarNomPersonatgeDefault();}
-function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc","La Júlia","En Nil","En Joan","Na Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
+function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc","La Júlia","En Nil","En Joan","La Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
 function construirCategories(){const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));estat.compres.forEach(id=>{const pId=id.includes('_p')?id.split('_p')[0]:id;const p=PACKS_BOTIGA.find(x=>x.id===pId);if(p&&p.emojis)p.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji)));});CATEGORIES_DESBLOQUEJADES={};Object.keys(CATEGORIES_TOTS).forEach(c=>{CATEGORIES_DESBLOQUEJADES[c]=CATEGORIES_TOTS[c].filter(e=>d.has(quitarSkinTone(e)));});estat.desbloquejats=CATEGORIES_DESBLOQUEJADES;}
 function construirTotsEmojis(){TOTS_EMOJIS=BIBLIOTECA_PLA.map(e=>({...e}));}
@@ -114,7 +114,7 @@ async function generarLectura(){
   if(typeof genere === 'object') genere = genere.g || genere.genere || 'm';
   genere = genere || 'm';
   const pronom=genere==='f'?'ella':'ell',Pronom=genere==='f'?'Ella':'Ell';
-  lecturaActualVocab=[]; lecturaContext={};
+  lecturaActualVocab=[]; lecturaContext={genere:genere};
   const plantilla=data.plantillas[Math.floor(Math.random()*data.plantillas.length)],temes=['la_familia','la_casa','l_escola','la_ciutat','la_natura','el_temps_lliure'],tema=temes[Math.floor(Math.random()*temes.length)];
   lecturaContext.tema_text=tema.replace(/_/g,' ');const vocab=data[tema];if(!vocab){const c=document.getElementById('lectura-texto');if(c)c.innerHTML=`<p>Tema no trobat: ${tema}</p>`;return;}
   const cons=regles?.connectors_ortografia||CONECTORS_LECTURA;let ult=[];const getCon=()=>{let c,tr=0;do{c=cons[Math.floor(Math.random()*cons.length)];if(c==="Quan")c="Aleshores";tr++;}while(ult.includes(c)&&tr<20);ult.push(c);if(ult.length>3)ult.shift();return c;};
@@ -122,8 +122,40 @@ async function generarLectura(){
   let temps='perifrastic';if(nivell==='a2'){const o=['perifrastic','present_continu','present_continu'];temps=o[Math.floor(Math.random()*o.length)];}else if(nivell==='b1'){const o=['imperfet','futur','perfet_continu','present_continu','perifrastic'];temps=o[Math.floor(Math.random()*o.length)];}lecturaContext.temps_verbal=temps;
   function pick(k,a){if(!a||!a.length)return k;if(lecturaContext[k])return lecturaContext[k];const v=a[Math.floor(Math.random()*a.length)];if(!lecturaActualVocab.includes(v))lecturaActualVocab.push(v);lecturaContext[k]=v;return v;}
   function reemplaçar(t,cong=false){return t.replace(/\$\{(\w+)\}/g,(m,k)=>{if(k==='personatge')return personatge;if(k==='tema')return lecturaContext.tema_text||k;if(k==='pronom')return pronom;if(k==='Pronom')return Pronom;if(k.startsWith('conector')){if(!lecturaContext[k])lecturaContext[k]=getCon();return lecturaContext[k];}if(cong&&lecturaContext[k])return lecturaContext[k];if(vocab[k])return pick(k,vocab[k]);return lecturaContext[k]||k;});}
-  function concordarGenere(t){let r=t;if(!regles?.generes_paraules)return t;Object.keys(regles.generes_paraules).forEach(p=>{const f=regles.generes_paraules[p];if(!f)return;const re=new RegExp(`\\b${p}\\b`,'gi');r=r.replace(re,f[genere]||p);});return r;}
-  function aplicarFixes(t){let x=t;x=x.replace(/\bva tornar classe\b/gi,"va tornar a classe").replace(/\bva tornar lliure\b/gi,"va tornar a casa").replace(/\bva tornar llibre\b/gi,"va tornar a casa").replace(/\bva tornar escola\b/gi,"va tornar a l'escola").replace(/\bva tancar finestra\b/gi,"va tancar la finestra").replace(/\btornar classe\b/gi,"tornar a classe").replace(/\btornar lliure\b/gi,"tornar a casa").replace(/\btornar llibre\b/gi,"tornar a casa").replace(/\bI escola ha estat\b/g,"L'escola ha estat").replace(/\bI escola és\b/g,"L'escola és").replace(/\bl escola\b/gi,"l'escola").replace(/\.\s*ell estava\b/g,". Ell estava").replace(/^ell estava\b/gm,"Ell estava").replace(/\bva menjar fruita amb fruita\b/gi,"va berenar amb fruita").replace(/\bmenjar fruita amb fruita\b/gi,"berenar amb fruita");if(lecturaContext.companys&&esSingular(lecturaContext.companys)&&!esGrupPlural(lecturaContext.companys)){x=x.replace(/\bvan estudiar\b/gi,"va estudiar").replace(/\bvan jugar\b/gi,"va jugar").replace(/\bvan parlar\b/gi,"va parlar").replace(/\bvan riure\b/gi,"va riure").replace(/\bvan mirar\b/gi,"va mirar").replace(/\bvan caminar\b/gi,"va caminar").replace(/\bvan pintar\b/gi,"va pintar");}x=x.replace(/^Quan, el seu\b/gm,"Aleshores, el seu").replace(/\.\s*Quan, el seu\b/g,". Aleshores, el seu").replace(/\bQuan va descansar amb\b/gi,"Després va berenar amb").replace(/\bva descansar amb galetes\b/gi,"va berenar amb galetes").replace(/\bmentre ell escoltar\b/gi,"mentre ell escoltava").replace(/\bmentre ell comprar\b/gi,"mentre ell comprava").replace(/\bmentre ell ordenar\b/gi,"mentre ell ordenava").replace(/\bmentre ell jugar\b/gi,"mentre ell jugava").replace(/\bmentre ell mirar\b/gi,"mentre ell mirava").replace(/\bmentre ella escoltar\b/gi,"mentre ella escoltava");if(regles?.apostrofacio){Object.entries(regles.apostrofacio).forEach(([k,v])=>{const re=new RegExp(`\\b${k}\\b`,'gi');x=x.replace(re,v);});}return x.replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1").replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1").replace(/tranquil·la·la/g,'tranquil·la').replace(/\s+/g,' ').trim();}
+  function concordarGenere(t){
+    let r=t;
+    if(regles?.generes_paraules){
+      Object.keys(regles.generes_paraules).forEach(p=>{
+        const f=regles.generes_paraules[p];
+        if(!f)return;
+        const re=new RegExp(`\\b${p}\\b`,'gi');
+        r=r.replace(re,f[genere]||p);
+      });
+    }
+    // FIX JUNTS/JUNTES segons gènere del protagonista + company
+    const companyFem = (lecturaContext.persona && /germana|mare|àvia|tia|tutora|amiga/i.test(lecturaContext.persona)) || (lecturaContext.companys && /germana|mare/i.test(lecturaContext.companys));
+    if(genere==='f' && companyFem){
+      r=r.replace(/\bJunts van\b/g,"Juntes van").replace(/\bjunts van\b/g,"juntes van");
+    } else if(genere==='m' &&!companyFem){
+      r=r.replace(/\bJuntes van\b/g,"Junts van");
+    }
+    return r;
+  }
+  function aplicarFixes(t){
+    let x=t;
+    // FIX MAJÚSCULA - el bug de les fotos. ella
+    x=x.replace(/\.\s*ella\b/g,". Ella").replace(/\.\s*ell\b/g,". Ell")
+    .replace(/^\s*ella\b/gm,"Ella").replace(/^\s*ell\b/gm,"Ell")
+    .replace(/:\s*ella\b/g,": Ella").replace(/!\s*ella\b/g,"! Ella");
+
+    x=x.replace(/\bva tornar classe\b/gi,"va tornar a classe").replace(/\bva tornar lliure\b/gi,"va tornar a casa").replace(/\bva tornar llibre\b/gi,"va tornar a casa").replace(/\bva tornar escola\b/gi,"va tornar a l'escola").replace(/\bva tancar finestra\b/gi,"va tancar la finestra").replace(/\btornar classe\b/gi,"tornar a classe").replace(/\btornar lliure\b/gi,"tornar a casa").replace(/\btornar llibre\b/gi,"tornar a casa").replace(/\bI escola ha estat\b/g,"L'escola ha estat").replace(/\bI escola és\b/g,"L'escola és").replace(/\bl escola\b/gi,"l'escola").replace(/\bva menjar fruita amb fruita\b/gi,"va berenar amb fruita").replace(/\bmenjar fruita amb fruita\b/gi,"berenar amb fruita");
+    if(lecturaContext.companys&&esSingular(lecturaContext.companys)&&!esGrupPlural(lecturaContext.companys)){x=x.replace(/\bvan estudiar\b/gi,"va estudiar").replace(/\bvan jugar\b/gi,"va jugar").replace(/\bvan parlar\b/gi,"va parlar").replace(/\bvan riure\b/gi,"va riure").replace(/\bvan mirar\b/gi,"va mirar").replace(/\bvan caminar\b/gi,"va caminar").replace(/\bvan pintar\b/gi,"va pintar");}
+    x=x.replace(/^Quan, el seu\b/gm,"Aleshores, el seu").replace(/\.\s*Quan, el seu\b/g,". Aleshores, el seu").replace(/\bQuan va descansar amb\b/gi,"Després va berenar amb").replace(/\bva descansar amb galetes\b/gi,"va berenar amb galetes").replace(/\bmentre ell escoltar\b/gi,"mentre ell escoltava").replace(/\bmentre ell comprar\b/gi,"mentre ell comprava").replace(/\bmentre ell ordenar\b/gi,"mentre ell ordenava").replace(/\bmentre ell jugar\b/gi,"mentre ell jugava").replace(/\bmentre ell mirar\b/gi,"mentre ell mirava").replace(/\bmentre ella escoltar\b/gi,"mentre ella escoltava");
+    // Parche Na -> La per seguretat
+    x=x.replace(/\bNa\s+Bruna\b/g,"La Bruna").replace(/\bNa\s+Maria\b/g,"La Maria").replace(/\bna\s+Maria\b/gi,"La Maria").replace(/\ben\s+Joan\b/gi,"En Joan");
+    if(regles?.apostrofacio){Object.entries(regles.apostrofacio).forEach(([k,v])=>{const re=new RegExp(`\\b${k}\\b`,'gi');x=x.replace(re,v);});}
+    return x.replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1").replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1").replace(/tranquil·la·la/g,'tranquil·la').replace(/\s+/g,' ').trim();
+  }
   function opcionsSenseDuplicats(arr){const net=[];const vist=new Set();arr.forEach(op=>{const low=op.toLowerCase().trim();if(!vist.has(low)&&low){vist.add(low);net.push(op);}});const extres=["content","tranquil","feliç","cansat","sorprès","relaxat","atent","curiós"];let i=0;while(net.length<3&&i<20){const cand=extres[Math.floor(Math.random()*extres.length)];if(!vist.has(cand)){vist.add(cand);net.push(cand);}i++;}return net.slice(0,3);}
   const tit_raw=reemplaçar(plantilla.titol,false);
   let frases=plantilla.seq.map((l,i)=>{let f=reemplaçar(l,false);f=concordarGenere(f);if(temps!=='perifrastic'){const raw=lecturaContext.accio_prota||lecturaContext.accio_grup||lecturaContext.accio_final;if(raw&&i>1){const conj=conjugarTemps(raw,temps);if(f.includes(raw)&&conj!==raw)f=f.replace(raw,conj);else if(f.toLowerCase().includes("mentre")&&temps==='imperfet'){const imp=conjugarTemps(raw,'imperfet');f=f.replace(raw,imp);}}if(temps==='present_continu'&&f.includes("va "+lecturaContext.accio_prota)){const pc=conjugarTemps(lecturaContext.accio_prota,'present_continu');f=f.replace("va "+lecturaContext.accio_prota,pc);}if(temps==='futur'&&f.includes("va "+lecturaContext.accio_final)){const fu=conjugarTemps(lecturaContext.accio_final,'futur');f=f.replace("va "+lecturaContext.accio_final,fu);}}if(f.toLowerCase().includes("mentre")&&!f.includes("escoltava")&&!f.includes("jugava")&&!f.includes("comprava")){const raw=lecturaContext.accio_prota;if(raw){const conj=conjugarTemps(raw,'imperfet');if(f.includes(raw))f=f.replace(raw,conj);}}f=aplicarFixes(f);if(i>0&&f.includes(personatge)&&!l.includes('${pronom}')){if(Math.random()>0.3){f=f.replace(new RegExp(`\\b${personatge.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'g'),pronom);}}if(i>0&&!l.toLowerCase().includes('conector')&&!l.match(/^(Després|Més tard|Mentrestant|Al final|De sobte|Aleshores|Però|A més|Tot i això)/i)){if(Math.random()>0.5){const co=getCon();if(!f.toLowerCase().startsWith(co.toLowerCase())){f=`${co}, ${f.charAt(0).toLowerCase()+f.slice(1)}`;}}}return f;});
