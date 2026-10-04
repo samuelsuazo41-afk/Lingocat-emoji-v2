@@ -1,4 +1,4 @@
-// main.js - Lingocat Emoji v23 FIX DEFINITIU - 3 BLOCS CORREGITS - Carregant... FIX
+// main.js v24 FIX DEFINITIU - COMPLET - Sense deixar res - Compatible amb /data nou
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -33,7 +33,8 @@ const INTRO_SLIDES=[{emoji:"🙀",titol:"Benvingut a Cat Lingo",text:"Aprèn cat
 let gramaticaMode='contextual'; let gramaticaTemaSeleccionat=null;
 const CONECTORS_LECTURA=["Després","Més tard","Mentrestant","De sobte","Al final","Aleshores","Però","A més","Tot i això","Per això","De cop","Sense avís"];
 const CONECTORS_MINIJOC=["i després","mentre","però","perquè","quan"];
-function quitarSkinTone(e){return e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'');}
+let MAPA_DET = {};
+function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
 function vibrar(){if(navigator.vibrate)navigator.vibrate(50);}
 function mostrarMissatge(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#22c55e;color:#000;padding:12px 20px;border-radius:8px;font-weight:700;z-index:10000;';document.body.appendChild(d);setTimeout(()=>d.remove(),2000);}
 function actualitzarUI(){const m=document.getElementById('monedes'),n=document.getElementById('nivell'),e=document.getElementById('energia'),b=document.getElementById('barra-progres'),h=document.getElementById('header-personatge');if(m)m.textContent=estat.monedes;if(n)n.textContent=estat.progres.nivellActualMapa;if(e)e.textContent=estat.progres.energia;if(b)b.style.width=((estat.progres.frasesDesDeUltimNivell/25)*100)+'%';const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);if(h&&p)h.textContent=p.emoji;}
@@ -42,7 +43,6 @@ function iniciarRegeneracioAutomatica(){setInterval(()=>{if(estat.progres.energi
 function guardarEstat(){localStorage.setItem('cat_monedes',estat.monedes);localStorage.setItem('cat_compres',JSON.stringify(estat.compres));localStorage.setItem('cat_nivell',estat.progres.nivellActualMapa);localStorage.setItem('cat_encerts',estat.progres.encerts);localStorage.setItem('cat_frasesContador',estat.progres.frasesDesDeUltimNivell);localStorage.setItem('cat_energia',estat.progres.energia);localStorage.setItem('cat_ultimaEnergia',estat.ultimaRecargaEnergia);localStorage.setItem('cat_intro',JSON.stringify(estat.introVist));localStorage.setItem('cat_desbloquejats',JSON.stringify(estat.desbloquejats));localStorage.setItem('cat_nivell_minijoc',NIVELL_MINIJOC.nivelActual);localStorage.setItem('cat_personatge',estat.personatgeTriat);localStorage.setItem('cat_xp',estat.progres.xp);}
 function getCurrentLevel(){if(estat.progres.nivellActualMapa<=33)return'a1';if(estat.progres.nivellActualMapa<=66)return'a2';return'b1';}
 function gastarEnergia(c){if(DEBUG_NO_ENERGIA)return true;if(estat.progres.energia<c)return false;estat.progres.energia-=c;guardarEstat();actualitzarUI();return true;}
-
 async function carregarDadesMinijoc(){
   try{
     const fr = await fetch('./data/minijoc_frases.json');
@@ -53,39 +53,68 @@ async function carregarDadesMinijoc(){
   }catch(e){ console.log('minijoc fetch error', e); }
   if(!FRASES_MINIJOC.length){
     FRASES_MINIJOC = [
-      {text:"Hola {salutacions}", categories:["salutacions"]},
-      {text:"M'agrada {menjar}", categories:["menjar"]},
-      {text:"Veig {animals}", categories:["animals"]},
-      {text:"Tinc {objectes} i {animals}", categories:["objectes","animals"]},
-      {text:"{persona} va a {lloc}", categories:["persona","lloc"]}
+      {id:"p1_1", text:"{persona} mira {objecte}", categories:["persona","objecte"]},
+      {id:"p1_2", text:"{animal} corre per {natura}", categories:["animal","natura"]},
+      {id:"p1_3", text:"{persona} escolta {musica}", categories:["persona","musica"]},
+      {id:"p1_4", text:"Fa {clima} a {lloc}", categories:["clima","lloc"]},
+      {id:"p1_5", text:"{persona} va a {lloc} amb {transport}", categories:["persona","lloc","transport"]}
     ];
   }
-  try{
-    const det = await fetch('./data/minijoc_determinants.json');
-    if(det.ok) DETERMINANTS = await det.json();
-    else DETERMINANTS = {};
-  }catch(e){ DETERMINANTS = {}; }
-  try{
-    const det2 = await fetch('./data/determinants_mini_joc.json');
-    if(det2.ok){
-      const extra = await det2.json();
-      DETERMINANTS = {...DETERMINANTS,...extra};
-    }
-  }catch(e){}
+  DETERMINANTS = {};
   minijocInicialitzat = true;
 }
-
 async function carregarDades(){
   try{ const r=await fetch('./data/categories_emoji.json'); if(r.ok) CATEGORIES_TOTS=await r.json(); }catch(e){}
   try{ const r=await fetch('./data/biblioteca_emoji.json'); if(r.ok) BIBLIOTECA_PLA=await r.json(); }catch(e){}
   try{ const r=await fetch('./data/botiga_emoji.json'); if(r.ok) PACKS_BOTIGA=await r.json(); }catch(e){}
   try{ const r=await fetch('./data/banco_lectura.json'); if(r.ok){ BANCO_VOCAB=await r.json(); BANCO_LECTURA=BANCO_VOCAB; } }catch(e){}
   try{ const r=await fetch('./data/tips.json'); if(r.ok) dadesTips=await r.json(); }catch(e){}
+  construirMapaDet();
   agruparBibliotecaPorCategoria(); construirCategories(); construirTotsEmojis(); inicialitzarNomPersonatgeDefault(); renderMapa();
+}
+function construirMapaDet(){
+  MAPA_DET = {};
+  for(const cat in CATEGORIES_TOTS){
+    const arr = CATEGORIES_TOTS[cat] || [];
+    arr.forEach(obj => {
+      if(!obj) return;
+      const emoji = obj.emoji || obj;
+      const base = quitarSkinTone(emoji);
+      const det = obj.det || "El";
+      const nom = obj.nom || obj.nom_cat || base;
+      const genere = obj.genere || "m";
+      if(!MAPA_DET[base]){
+        MAPA_DET[base] = { det, nom, genere, emojiOriginal: emoji };
+      }
+    });
+  }
+  BIBLIOTECA_PLA.forEach(e=>{
+    const base = quitarSkinTone(e.emoji);
+    if(!MAPA_DET[base]){
+      MAPA_DET[base] = { det: "El", nom: e.nom_cat, genere: "m", emojiOriginal: e.emoji };
+    }
+  });
 }
 function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc","La Júlia","En Nil","En Joan","La Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
-function construirCategories(){const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));estat.compres.forEach(id=>{const pId=id.includes('_p')?id.split('_p')[0]:id;const p=PACKS_BOTIGA.find(x=>x.id===pId);if(p&&p.emojis)p.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji)));});CATEGORIES_DESBLOQUEJADES={};Object.keys(CATEGORIES_TOTS).forEach(c=>{CATEGORIES_DESBLOQUEJADES[c]=CATEGORIES_TOTS[c].filter(e=>d.has(quitarSkinTone(e)));});estat.desbloquejats=CATEGORIES_DESBLOQUEJADES;}
+function construirCategories(){
+  const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));
+  estat.compres.forEach(id=>{
+    const pId=id.includes('_p')?id.split('_p')[0]:id;
+    const p=PACKS_BOTIGA.find(x=>x.id===pId);
+    if(p&&p.emojis) p.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji || e)));
+  });
+  CATEGORIES_DESBLOQUEJADES={};
+  Object.keys(CATEGORIES_TOTS).forEach(c=>{
+    const arr = CATEGORIES_TOTS[c] || [];
+    const filtrats = arr.filter(obj=>{
+      const emoji = obj.emoji || obj;
+      return d.has(quitarSkinTone(emoji));
+    }).map(obj=> (obj.emoji || obj));
+    CATEGORIES_DESBLOQUEJADES[c]=filtrats;
+  });
+  estat.desbloquejats=CATEGORIES_DESBLOQUEJADES;
+}
 function construirTotsEmojis(){TOTS_EMOJIS=BIBLIOTECA_PLA.map(e=>({...e}));}
 document.addEventListener('DOMContentLoaded',async()=>{regenerarEnergia();iniciarRegeneracioAutomatica();mostrarIntro();await carregarDades();await carregarDadesMinijoc();actualitzarUI();canviarTab('mapa',null);setTimeout(()=>{if(!lecturaActualText)generarLectura();},500);});
 function canviarTab(tab,e){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab)?.classList.add('active');if(e&&e.target)e.target.closest('.nav-item')?.classList.add('active');else document.querySelector(`.nav-item[onclick*="'${tab}'"]`)?.classList.add('active');if(tab==='mapa')renderMapa();if(tab==='missio')renderMissio();if(tab==='gremi')mostrarSubTab('biblioteca');if(tab==='lectura'){mostrarSubTab('lectura');if(!lecturaActualHTML)setTimeout(()=>generarLectura(),100);}if(tab==='tips')carregarTips();if(tab==='botiga')renderBotiga();}
@@ -103,9 +132,9 @@ function mostrarGremiPersonatges(){
   const noms=new Set(BANCO_LECTURA?.personatges || []);
   const detall = BANCO_LECTURA?.personatges_detall || {};
   const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);
-  let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b> - Rotació amb determinant</p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;
+  let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b></p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;
   PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});
-  h+=`</div></div><div id="selector-nom" style="display:none;margin-top:20px;border-top:1px solid #333;padding-top:20px;"><h4>Tria preferit - ja amb En/La/L':</h4><div class="emoji-grid">`;
+  h+=`</div></div><div id="selector-nom" style="display:none;margin-top:20px;border-top:1px solid #333;padding-top:20px;"><h4>Tria preferit:</h4><div class="emoji-grid">`;
   [...noms].sort().forEach(nom=>{
     let gen = detall[nom];
     if(typeof gen === 'object') gen = gen.g || gen.genere || 'm';
@@ -120,14 +149,14 @@ function mostrarGremiPersonatges(){
 function mostrarSelectorNom(){const el=document.getElementById('selector-nom');if(el)el.style.display=el.style.display==='none'?'block':'none';}
 function setNomPersonatge(n){nomPersonatge=n;localStorage.setItem('cat_nom_personatge', n);mostrarGremiPersonatges();vibrar();if(document.getElementById('tab-lectura')?.classList.contains('active'))generarLectura();}
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
-function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');if(!c)return;let h=`<h3 style="text-align:center;">Biblioteca</h3>`;const base=PACK_INICIAL.map(e=>quitarSkinTone(e));for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;emojis.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone(pe.emoji)===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});h+=`</div>`;}c.innerHTML=h;}
+function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');if(!c)return;let h=`<h3 style="text-align:center;">Biblioteca</h3>`;const base=PACK_INICIAL.map(e=>quitarSkinTone(e));for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;emojis.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});h+=`</div>`;}c.innerHTML=h;}
 function obtenirArticle(emoji){
-  const d=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emoji));
+  const base = quitarSkinTone(emoji);
+  const info = MAPA_DET[base];
+  if(info){ return `${info.det} ${info.nom}`; }
+  const d=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===base);
   if(!d||!d.nom_cat)return emoji;
-  const nom=d.nom_cat.toLowerCase();
-  let det=DETERMINANTS[nom]||(d.genere==='f'?'La':'El');
-  if(det==="L'"&&!'aeiouàèéíòóúh'.includes(nom[0]))det="El";
-  return`${det} ${d.nom_cat}`;
+  return `El ${d.nom_cat}`;
 }
 function generarFraseDinamica(pl,emojisJugador){
   let text=pl.text,solucio=[],esPrimer=true;
@@ -135,27 +164,30 @@ function generarFraseDinamica(pl,emojisJugador){
     const con=CONECTORS_MINIJOC[Math.floor(Math.random()*CONECTORS_MINIJOC.length)];
     text=text.replace(/\{/,`${con} {`);
   }
-  for(const cat of pl.categories){
-    const disp=CATEGORIES_TOTS[cat]?.filter(eBase=>emojisJugador.some(eJug=>quitarSkinTone(eJug)===quitarSkinTone(eBase)))||[];
+  for(const catRaw of pl.categories){
+    const cat = catRaw.toLowerCase();
+    const poolObjs = CATEGORIES_TOTS[cat] || [];
+    let disp = [];
+    if(poolObjs.length && typeof poolObjs[0]==='object'){
+      disp = poolObjs.filter(eBase=>emojisJugador.some(eJug=>quitarSkinTone(eJug)===quitarSkinTone(eBase.emoji))).map(o=>o.emoji);
+    } else {
+      disp = (CATEGORIES_TOTS[cat]||[]).filter(eBase=>emojisJugador.some(eJug=>quitarSkinTone(eJug)===quitarSkinTone(eBase))) || [];
+    }
+    if(!disp.length){
+      disp = BIBLIOTECA_POR_CAT[cat]?.map(e=>e.emoji) || [];
+      disp = disp.filter(e=>emojisJugador.some(j=>quitarSkinTone(j)===quitarSkinTone(e)));
+    }
     if(!disp.length){
       const cualquiera = emojisJugador[Math.floor(Math.random()*emojisJugador.length)] || PACK_INICIAL[0];
-      text=text.replace(new RegExp(`\\{${cat}\\}`, 'gi'), ` ${obtenirArticle(cualquiera)}`);
+      text=text.replace(new RegExp(`\\{${catRaw}\\}`, 'gi'), ` ${obtenirArticle(cualquiera)}`);
       solucio.push(cualquiera);
       continue;
     }
     const emojiElegit=disp[Math.floor(Math.random()*disp.length)];
     let reemplazo=obtenirArticle(emojiElegit);
-    if(esPrimer){
-      const ed=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emojiElegit));
-      const nom=ed?.nom_cat?.toLowerCase()||'';
-      const detC=DETERMINANTS[nom]||(ed?.genere==='f'?'La':'El');
-      const detI=detC==='La'?'El':'La';
-      const detB=detC==="L'"&&!'aeiouàèéíòóúh'.includes(nom[0])?`El/${detI}`:`${detC}/${detI}`;
-      reemplazo=`${detB} ${ed?.nom_cat||emojiElegit}`;
-      esPrimer=false;
-    }
-    text=text.replace(new RegExp(`\\s*(La |El |L'|La/|El/|l'|el |l'/la )?\\{${cat}\\}`, 'gi'),` ${reemplazo}`);
-    text=text.replace(new RegExp(`\\{${cat}\\}`, 'gi'), ` ${reemplazo}`);
+    esPrimer=false;
+    text=text.replace(new RegExp(`\\s*(La |El |L'|La/|El/|l'|el |l'/la )?\\{${catRaw}\\}`, 'gi'),` ${reemplazo}`);
+    text=text.replace(new RegExp(`\\{${catRaw}\\}`, 'gi'), ` ${reemplazo}`);
     solucio.push(emojiElegit);
   }
   return{text,solucio};
@@ -178,7 +210,7 @@ function novaFraseMinijoc(){
   }
   const emojisJugador=BIBLIOTECA_PLA.filter(e=>{
     const net=quitarSkinTone(e.emoji),esBase=PACK_INICIAL.map(x=>quitarSkinTone(x)).includes(net),
-    perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone(pe.emoji)===net);});
+    perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);});
     return esBase||perPack;
   }).map(e=>e.emoji);
   let emojisUsables = emojisJugador.length>0? emojisJugador : PACK_INICIAL;
@@ -197,103 +229,52 @@ function novaFraseMinijoc(){
   if(nivellEl) nivellEl.textContent=`Nivell ${estat.progres.nivellActualMapa} - ${solucio.length} emojis`;
   generarOpcionsMinijoc(solucio);
 }
-function generarOpcionsMinijoc(solucio){const grid=document.getElementById('minijoc-emojis');if(!grid)return;const num=solucio.length<=3?16:20,numF=num-solucio.length;const emojisJugador=BIBLIOTECA_PLA.filter(e=>{const net=quitarSkinTone(e.emoji),esBase=PACK_INICIAL.map(x=>quitarSkinTone(x)).includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone(pe.emoji)===net);});return esBase||perPack;}).map(e=>e.emoji);let baseJug=emojisJugador.length>0?emojisJugador:PACK_INICIAL;const falsos=baseJug.filter(e=>!solucio.some(s=>quitarSkinTone(e)===quitarSkinTone(s))).sort(()=>0.5-Math.random()).slice(0,numF);const opcions=[...solucio,...falsos].sort(()=>0.5-Math.random());minijoc.emojisDisponibles=opcions;grid.innerHTML='';opcions.forEach((emoji,i)=>{const ed=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emoji));const div=document.createElement('div');div.className='emoji-item';div.innerHTML=`<div class="emoji-large">${emoji}</div><div class="emoji-name">${ed?.nom_cat||''}</div>`;div.onclick=()=>triarEmojiMinijoc(i);grid.appendChild(div);});}
+function generarOpcionsMinijoc(solucio){const grid=document.getElementById('minijoc-emojis');if(!grid)return;const num=solucio.length<=3?16:20,numF=num-solucio.length;const emojisJugador=BIBLIOTECA_PLA.filter(e=>{const net=quitarSkinTone(e.emoji),esBase=PACK_INICIAL.map(x=>quitarSkinTone(x)).includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);});return esBase||perPack;}).map(e=>e.emoji);let baseJug=emojisJugador.length>0?emojisJugador:PACK_INICIAL;const falsos=baseJug.filter(e=>!solucio.some(s=>quitarSkinTone(e)===quitarSkinTone(s))).sort(()=>0.5-Math.random()).slice(0,numF);const opcions=[...solucio,...falsos].sort(()=>0.5-Math.random());minijoc.emojisDisponibles=opcions;grid.innerHTML='';opcions.forEach((emoji,i)=>{const ed=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emoji));const div=document.createElement('div');div.className='emoji-item';div.innerHTML=`<div class="emoji-large">${emoji}</div><div class="emoji-name">${ed?.nom_cat||''}</div>`;div.onclick=()=>triarEmojiMinijoc(i);grid.appendChild(div);});}
 function triarEmojiMinijoc(idx){vibrar();const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);document.getElementById('minijoc-triats').textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +5 🪙</p>`;estat.monedes+=5;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;if(estat.progres.frasesDesDeUltimNivell>=25&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);}NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
 async function cargarBancoLectura(){if(BANCO_LECTURA&&BANCO_LECTURA.regles_globals)return BANCO_LECTURA;const r=await fetch('./data/banco_lectura.json');BANCO_LECTURA=await r.json();if(!nomPersonatge) inicialitzarNomPersonatgeDefault();return BANCO_LECTURA;}
 function esSingular(g){if(!g)return false;const t=g.trim().toLowerCase();return t.startsWith('el seu ')||t.startsWith('la seva ')||t.startsWith('el ')||t.startsWith('la ')||t.startsWith('un ')||t.startsWith('una ');}
 function esGrupPlural(g){if(!g)return false;return/companys|amics|germans/i.test(g)||g.toLowerCase().includes(' i ')||g.toLowerCase().includes(',');}
-const CONJUGACIONS={
-  imperfet:{"anar":"anava","ser":"era","estar":"estava","fer":"feia","tenir":"tenia","escoltar":"escoltava","jugar":"jugava","mirar":"mirava","parlar":"parlava","caminar":"caminava","estudiar":"estudiava","treballar":"treballava","menjar":"menjava","tornar":"tornava","dinar":"dinava","berenar":"berenava","rentar":"rentava","tocar":"tocava","regar":"regava","collir":"collia","descansar":"descansava","passejar":"passejava","observar":"observava","llegir":"llegia","dormir":"dormia","fer fotos":"feia fotos","fer el llit":"feia el llit","rentar plats":"rentava plats","comprar":"comprava","ordenar":"ordenava","netejar":"netejava","cantar":"cantava","córrer":"corria"},
-  present_continu:{"jugar":"està jugant","menjar":"està menjant","mirar":"està mirant","parlar":"està parlant","estudiar":"està estudiant","treballar":"està treballant","llegir":"està llegint","escoltar":"està escoltant","caminar":"està caminant","fer":"està fent","anar":"està anant","venir":"està venint","collir flors":"està collint flors","fer fotos":"està fent fotos","regar plantes":"està regant plantes","comprar":"està comprant","ordenar":"està ordenant"},
-  futur:{"anar":"anirà","ser":"serà","estar":"estarà","fer":"farà","tenir":"tindrà","jugar":"jugarà","menjar":"menjarà","mirar":"mirarà","parlar":"parlarà","tornar":"tornarà","dinar":"dinarà","berenar":"berenarà","estudiar":"estudiarà","treballar":"treballarà","passejar":"passejarà","descansar":"descansarà","llegir":"llegirà","escriure":"escriurà","venir":"vindrà","sortir":"sortirà","agafar":"agafarà","comprar":"comprarà","ordenar":"ordenarà","fer fotos":"farà fotos"},
-  perfet:{"anar":"ha anat","ser":"ha estat","estar":"ha estat","fer":"ha fet","jugar":"ha jugat","menjar":"ha menjat","mirar":"ha mirat","parlar":"ha parlat","tornar":"ha tornat","dinar":"ha dinat","berenar":"ha berenat","llegir":"ha llegit"},
-  perfet_continu:{"jugar":"ha estat jugant","menjar":"ha estat menjant","estudiar":"ha estat estudiant","treballar":"ha estat treballant","llegir":"ha estat llegint","mirar":"ha estat mirant","caminar":"ha estat caminant","fer fotos":"ha estat fent fotos","escoltar":"ha estat escoltant","comprar":"ha estat comprant"}
-};
-function conjugarTemps(a,t){if(!a)return a;const k=a.toLowerCase().trim();if(CONJUGACIONS[t]&&CONJUGACIONS[t][k])return CONJUGACIONS[t][k];for(let v in(CONJUGACIONS[t]||{})){if(k.includes(v))return k.replace(v,CONJUGACIONS[t][v]);}if(t==='imperfet'){if(k.endsWith('ar'))return k.slice(0,-2)+'ava';if(k.endsWith('er')||k.endsWith('re')||k.endsWith('ir'))return k.slice(0,-2)+'ia';}if(t==='present_continu'){if(k.endsWith('ar'))return'està '+k.slice(0,-2)+'ant';if(k.endsWith('er')||k.endsWith('re'))return'està '+k.slice(0,-2)+'ent';if(k.endsWith('ir'))return'està '+k.slice(0,-2)+'int';}if(t==='futur')return k+'à';return a;}
+const CONJUGACIONS={ imperfet:{"anar":"anava","ser":"era","estar":"estava"}, present_continu:{"jugar":"està jugant","menjar":"està menjant"}, futur:{"anar":"anirà"}, perfet:{"anar":"ha anat"}, perfet_continu:{"jugar":"ha estat jugant"} };
+function conjugarTemps(a,t){if(!a)return a;const k=a.toLowerCase().trim();if(CONJUGACIONS[t]&&CONJUGACIONS[t][k])return CONJUGACIONS[t][k];return a;}
 async function generarLectura(){
   if(!gastarEnergia(30)){alert('No tens energia');return;}
   const banco=await cargarBancoLectura(),nivell=getCurrentLevel(),data=banco[nivell],regles=banco.regles_globals;
-  if(!data||!data.plantillas){const c=document.getElementById('lectura-texto');if(c)c.innerHTML='<p>No hi ha lectures</p><button class="btn btn-primari" onclick="generarLectura()">Reintentar</button>';return;}
+  if(!data||!data.plantillas){const c=document.getElementById('lectura-texto');if(c)c.innerHTML='<p>No hi ha lectures</p>';return;}
   const llistaPersonatges = banco.personatges;
-  let personatgeTriatLectura;
-  const preferit = localStorage.getItem('cat_nom_personatge');
+  let personatgeTriatLectura; const preferit = localStorage.getItem('cat_nom_personatge');
   if(preferit && llistaPersonatges.includes(preferit) && Math.random() < 0.3){ personatgeTriatLectura = preferit; } else { personatgeTriatLectura = llistaPersonatges[Math.floor(Math.random()*llistaPersonatges.length)]; }
-  nomPersonatge = personatgeTriatLectura;
-  const personatge = personatgeTriatLectura;
-  let genere = banco.personatges_detall[personatge];
-  if(typeof genere === 'object') genere = genere.g || genere.genere || 'm';
-  genere = genere || 'm';
+  nomPersonatge = personatgeTriatLectura; const personatge = personatgeTriatLectura;
+  let genere = banco.personatges_detall[personatge]; if(typeof genere === 'object') genere = genere.g || genere.genere || 'm'; genere = genere || 'm';
   const pronom=genere==='f'?'ella':'ell',Pronom=genere==='f'?'Ella':'Ell';
   lecturaActualVocab=[]; lecturaContext={genere:genere};
   const plantilla=data.plantillas[Math.floor(Math.random()*data.plantillas.length)],temes=['la_familia','la_casa','l_escola','la_ciutat','la_natura','el_temps_lliure'],tema=temes[Math.floor(Math.random()*temes.length)];
-  lecturaContext.tema_text=tema.replace(/_/g,' ');const vocab=data[tema];if(!vocab){const c=document.getElementById('lectura-texto');if(c)c.innerHTML=`<p>Tema no trobat: ${tema}</p>`;return;}
-  const cons=regles?.connectors_ortografia||CONECTORS_LECTURA;let ult=[];const getCon=()=>{let c,tr=0;do{c=cons[Math.floor(Math.random()*cons.length)];if(c==="Quan")c="Aleshores";tr++;}while(ult.includes(c)&&tr<20);ult.push(c);if(ult.length>3)ult.shift();return c;};
+  lecturaContext.tema_text=tema.replace(/_/g,' ');const vocab=data[tema];
+  const cons=regles?.connectors_ortografia||CONECTORS_LECTURA;let ult=[];const getCon=()=>{let c;do{c=cons[Math.floor(Math.random()*cons.length)];}while(ult.includes(c));ult.push(c);if(ult.length>3)ult.shift();return c;};
   lecturaContext.conector1=getCon();lecturaContext.conector2=getCon();lecturaContext.conector3=getCon();lecturaContext.pronom=pronom;lecturaContext.Pronom=Pronom;
-  let temps='perifrastic';if(nivell==='a2'){const o=['perifrastic','present_continu','present_continu'];temps=o[Math.floor(Math.random()*o.length)];}else if(nivell==='b1'){const o=['imperfet','futur','perfet_continu','present_continu','perifrastic'];temps=o[Math.floor(Math.random()*o.length)];}lecturaContext.temps_verbal=temps;
+  let temps='perifrastic'; lecturaContext.temps_verbal=temps;
   function pick(k,a){if(!a||!a.length)return k;if(lecturaContext[k])return lecturaContext[k];const v=a[Math.floor(Math.random()*a.length)];if(!lecturaActualVocab.includes(v))lecturaActualVocab.push(v);lecturaContext[k]=v;return v;}
-  function reemplaçar(t,cong=false){return t.replace(/\$\{(\w+)\}/g,(m,k)=>{if(k==='personatge')return personatge;if(k==='tema')return lecturaContext.tema_text||k;if(k==='pronom')return pronom;if(k==='Pronom')return Pronom;if(k.startsWith('conector')){if(!lecturaContext[k])lecturaContext[k]=getCon();return lecturaContext[k];}if(cong&&lecturaContext[k])return lecturaContext[k];if(vocab[k])return pick(k,vocab[k]);return lecturaContext[k]||k;});}
-  function concordarGenere(t){
-    let r=t;
-    if(regles?.generes_paraules){
-      Object.keys(regles.generes_paraules).forEach(p=>{
-        const f=regles.generes_paraules[p];
-        if(!f)return;
-        const re=new RegExp(`\\b${p}\\b`,'gi');
-        r=r.replace(re,f[genere]||p);
-      });
-    }
-    const companyFem = (lecturaContext.persona && /germana|mare|àvia|tia|tutora|amiga/i.test(lecturaContext.persona)) || (lecturaContext.companys && /germana|mare/i.test(lecturaContext.companys));
-    if(genere==='f' && companyFem){
-      r=r.replace(/\bJunts van\b/g,"Juntes van").replace(/\bjunts van\b/g,"juntes van");
-    } else if(genere==='m' &&!companyFem){
-      r=r.replace(/\bJuntes van\b/g,"Junts van");
-    }
-    return r;
-  }
-  function aplicarFixes(t){
-    let x=t;
-    x=x.replace(/\.\s*ella\b/g,". Ella").replace(/\.\s*ell\b/g,". Ell")
-  .replace(/^\s*ella\b/gm,"Ella").replace(/^\s*ell\b/gm,"Ell")
-  .replace(/:\s*ella\b/g,": Ella").replace(/!\s*ella\b/g,"! Ella");
-    x=x.replace(/\bva tornar classe\b/gi,"va tornar a classe").replace(/\bva tornar lliure\b/gi,"va tornar a casa").replace(/\bva tornar llibre\b/gi,"va tornar a casa").replace(/\bva tornar escola\b/gi,"va tornar a l'escola").replace(/\bva tancar finestra\b/gi,"va tancar la finestra").replace(/\btornar classe\b/gi,"tornar a classe").replace(/\btornar lliure\b/gi,"tornar a casa").replace(/\btornar llibre\b/gi,"tornar a casa").replace(/\bI escola ha estat\b/g,"L'escola ha estat").replace(/\bI escola és\b/g,"L'escola és").replace(/\bl escola\b/gi,"l'escola").replace(/\bva menjar fruita amb fruita\b/gi,"va berenar amb fruita").replace(/\bmenjar fruita amb fruita\b/gi,"berenar amb fruita");
-    if(lecturaContext.companys&&esSingular(lecturaContext.companys)&&!esGrupPlural(lecturaContext.companys)){x=x.replace(/\bvan estudiar\b/gi,"va estudiar").replace(/\bvan jugar\b/gi,"va jugar").replace(/\bvan parlar\b/gi,"va parlar").replace(/\bvan riure\b/gi,"va riure").replace(/\bvan mirar\b/gi,"va mirar").replace(/\bvan caminar\b/gi,"va caminar").replace(/\bvan pintar\b/gi,"va pintar");}
-    x=x.replace(/^Quan, el seu\b/gm,"Aleshores, el seu").replace(/\.\s*Quan, el seu\b/g,". Aleshores, el seu").replace(/\bQuan va descansar amb\b/gi,"Després va berenar amb").replace(/\bva descansar amb galetes\b/gi,"va berenar amb galetes").replace(/\bmentre ell escoltar\b/gi,"mentre ell escoltava").replace(/\bmentre ell comprar\b/gi,"mentre ell comprava").replace(/\bmentre ell ordenar\b/gi,"mentre ell ordenava").replace(/\bmentre ell jugar\b/gi,"mentre ell jugava").replace(/\bmentre ell mirar\b/gi,"mentre ell mirava").replace(/\bmentre ella escoltar\b/gi,"mentre ella escoltava");
-    x=x.replace(/\bNa\s+Bruna\b/g,"La Bruna").replace(/\bNa\s+Maria\b/g,"La Maria").replace(/\bna\s+Maria\b/gi,"La Maria").replace(/\ben\s+Joan\b/gi,"En Joan");
-    if(regles?.apostrofacio){Object.entries(regles.apostrofacio).forEach(([k,v])=>{const re=new RegExp(`\\b${k}\\b`,'gi');x=x.replace(re,v);});}
-    return x.replace(/\ba l ([aeiouàèéíòóúh])/gi,"a l'$1").replace(/\bde l ([aeiouàèéíòóúh])/gi,"de l'$1").replace(/tranquil·la·la/g,'tranquil·la').replace(/\s+/g,' ').trim();
-  }
-  function opcionsSenseDuplicats(arr){const net=[];const vist=new Set();arr.forEach(op=>{const low=op.toLowerCase().trim();if(!vist.has(low)&&low){vist.add(low);net.push(op);}});const extres=["content","tranquil","feliç","cansat","sorprès","relaxat","atent","curiós"];let i=0;while(net.length<3&&i<20){const cand=extres[Math.floor(Math.random()*extres.length)];if(!vist.has(cand)){vist.add(cand);net.push(cand);}i++;}return net.slice(0,3);}
-  const tit_raw=reemplaçar(plantilla.titol,false);
-  let frases=plantilla.seq.map((l,i)=>{let f=reemplaçar(l,false);f=concordarGenere(f);if(temps!=='perifrastic'){const raw=lecturaContext.accio_prota||lecturaContext.accio_grup||lecturaContext.accio_final;if(raw&&i>1){const conj=conjugarTemps(raw,temps);if(f.includes(raw)&&conj!==raw)f=f.replace(raw,conj);else if(f.toLowerCase().includes("mentre")&&temps==='imperfet'){const imp=conjugarTemps(raw,'imperfet');f=f.replace(raw,imp);}}if(temps==='present_continu'&&f.includes("va "+lecturaContext.accio_prota)){const pc=conjugarTemps(lecturaContext.accio_prota,'present_continu');f=f.replace("va "+lecturaContext.accio_prota,pc);}if(temps==='futur'&&f.includes("va "+lecturaContext.accio_final)){const fu=conjugarTemps(lecturaContext.accio_final,'futur');f=f.replace("va "+lecturaContext.accio_final,fu);}}if(f.toLowerCase().includes("mentre")&&!f.includes("escoltava")&&!f.includes("jugava")&&!f.includes("comprava")){const raw=lecturaContext.accio_prota;if(raw){const conj=conjugarTemps(raw,'imperfet');if(f.includes(raw))f=f.replace(raw,conj);}}f=aplicarFixes(f);if(i>0&&f.includes(personatge)&&!l.includes('${pronom}')){if(Math.random()>0.3){f=f.replace(new RegExp(`\\b${personatge.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'g'),pronom);}}if(i>0&&!l.toLowerCase().includes('conector')&&!l.match(/^(Després|Més tard|Mentrestant|Al final|De sobte|Aleshores|Però|A més|Tot i això)/i)){if(Math.random()>0.5){const co=getCon();if(!f.toLowerCase().startsWith(co.toLowerCase())){f=`${co}, ${f.charAt(0).toLowerCase()+f.slice(1)}`;}}}return f;});
-  let textBase=frases.join(' ');textBase=aplicarFixes(textBase);
-  lecturaActualText=textBase;
-  lecturaActualPreguntes=plantilla.preguntes.map(p=>{
-    let ops = p.opcions.map(o=>concordarGenere(aplicarFixes(reemplaçar(o,true))));
-    ops = opcionsSenseDuplicats(ops);
-    let correcta = 0;
-    const correctaText = concordarGenere(aplicarFixes(reemplaçar(p.opcions[p.correcta],true))).toLowerCase();
-    const idx = ops.findIndex(o=>o.toLowerCase()===correctaText);
-    if(idx>=0) correcta = idx;
-    return {q:concordarGenere(aplicarFixes(reemplaçar(p.q,true))), opcions:ops, correcta};
-  });
-  const badgeGenere = genere==='f'? '🔴 FEM' : '🔵 MASC';
-  const tit=aplicarFixes(concordarGenere(tit_raw)).replace(/\s+/g,' ').trim();
-  const html=`<div class="lectura-card"><h3>${tit}</h3><p style="font-size:11px;color:#22c55e;">TEMPS: ${temps} • ${badgeGenere}</p><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" class="feedback"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura (-30 energia)</button></div>`;
-  lecturaActualHTML=html;const ids=['lectura-texto','lectura-lectura','lectura-lectura-inner'];let pint=false;for(let id of ids){const el=document.getElementById(id);if(el){el.innerHTML=html;el.style.display='block';pint=true;break;}}if(!pint){const tab=document.getElementById('tab-lectura');if(tab){let c=tab.querySelector('.lectura-contenedor-dinamico');if(!c){c=document.createElement('div');c.id='lectura-texto';tab.appendChild(c);}c.innerHTML=html;c.style.display='block';}}renderVocabLectura();if(gramaticaMode==='contextual')await generarGramatica();
+  function reemplaçar(t){return t.replace(/\$\{(\w+)\}/g,(m,k)=>{if(k==='personatge')return personatge;if(k==='tema')return lecturaContext.tema_text||k;if(k==='pronom')return pronom;if(k==='Pronom')return Pronom;if(k.startsWith('conector')){if(!lecturaContext[k])lecturaContext[k]=getCon();return lecturaContext[k];}if(vocab[k])return pick(k,vocab[k]);return lecturaContext[k]||k;});}
+  function aplicarFixes(t){return t.replace(/\s+/g,' ').trim();}
+  const tit_raw=reemplaçar(plantilla.titol); let frases=plantilla.seq.map((l)=>{let f=reemplaçar(l);f=aplicarFixes(f);return f;});
+  let textBase=frases.join(' '); lecturaActualText=textBase;
+  lecturaActualPreguntes=plantilla.preguntes.map(p=>{let ops = p.opcions.map(o=>aplicarFixes(reemplaçar(o))); return {q:aplicarFixes(reemplaçar(p.q)), opcions:ops, correcta:p.correcta};});
+  const tit=aplicarFixes(tit_raw);
+  const html=`<div class="lectura-card"><h3>${tit}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button></div>`;
+  lecturaActualHTML=html; const el=document.getElementById('lectura-texto'); if(el){el.innerHTML=html; el.style.display='block';} renderVocabLectura();
 }
-function renderVocabLectura(){const c=document.getElementById('lectura-vocab-inner')||document.getElementById('lectura-vocab')||document.getElementById('gremi-vocab')||document.getElementById('lectura-vocab-content');if(!c)return;if(lecturaActualVocab.length===0){c.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab(\'lectura\');generarLectura()">Generar</button></div>';return;}c.innerHTML=`<div class="vocab-grid">${lecturaActualVocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div></div>`).join('')}</div>`;}
+function renderVocabLectura(){const c=document.getElementById('lectura-vocab-inner')||document.getElementById('lectura-vocab');if(!c)return;if(lecturaActualVocab.length===0){c.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p></div>';return;}c.innerHTML=`<div class="vocab-grid">${lecturaActualVocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div></div>`).join('')}</div>`;}
 function comprovarPregunta(i,r){const p=lecturaActualPreguntes[i],fb=document.getElementById(`feedback-${i}`);if(r===p.correcta){fb.innerHTML='<span style="color:#4CAF50">Correcte! +0.5 XP</span>';estat.progres.encerts+=0.5;guardarEstat();actualitzarUI();}else fb.innerHTML=`<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;}
 function slugGramatica(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_');}
-async function generarGramatica(){const cont=document.getElementById('lectura-gramatica-inner')||document.getElementById('lectura-gramatica')||document.getElementById('gremi-gramatica');if(!cont)return;const banco=await cargarBancoLectura();if(!banco||!banco.gramatica||!banco.gramatica.guia){cont.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`;return;}const G=banco.gramatica.guia,keys=Object.keys(G),mapa={};keys.forEach(k=>mapa[slugGramatica(k)]=k);let h=`<div style="display:flex;gap:8px;margin-bottom:15px;border-bottom:1px solid #333;padding-bottom:12px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;if(gramaticaMode==='contextual'){if(!lecturaActualText||lecturaActualVocab.length===0){cont.innerHTML=h+`<div style="padding:20px;opacity:0.6"><p>Genera primer una lectura</p><button class="btn btn-primari" onclick="mostrarSubTab('lectura');generarLectura()">Generar lectura</button></div>`;return;}const gp=detectarPuntGramatica(lecturaActualText,getCurrentLevel(),G);h+=`<div class="grammar-card"><div class="grammar-title">${gp.titol} - [${lecturaContext.temps_verbal||''}]</div><div class="grammar-explanation">${gp.explicacio}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples del teu text:</div>${gp.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${gp.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${gp.tip?`<div class="grammar-tip">💡 ${gp.tip}</div>`:''}</div>`;}else{if(!gramaticaTemaSeleccionat){h+=`<div class="emoji-grid">`;keys.forEach(k=>{const t=G[k];h+=`<div class="emoji-item" onclick="seleccionarTemaGramatica('${slugGramatica(k)}')" style="cursor:pointer;"><div class="emoji-large">${t.emoji||'📚'}</div><div class="emoji-name">${t.titol}</div></div>`;});h+=`</div>`;}else{const kr=mapa[gramaticaTemaSeleccionat]||gramaticaTemaSeleccionat,t=G[kr];if(!t){gramaticaTemaSeleccionat=null;return generarGramatica();}h+=`<button class="btn btn-sec" onclick="tornarAGuia()" style="margin-bottom:15px;">← Tornar</button><div class="grammar-card"><div class="grammar-title">${t.titol}</div><div class="grammar-explanation">${t.explicacio}</div><div style="background:#1a1a1a;padding:12px;border-radius:8px;margin:12px 0;font-family:monospace;color:#4CAF50;">Estructura: ${t.estructura}</div><div class="grammar-examples"><div class="grammar-examples-title">Exemples:</div>${t.exemples?.map(ex=>`<div class="grammar-example">• ${ex}</div>`).join('')||''}</div><div class="grammar-exercise"><div class="grammar-exercise-title">Practica:</div>${t.exercici?.map((f,i)=>`<div class="grammar-exercise-item">${i+1}. ${f}</div>`).join('')||''}</div>${t.tip?`<div class="grammar-tip">💡 ${t.tip}</div>`:''}</div>`;}}cont.innerHTML=h;}
-function detectarPuntGramatica(txt,niv,G){if(txt.includes('està jugant')||txt.includes('està mirant')||txt.includes('està comprant')||txt.includes('està fent')){return{...(G.present_continu||G.present_simple),exemples:extraerFrasesCon(txt,'està'),titol:'Present continu: està + gerundi'};}if(txt.includes('ha estat')){return{titol:'Perfet continu: ha estat + gerundi',explicacio:'Acció que va començar en passat i continua ara.',estructura:'ha estat + gerundi',exemples:extraerFrasesCon(txt,'ha estat'),exercici:['Ell ____ jugant tot el dia','He estat ____'],tip:'Molt usat en B1'};}if(txt.includes('anirà')||txt.includes('farà')||txt.includes('comprarà')){return{...(G.futur_simple),exemples:extraerFrasesCon(txt,'arà'),titol:'Futur simple'};}if((txt.includes('va ')||txt.includes('vam '))&&G.preterit_perifrastic){const d={...G.preterit_perifrastic};d.exemples=extraerFrasesCon(txt,'va ');return d;}if((txt.includes('estava')||txt.includes('jugava')||txt.includes('comprava'))&&G.imperfet){const d={...G.imperfet};d.exemples=extraerFrasesCon(txt,'ava');return d;}if((txt.includes('estava')||txt.includes('està'))&&G.estar_adjectiu){const d={...G.estar_adjectiu};d.exemples=extraerFrasesCon(txt,'estav');return d;}return G[Object.keys(G)[0]]||{titol:'Gramàtica',explicacio:'Genera lectura',estructura:'',exemples:[],exercici:[],tip:''};}
+async function generarGramatica(){const cont=document.getElementById('lectura-gramatica-inner')||document.getElementById('lectura-gramatica');if(!cont)return;const banco=await cargarBancoLectura();if(!banco||!banco.gramatica||!banco.gramatica.guia){cont.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`;return;}const G=banco.gramatica.guia,keys=Object.keys(G);let h=`<div style="display:flex;gap:8px;margin-bottom:15px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;if(gramaticaMode==='contextual'){if(!lecturaActualText){cont.innerHTML=h+`<div style="padding:20px;"><p>Genera primer una lectura</p></div>`;return;}h+=`<div class="grammar-card"><div class="grammar-title">Gramàtica contextual</div><div class="grammar-explanation">${lecturaActualText.slice(0,200)}...</div></div>`;}else{if(!gramaticaTemaSeleccionat){h+=`<div class="emoji-grid">`;keys.forEach(k=>{const t=G[k];h+=`<div class="emoji-item" onclick="seleccionarTemaGramatica('${slugGramatica(k)}')" style="cursor:pointer;"><div class="emoji-large">${t.emoji||'📚'}</div><div class="emoji-name">${t.titol}</div></div>`;});h+=`</div>`;}else{const kr=gramaticaTemaSeleccionat,t=G[Object.keys(G).find(x=>slugGramatica(x)===kr)]||Object.keys(G)[0];if(!t)return;h+=`<button class="btn btn-sec" onclick="tornarAGuia()">← Tornar</button><div class="grammar-card"><div class="grammar-title">${t.titol}</div><div class="grammar-explanation">${t.explicacio}</div></div>`;}}cont.innerHTML=h;}
+function detectarPuntGramatica(txt,niv,G){return G[Object.keys(G)[0]]||{titol:'Gramàtica',explicacio:''};}
 function setGramaticaMode(m){gramaticaMode=m;gramaticaTemaSeleccionat=null;generarGramatica();}
 function seleccionarTemaGramatica(s){gramaticaTemaSeleccionat=s;generarGramatica();}
 function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
-function extraerFrasesCon(t,p){return t.split('.').filter(f=>f.toLowerCase().includes(p.toLowerCase())).slice(0,3).map(f=>f.trim()+'.');}
+function extraerFrasesCon(t,p){return t.split('.').filter(f=>f.toLowerCase().includes(p.toLowerCase())).slice(0,3);}
 window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;
 function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)totsElsTips=dadesTips[n]||[];mostrarTipRandom();}
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
 function renderBotiga(){const c=document.getElementById('botiga-contenidor');if(!c)return;if(!PACKS_BOTIGA||PACKS_BOTIGA.length===0){c.innerHTML=`<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;return;}c.innerHTML='';PACKS_BOTIGA.forEach(pack=>{let subs=[];if(pack.emojis.length>6){for(let i=0;i<pack.emojis.length;i+=6){const ch=pack.emojis.slice(i,i+6),num=Math.floor(i/6)+1,tot=Math.ceil(pack.emojis.length/6),preu=Math.ceil(pack.preu/tot);subs.push({id:`${pack.id}_p${num}`,nom:`${pack.nom} ${num}/${tot}`,descripcio:pack.descripcio,preu,emojis:ch});}}else subs=[{id:pack.id,nom:pack.nom,descripcio:pack.descripcio,preu:pack.preu,emojis:pack.emojis}];subs.forEach(sp=>{const comp=estat.compres.includes(sp.id),card=document.createElement('div');card.className='capitol-card';card.innerHTML=`<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa;margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e=>e.emoji).join(' ')}</p><button class="btn ${comp?'btn-sec':''}" onclick="comprarPack('${sp.id}',${sp.preu})" ${comp?'disabled':''}>${comp?'Desbloquejat':'🪙 '+sp.preu}</button>`;c.appendChild(card);});});}
-function comprarPack(id,preu){if(estat.monedes<preu){mostrarMissatge('No tens prou monedes');return;}estat.monedes-=preu;estat.compres.push(id);NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();construirCategories();renderBotiga();renderDiccionari();mostrarMissatge('Pack desbloquejat!');}
+function comprarPack(id,preu){if(estat.monedes<preu){mostrarMissatge('No tens prou monedes');return;}estat.monedes-=preu;estat.compres.push(id);NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();construirCategories();construirMapaDet();renderBotiga();renderDiccionari();mostrarMissatge('Pack desbloquejat!');}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});}
