@@ -47,10 +47,22 @@ async function carregarDadesMinijoc(){
     const fr = await fetch('./data/minijoc_frases.json');
     if(!fr.ok) throw new Error('No frases');
     const d = await fr.json();
-    FRASES_MINIJOC = Array.isArray(d)? d : (d.frases || []);
-    try{ const det = await fetch('./data/minijoc_determinants.json'); if(det.ok) DETERMINANTS = await det.json(); }catch(e){}
+    FRASES_MINIJOC = Array.isArray(d) ? d : (d.frases || []);
+    // Ya no buscamos minijoc_determinants.json porque no existe en tu data
+    DETERMINANTS = {};
     minijocInicialitzat = true;
-  }catch(e){ console.error(e); minijocInicialitzat = true; }
+    console.log('Minijoc OK:', FRASES_MINIJOC.length);
+  }catch(e){
+    console.error('Error minijoc, usando frases de emergencia', e);
+    // Fallback para que nunca se quede en Carregant...
+    FRASES_MINIJOC = [
+      {text:"Hola {salutacions}", categories:["salutacions"]},
+      {text:"M'agrada {menjar}", categories:["menjar"]},
+      {text:"Veig {animals}", categories:["animals"]}
+    ];
+    DETERMINANTS = {};
+    minijocInicialitzat = true;
+  }
 }
 async function carregarDades(){try{const[cat,bib,bot,lec,tip]=await Promise.all([fetch('./data/categories_emoji.json'),fetch('./data/biblioteca_emoji.json'),fetch('./data/botiga_emoji.json'),fetch('./data/banco_lectura.json'),fetch('./data/tips.json')]);CATEGORIES_TOTS=cat.ok?await cat.json():{};BIBLIOTECA_PLA=bib.ok?await bib.json():[];PACKS_BOTIGA=bot.ok?await bot.json():[];BANCO_VOCAB=lec.ok?await lec.json():{};BANCO_LECTURA=BANCO_VOCAB;dadesTips=tip.ok?await tip.json():{};}catch(e){console.error(e);}agruparBibliotecaPorCategoria();construirCategories();construirTotsEmojis();inicialitzarNomPersonatgeDefault();}
 function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc","La Júlia","En Nil","En Joan","La Maria","L'avi Pere"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
