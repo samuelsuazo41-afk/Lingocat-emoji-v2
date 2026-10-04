@@ -1,4 +1,4 @@
-// main.js v25 FIX DEFINITIU LOGIC - COMPLET - Frases amb sentit
+// main.js v16.1 FIX DEFINITIU MINIJOC LOGIC - Basat en el teu v16.0 FINAL - No trenca res
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -32,7 +32,6 @@ let minijoc={fraseObjectiu:null,emojisTriats:[],emojisDisponibles:[]}; let minij
 const INTRO_SLIDES=[{emoji:"🙀",titol:"Benvingut a Cat Lingo",text:"Aprèn català en 5 minuts al dia."},{emoji:"⛷️",titol:"Vocabulari visual",text:"Toca emojis i aprèn paraules."},{emoji:"📝",titol:"Gramàtica fàcil",text:"Explicacions curtes amb exemples."},{emoji:"📚",titol:"Lectures adaptades",text:"Textos al teu nivell A1, A2 o B1."},{emoji:"🚀",titol:"A jugar!",text:"Prem Saltar per començar"}];
 let gramaticaMode='contextual'; let gramaticaTemaSeleccionat=null;
 const CONECTORS_LECTURA=["Després","Més tard","Mentrestant","De sobte","Al final","Aleshores","Però","A més","Tot i això","Per això","De cop","Sense avís"];
-const CONECTORS_MINIJOC=["i després","mentre","però","perquè","quan"];
 let MAPA_DET = {};
 function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
 function vibrar(){if(navigator.vibrate)navigator.vibrate(50);}
@@ -50,19 +49,14 @@ async function carregarDadesMinijoc(){
       const d = await fr.json();
       FRASES_MINIJOC = Array.isArray(d)? d : (d.frases || []);
     }
-  }catch(e){}
+  }catch(e){ console.log('minijoc error', e); }
   if(!FRASES_MINIJOC.length){
     FRASES_MINIJOC = [
-      {"id":"n1_001","nivell":1,"text":"{persona} menja {menjar}","roles":{"persona":["persona"],"menjar":["menjar"]}},
-      {"id":"n1_002","nivell":1,"text":"{persona} mira {animal}","roles":{"persona":["persona"],"animal":["animal"]}},
-      {"id":"n1_003","nivell":1,"text":"{persona} té {objecte}","roles":{"persona":["persona"],"objecte":["objecte"]}},
-      {"id":"n2_001","nivell":2,"text":"{persona} troba {objecte} a {lloc}","roles":{"persona":["persona"],"objecte":["objecte","menjar"],"lloc":["lloc","natura"]}},
-      {"id":"n2_002","nivell":2,"text":"{persona} juga a {esport} a {lloc}","roles":{"persona":["persona"],"esport":["esport"],"lloc":["lloc"]}},
-      {"id":"n2_003","nivell":2,"text":"{persona} viatja amb {transport} a {lloc}","roles":{"persona":["persona"],"transport":["transport"],"lloc":["lloc"]}},
-      {"id":"n3_001","nivell":3,"text":"{persona} està {emocio} amb {animal}","roles":{"persona":["persona"],"emocio":["emocio"],"animal":["animal"]}}
+      {"id":"p1_1","text":"{persona} mira {objecte}","roles":{"persona":["persona"],"objecte":["objecte"]}},
+      {"id":"p1_2","text":"{persona} troba {objecte} a {lloc}","roles":{"persona":["persona"],"objecte":["objecte"],"lloc":["lloc"]}},
+      {"id":"p1_3","text":"{animal} corre per {natura}","roles":{"animal":["animal"],"natura":["natura"]}}
     ];
   }
-  DETERMINANTS = {};
   minijocInicialitzat = true;
 }
 async function carregarDades(){
@@ -97,7 +91,7 @@ function construirMapaDet(){
     }
   });
 }
-function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
+function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
 function construirCategories(){
   const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));
@@ -120,7 +114,7 @@ function construirCategories(){
 function construirTotsEmojis(){TOTS_EMOJIS=BIBLIOTECA_PLA.map(e=>({...e}));}
 document.addEventListener('DOMContentLoaded',async()=>{regenerarEnergia();iniciarRegeneracioAutomatica();mostrarIntro();await carregarDades();await carregarDadesMinijoc();actualitzarUI();canviarTab('mapa',null);setTimeout(()=>{if(!lecturaActualText)generarLectura();},500);});
 function canviarTab(tab,e){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab)?.classList.add('active');if(e&&e.target)e.target.closest('.nav-item')?.classList.add('active');else document.querySelector(`.nav-item[onclick*="'${tab}'"]`)?.classList.add('active');if(tab==='mapa')renderMapa();if(tab==='missio')renderMissio();if(tab==='gremi')mostrarSubTab('biblioteca');if(tab==='lectura'){mostrarSubTab('lectura');if(!lecturaActualHTML)setTimeout(()=>generarLectura(),100);}if(tab==='tips')carregarTips();if(tab==='botiga')renderBotiga();}
-function mostrarSubTab(sub){const tabActiva=document.querySelector('.tab-content.active');if(!tabActiva)return;tabActiva.querySelectorAll('.sub-tab-content').forEach(t=>t.style.display='none');document.querySelectorAll('.sub-tab-btn').forEach(b=>b.classList.remove('active'));const ids=[`lectura-${sub}`,`lectura-${sub}-inner`,`gremi-${sub}`,`lectura-${sub}-content`,`lectura-${sub}-texto`,`lectura-texto`,`gremi-${sub}-inner`,sub];let target=null;for(let id of ids){target=document.getElementById(id);if(target&&(tabActiva.contains(target)||sub==='lectura'))break;}if(!target){const todos=tabActiva.querySelectorAll('.sub-tab-content');if(sub==='lectura'&&todos[0])target=todos[0];if(sub==='vocab'&&todos[1])target=todos[1];if(sub==='gramatica'&&todos[2])target=todos[2];}if(target){target.style.display='block';const p=target.closest('.sub-tab-content');if(p)p.style.display='block';}document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));if(sub==='personatges')mostrarGremiPersonatges();if(sub==='biblioteca')renderDiccionari();if(sub==='minijoc')setTimeout(()=>novaFraseMinijoc(),100);if(sub==='gramatica')setTimeout(()=>generarGramatica(),10);if(sub==='vocab')setTimeout(()=>renderVocabLectura(),10);if(sub==='lectura'){const c=document.getElementById('lectura-texto');if(c&&lecturaActualHTML&&!c.innerHTML.trim())c.innerHTML=lecturaActualHTML;if(c)c.style.display='block';const cp=document.getElementById('lectura-lectura');if(cp)cp.style.display='block';}}
+function mostrarSubTab(sub){const tabActiva=document.querySelector('.tab-content.active');if(!tabActiva)return;tabActiva.querySelectorAll('.sub-tab-content').forEach(t=>t.style.display='none');document.querySelectorAll('.sub-tab-btn').forEach(b=>b.classList.remove('active'));const ids=[`lectura-${sub}`,`lectura-${sub}-inner`,`gremi-${sub}`,`lectura-${sub}-content`,`lectura-${sub}-texto`,`lectura-texto`,`gremi-${sub}-inner`,sub];let target=null;for(let id of ids){target=document.getElementById(id);if(target&&(tabActiva.contains(target)||sub==='lectura'))break;}if(!target){const todos=tabActiva.querySelectorAll('.sub-tab-content');if(sub==='lectura'&&todos[0])target=todos[0];if(sub==='vocab'&&todos[1])target=todos[1];if(sub==='gramatica'&&todos[2])target=todos[2];}if(target){target.style.display='block';const p=target.closest('.sub-tab-content');if(p)p.style.display='block';}document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));if(sub==='personatges')mostrarGremiPersonatges();if(sub==='biblioteca')renderDiccionari();if(sub==='minijoc')setTimeout(()=>novaFraseMinijoc(),100);if(sub==='gramatica')setTimeout(()=>generarGramatica(),10);if(sub==='vocab')setTimeout(()=>renderVocabLectura(),10);if(sub==='lectura'){const c=document.getElementById('lectura-texto');if(c&&lecturaActualHTML&&!c.innerHTML.trim())c.innerHTML=lecturaActualHTML;if(c)c.style.display='block';}}
 function mostrarIntro(){const el=document.getElementById('intro');if(!el)return;el.style.display='flex';slideActual=0;pintarSlide();el.onclick=()=>seguentSlide();}
 function pintarSlide(){const s=INTRO_SLIDES[slideActual];document.getElementById('intro-emoji').textContent=s.emoji;document.getElementById('intro-titol').textContent=s.titol;document.getElementById('intro-text').textContent=s.text;const d=document.getElementById('intro-dots');if(d)d.innerHTML=INTRO_SLIDES.map((_,i)=>`<span style="opacity:${i===slideActual?1:0.3}">●</span>`).join(' ');const b=document.getElementById('intro-btn');if(b){b.textContent=slideActual===INTRO_SLIDES.length-1?'Començar':'Següent';b.onclick=e=>{e.stopPropagation();seguentSlide();};}}
 function seguentSlide(){vibrar();if(slideActual<INTRO_SLIDES.length-1){slideActual++;pintarSlide();}else saltarIntro();}
@@ -129,20 +123,11 @@ function renderMapa(){const c=document.getElementById('mapa-contenidor');if(!c)r
 function jugarNivell(n){if(n>estat.progres.nivellActualMapa)return;canviarTab('gremi',null);mostrarSubTab('minijoc');}
 function renderMissio(){const c=document.getElementById('missio-contenidor');if(!c)return;const n=estat.progres.nivellActualMapa||1,xp=n*100,xpF=xp-(estat.progres.xp||0),nB1=25,pB1=Math.min(100,Math.max(0,(n/nB1)*100)),fB1=Math.max(0,nB1-n);c.innerHTML=`<h3 style="text-align:center;margin-bottom:20px;">Missions</h3><div class="missio-item" onclick="canviarTab('gremi',null);mostrarSubTab('minijoc');" style="cursor:pointer;">${xpF>0?'🎯':'✅'} Et falten ${xpF} acerts per pujar de nivell</div><div class="missio-item" onclick="canviarTab('botiga',null);" style="cursor:pointer;">📦 Desbloqueja tota la biblioteca</div><div class="missio-item" onclick="canviarTab('lectura',null);setTimeout(()=>mostrarSubTab('gramatica'),100);" style="cursor:pointer;">📚 Aprèn gramàtica</div><div class="missio-item" onclick="recarregarEnergia()" style="cursor:pointer;">⚡ Recarrega energia per 50 🪙</div><div class="missio-item"><div style="display:flex;gap:12px;margin-bottom:8px;"><span style="font-size:32px;">${fB1===0?'✅':'🏆'}</span><div style="flex:1;"><div style="font-weight:700;">Arriba al nivell B1</div><div style="font-size:13px;color:#aaa;">Nivell ${n} de ${nB1} - Falten ${fB1}</div></div></div><div style="width:100%;height:8px;background:#333;border-radius:4px;"><div style="width:${pB1}%;height:100%;background:#22c55e;"></div></div></div>`;}
 function recarregarEnergia(){if(estat.progres.energia>=100){mostrarMissatge('Ja tens l\'energia al màxim!');return;}if(estat.monedes<50){mostrarMissatge('Necessites 50 monedes');return;}estat.monedes-=50;estat.progres.energia=100;estat.ultimaRecargaEnergia=Date.now();guardarEstat();actualitzarUI();renderMissio();vibrar();mostrarMissatge('Energia recarregada!');}
-function mostrarGremiPersonatges(){
-  const c=document.getElementById('gremi-personatges');if(!c)return;
-  const noms=new Set(BANCO_LECTURA?.personatges || []);
-  const detall = BANCO_LECTURA?.personatges_detall || {};
-  const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);
-  let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b></p><button class="btn btn-sec" onclick="mostrarSelectorNom()" style="margin:20px;">Canviar preferit</button><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;
-  PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});
-  h+=`</div></div></div>`;c.innerHTML=h;
-}
-function mostrarSelectorNom(){const el=document.getElementById('selector-nom');if(el)el.style.display=el.style.display==='none'?'block':'none';}
-function setNomPersonatge(n){nomPersonatge=n;localStorage.setItem('cat_nom_personatge', n);mostrarGremiPersonatges();vibrar();}
+function mostrarGremiPersonatges(){const c=document.getElementById('gremi-personatges');if(!c)return;const noms=new Set(BANCO_LECTURA?.personatges || []);const p=PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat);let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${p.emoji}</div><h3>${p.nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b></p><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});h+=`</div></div></div>`;c.innerHTML=h;}
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
 function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');if(!c)return;let h=`<h3 style="text-align:center;">Biblioteca</h3>`;const base=PACK_INICIAL.map(e=>quitarSkinTone(e));for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;emojis.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});h+=`</div>`;}c.innerHTML=h;}
-// FIX V25 - ARTICULOS LOGICOS
+
+// FIX V25 LOGIC - AQUI ESTA EL FIX DEFINITIU
 function obtenirArticleNet(emoji){
   const base = quitarSkinTone(emoji);
   const info = MAPA_DET[base];
@@ -164,8 +149,24 @@ function generarFraseDinamicaLogica(pl, jug){
   let text=pl.text;
   let sol=[];
   let usats=new Set();
-  for(const rol of Object.keys(pl.roles)){
-    const cats=pl.roles[rol];
+  let claus = pl.roles? Object.keys(pl.roles) : (pl.categories || []);
+  // Soporta vell i nou format
+  if(!pl.roles){
+    claus = [];
+    let occ = {};
+    let tmp = text;
+    let idx=0;
+    while(tmp.includes('{persona}') && (tmp.match(/\{persona\}/g)||[]).length>1){
+      idx++;
+      tmp = tmp.replace('{persona}', '{persona}').replace('{persona}', '{persona_'+(idx+1)+'}');
+      if(idx>5) break;
+    }
+    const all = text.match(/\{(\w+)\}/g) || [];
+    all.forEach(m=>{ const k=m.replace(/[{}]/g,''); if(!claus.includes(k)) claus.push(k); });
+  }
+  for(const rol of claus){
+    const baseKey = rol.split('_')[0];
+    const cats = pl.roles? pl.roles[rol] : [baseKey];
     let pool=[];
     cats.forEach(cat=>{
       (CATEGORIES_TOTS[cat]||[]).forEach(o=>{
@@ -184,22 +185,22 @@ function generarFraseDinamicaLogica(pl, jug){
     const elegido=pool[Math.floor(Math.random()*pool.length)];
     usats.add(quitarSkinTone(elegido));
     let reemplazo=obtenirArticleNet(elegido);
-    if(text.includes("a {"+rol+"}")){
-      if(reemplazo.startsWith("El ")) reemplazo="el "+obtenirNomSenseArticle(elegido);
+    if(text.includes('a {'+rol+'}')){
+      if(reemplazo.startsWith('El ')) reemplazo='el '+obtenirNomSenseArticle(elegido);
       if(reemplazo.startsWith("L'")) reemplazo="l'"+obtenirNomSenseArticle(elegido);
-      if(reemplazo.startsWith("La ")) reemplazo="la "+obtenirNomSenseArticle(elegido);
-      text=text.replace("a {"+rol+"}", "a "+reemplazo);
-    } else if(text.includes("amb {"+rol+"}") || text.includes("per {"+rol+"}")){
-      text=text.replace("{"+rol+"}", reemplazo.toLowerCase());
+      if(reemplazo.startsWith('La ')) reemplazo='la '+obtenirNomSenseArticle(elegido);
+      text=text.replace('a {'+rol+'}','a '+reemplazo);
+    } else if(text.includes('amb {'+rol+'}') || text.includes('per {'+rol+'}') || text.includes('sota {'+rol+'}') || text.includes('de {'+rol+'}')){
+      text=text.replace('{'+rol+'}',reemplazo.toLowerCase());
     } else {
-      text=text.replace("{"+rol+"}", reemplazo);
+      text=text.replace('{'+rol+'}',reemplazo);
     }
     sol.push(elegido);
   }
-  text=text.replace(/En home/g, "L'home").replace(/Na dona/g, "La dona");
-  text=text.replace(/al El /g, "al ").replace(/a El /gi, "al ").replace(/a La /gi, "a la ").replace(/amb El /g, "amb el ").replace(/amb La /g, "amb la ");
+  text=text.replace(/En home/g, "L'home").replace(/Na dona/g, 'La dona');
+  text=text.replace(/al El /g,'al ').replace(/a El /gi,'al ').replace(/a La /gi,'a la ').replace(/amb El /g,'amb el ').replace(/amb La /g,'amb la ');
   text=text.replace(/ +/g,' ').trim();
-  text=text.charAt(0).toUpperCase()+text.slice(1);
+  if(text.length>0) text=text.charAt(0).toUpperCase()+text.slice(1);
   return {text, solucio:sol};
 }
 function generarFraseDinamica(pl, jug){ return generarFraseDinamicaLogica(pl, jug); }
@@ -210,7 +211,7 @@ function novaFraseMinijoc(){
   const nivellEl=document.getElementById('minijoc-nivell');
   const gridEl=document.getElementById('minijoc-emojis');
   if(fraseEl &&!FRASES_MINIJOC.length){
-    fraseEl.textContent="Error carregant frases...";
+    fraseEl.textContent="Carregant frases...";
     carregarDadesMinijoc().then(()=>novaFraseMinijoc());
     return;
   }
