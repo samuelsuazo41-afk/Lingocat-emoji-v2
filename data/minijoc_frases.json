@@ -49,4 +49,4 @@
     { "id": "p5_3", "text": "A {temps} {persona} i {persona_2} van {direccio} cap a {lloc} amb {simbol}", "dificultat": 5, "categories": ["temps", "persona", "persona", "direccio", "lloc", "simbol"], "nivell": 5, "roles": { "temps": ["temps"], "persona": ["persona"], "persona_2": ["persona"], "direccio": ["direccio"], "lloc": ["lloc"], "simbol": ["simbol"] } },
     { "id": "p5_4", "text": "{persona} troba {numero} {forma_color} i sent {so} a {lloc}", "dificultat": 5, "categories": ["persona", "numero", "forma_color", "so", "lloc"], "nivell": 5, "roles": { "persona": ["persona"], "numero": ["numero"], "forma_color": ["forma_color"], "so": ["so"], "lloc": ["lloc"] } }
   ]
-}
+} 
