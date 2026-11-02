@@ -1,4 +1,4 @@
-// main.js v17.1 YOC FIX DEFINITIU - Mirall categories+botiga+biblioteca 520 emojis - Suport roba + direccio/temps/numero/forma_color/so/simbol
+// main.js v18.0 FUSIO DEFINITIU - 50 PLANTILLAS LAYA+CATLINGO - A1 16 + A2 17 + B1 17 - Motor lectura actualitzat
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -92,7 +92,6 @@ function construirMapaDet(){
     if(!MAPA_DET[base]){
       MAPA_DET[base] = { det: "El", nom: e.nom_cat, genere: "m", categoria: e.categoria, emojiOriginal: e.emoji };
     } else {
-      // Actualiza categoria si viene de biblioteca (más fiable para roba etc)
       if(e.categoria) MAPA_DET[base].categoria = e.categoria;
     }
   });
@@ -105,7 +104,6 @@ function construirCategories(){
     const pId=id.includes('_p')?id.split('_p')[0]:id;
     const p=PACKS_BOTIGA.find(x=>x.id===pId || x.id===id);
     if(p&&p.emojis) p.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji || e)));
-    // soporte para formato nuevo _complet
     const p2=PACKS_BOTIGA.find(x=>x.id===id);
     if(p2&&p2.emojis) p2.emojis.forEach(e=>d.add(quitarSkinTone(e.emoji || e)));
   });
@@ -136,12 +134,11 @@ function mostrarGremiPersonatges(){const c=document.getElementById('gremi-person
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
 function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');if(!c)return;let h=`<h3 style="text-align:center;">Biblioteca</h3>`;const base=PACK_INICIAL.map(e=>quitarSkinTone(e));for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;emojis.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid || p.id===id);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});h+=`</div>`;}c.innerHTML=h;}
 
-// --- MOTOR MINIJOC v17.1 - FIX {roba} + NOVES CATEGORIES ---
+// --- MOTOR MINIJOC v18.0 - FIX roba + direccio etc ---
 function obtenirArticleNet(emoji){
   const base = quitarSkinTone(emoji);
   const info = MAPA_DET[base];
   if(!info) return emoji;
-  // Si es categoria sense article, retorna només nom
   if(CATS_SENSE_ARTICLE.has(info.categoria)) return info.nom;
   let det = info.det;
   let nom = info.nom;
@@ -183,7 +180,6 @@ function generarFraseDinamicaLogica(pl, jug){
         }
       });
     });
-    // fallback: si no hay pool (ej categoria nueva no desbloqueada), busca en jug directamente
     if(pool.length===0){
       jug.forEach(j=>{
         const b=quitarSkinTone(j);
@@ -288,10 +284,114 @@ function generarOpcionsMinijoc(solucio){
 function triarEmojiMinijoc(idx){vibrar();const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);document.getElementById('minijoc-triats').textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +5 🪙</p>`;estat.monedes+=5;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;if(estat.progres.frasesDesDeUltimNivell>=25&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);}NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
 
+// --- MOTOR LECTURA v18.0 - FUSIÓ 50 PLANTILLAS LAYA+CATLINGO - ACTUALITZAT PER NOU BANCO ---
 async function cargarBancoLectura(){if(BANCO_LECTURA&&BANCO_LECTURA.regles_globals)return BANCO_LECTURA;const r=await fetch('./data/banco_lectura.json');BANCO_LECTURA=await r.json();if(!nomPersonatge) inicialitzarNomPersonatgeDefault();return BANCO_LECTURA;}
 function renderVocabLectura(){const c=document.getElementById('lectura-vocab-inner')||document.getElementById('lectura-vocab');if(!c)return;if(lecturaActualVocab.length===0){c.innerHTML='<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p></div>';return;}c.innerHTML=`<div class="vocab-grid">${lecturaActualVocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div></div>`).join('')}</div>`;}
-async function generarLectura(){if(!gastarEnergia(30)){alert('No tens energia');return;}const banco=await cargarBancoLectura(),nivell=getCurrentLevel(),data=banco[nivell];if(!data||!data.plantillas){const c=document.getElementById('lectura-texto');if(c)c.innerHTML='<p>No hi ha lectures</p>';return;}const llista=banco.personatges;let pers=llista[Math.floor(Math.random()*llista.length)];nomPersonatge=pers;let genere=banco.personatges_detall[pers];if(typeof genere==='object')genere=genere.g||'m';genere=genere||'m';const pronom=genere==='f'?'ella':'ell';lecturaActualVocab=[];lecturaContext={genere};const plantilla=data.plantillas[Math.floor(Math.random()*data.plantillas.length)],temes=['la_familia','la_casa','l_escola'],tema=temes[Math.floor(Math.random()*temes.length)];const vocab=data[tema];if(!vocab)return;function pick(k,a){if(!a||!a.length)return k;if(lecturaContext[k])return lecturaContext[k];const v=a[Math.floor(Math.random()*a.length)];if(!lecturaActualVocab.includes(v))lecturaActualVocab.push(v);lecturaContext[k]=v;return v;}function reempla(t){return t.replace(/\$\{(\w+)\}/g,(m,k)=>{if(k==='personatge')return pers;if(k==='pronom')return pronom;if(vocab[k])return pick(k,vocab[k]);return lecturaContext[k]||k;});}const tit=reempla(plantilla.titol);let frases=plantilla.seq.map(l=>reempla(l));let textBase=frases.join(' ');lecturaActualText=textBase;lecturaActualPreguntes=plantilla.preguntes.map(p=>({q:reempla(p.q),opcions:p.opcions.map(o=>reempla(o)),correcta:p.correcta}));const html=`<div class="lectura-card"><h3>${tit}</h3><p class="lectura-text">${lecturaActualText}</p><div class="lectura-preguntes">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">Nova lectura</button></div>`;lecturaActualHTML=html;const el=document.getElementById('lectura-texto');if(el){el.innerHTML=html;el.style.display='block';}renderVocabLectura();}
-function comprovarPregunta(i,r){const p=lecturaActualPreguntes[i],fb=document.getElementById(`feedback-${i}`);if(r===p.correcta){fb.innerHTML='<span style="color:#4CAF50">Correcte! +0.5 XP</span>';estat.progres.encerts+=0.5;guardarEstat();actualitzarUI();}else fb.innerHTML=`<span style="color:#f44336">No. Era: ${p.opcions[p.correcta]}</span>`;}
+
+async function generarLectura(){
+  if(!gastarEnergia(30)){alert('No tens energia');return;}
+  const banco=await cargarBancoLectura();
+  const nivell=getCurrentLevel();
+  const data=banco[nivell];
+  if(!data||!data.plantillas||!data.plantillas.length){
+    const c=document.getElementById('lectura-texto');
+    if(c) c.innerHTML='<p>No hi ha lectures per aquest nivell</p>';
+    return;
+  }
+  // Personatge i gènere del nou banco
+  const llista=banco.personatges||["La Laia","En Pau"];
+  let pers=llista[Math.floor(Math.random()*llista.length)];
+  nomPersonatge=pers;
+  let genereRaw=banco.personatges_detall?banco.personatges_detall[pers]:'m';
+  let genere=(typeof genereRaw==='object'? (genereRaw.g||'m') : genereRaw)||'m';
+  genere=genere.toLowerCase().startsWith('f')?'f':'m';
+  const pronom=genere==='f'?'ella':'ell';
+
+  lecturaActualVocab=[];
+  lecturaContext={genere, personatge:pers, pronom};
+
+  // Tria plantilla aleatòria del nivell (16 A1, 17 A2, 17 B1)
+  const plantilla=data.plantillas[Math.floor(Math.random()*data.plantillas.length)];
+  
+  // Connectors segons nivell - del nou regles_globals
+  const regles=banco.regles_globals||{};
+  let connectors=[];
+  if(nivell==='a1') connectors=regles.connectors_a1||["Després","Més tard","Al final","Aleshores"];
+  else if(nivell==='a2') connectors=regles.connectors_a2||["Després","Mentrestant","Més tard","Al final","De sobte"];
+  else connectors=regles.connectors_b1||["Després","Mentrestant","De sobte","Al final","Més tard","Aleshores","Però"];
+
+  // Banc de vocabulari de la plantilla (nou format fusió)
+  const banc=plantilla.banc||{};
+
+  function pick(k, arr){
+    if(!arr||!arr.length) return k;
+    // Evita repetir si ja tenim context
+    let disponibles=arr;
+    // Si ja existeix al context i és del mateix tipus, el reutilitza per coherència
+    if(lecturaContext[k]) return lecturaContext[k];
+    const v=disponibles[Math.floor(Math.random()*disponibles.length)];
+    if(!lecturaActualVocab.includes(v)) lecturaActualVocab.push(v);
+    lecturaContext[k]=v;
+    return v;
+  }
+
+  function reempla(t){
+    if(!t) return "";
+    return t.replace(/\$\{(\w+)\}/g,(m,k)=>{
+      if(k==='personatge') return pers;
+      if(k==='pronom') return pronom;
+      if(k==='tema') return plantilla.topic_cat||plantilla.topic||plantilla.name;
+      if(k==='name') return plantilla.name||'';
+      // Connectors dinàmics
+      if(k.startsWith('conector')){
+        const num=parseInt(k.replace('conector',''))||1;
+        const idx=(num-1)%connectors.length;
+        // Rotació per no repetir sempre el mateix
+        const pool=[...connectors].sort(()=>0.5-Math.random());
+        const chosen=pool[idx%pool.length];
+        lecturaContext[k]=chosen;
+        return chosen;
+      }
+      // Banc de la plantilla fusió
+      if(banc[k]) return pick(k, banc[k]);
+      // Si ja està al context
+      if(lecturaContext[k]) return lecturaContext[k];
+      return k;
+    });
+  }
+
+  const tit=reempla(plantilla.titol);
+  let frases=plantilla.seq.map(l=>reempla(l));
+  // Neteja apostrofació bàsica (del nou regles_globals)
+  let textBase=frases.join(' ');
+  const apost=regles.apostrofacio||{"a el":"al","de el":"del","per el":"pel"};
+  Object.keys(apost).forEach(k=>{
+    const v=apost[k];
+    const re=new RegExp(k,'gi');
+    textBase=textBase.replace(re,v);
+  });
+  // Fix articles personals
+  textBase=textBase.replace(/En home/g,"L'home").replace(/Na dona/g,"La dona");
+
+  lecturaActualText=textBase;
+  lecturaActualPreguntes=(plantilla.preguntes||[]).map(p=>({
+    q:reempla(p.q),
+    opcions:(p.opcions||[]).map(o=>reempla(o)),
+    correcta:p.correcta||0
+  }));
+
+  // Afegeix info LAYA com a badge (opcional, no trenca res)
+  const badge=`<span style="font-size:11px;background:#22c55e;color:#000;padding:2px 6px;border-radius:10px;margin-left:8px;">${plantilla.level||nivell.toUpperCase()} · ${plantilla.name} · ${plantilla.grammar_LAYA?plantilla.grammar_LAYA[0]:''}</span>`;
+
+  const html=`<div class="lectura-card"><h3>${tit} ${badge}</h3><p class="lectura-text" style="line-height:1.7;font-size:16px;">${lecturaActualText}</p><div style="margin-top:10px;font-size:12px;color:#aaa;">Tema: ${plantilla.topic||''} | ${plantilla.topic_cat||''}</div><div class="lectura-preguntes" style="margin-top:20px;">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" style="margin-top:8px;"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">🔄 Nova lectura (${data.plantillas.length} disponibles)</button></div>`;
+
+  lecturaActualHTML=html;
+  const el=document.getElementById('lectura-texto');
+  if(el){el.innerHTML=html;el.style.display='block';}
+  renderVocabLectura();
+}
+
+function comprovarPregunta(i,r){const p=lecturaActualPreguntes[i],fb=document.getElementById(`feedback-${i}`);if(!fb)return;if(r===p.correcta){fb.innerHTML='<span style="color:#4CAF50">✅ Correcte! +0.5 XP</span>';estat.progres.encerts+=0.5;estat.progres.xp+=1;guardarEstat();actualitzarUI();}else fb.innerHTML=`<span style="color:#f44336">❌ No. Era: ${p.opcions[p.correcta]}</span>`;}
 function slugGramatica(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_');}
 async function generarGramatica(){const cont=document.getElementById('lectura-gramatica-inner')||document.getElementById('lectura-gramatica');if(!cont)return;const banco=await cargarBancoLectura();if(!banco||!banco.gramatica||!banco.gramatica.guia){cont.innerHTML=`<div style="padding:20px;opacity:0.6"><p>No trobo gramatica.guia</p></div>`;return;}const G=banco.gramatica.guia,keys=Object.keys(G);let h=`<div style="display:flex;gap:8px;margin-bottom:15px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;if(gramaticaMode==='contextual'){if(!lecturaActualText){cont.innerHTML=h+`<div style="padding:20px;"><p>Genera primer una lectura</p></div>`;return;}h+=`<div class="grammar-card"><div class="grammar-title">Gramàtica contextual</div><div class="grammar-explanation">${lecturaActualText.slice(0,200)}...</div></div>`;}else{if(!gramaticaTemaSeleccionat){h+=`<div class="emoji-grid">`;keys.forEach(k=>{const t=G[k];h+=`<div class="emoji-item" onclick="seleccionarTemaGramatica('${slugGramatica(k)}')" style="cursor:pointer;"><div class="emoji-large">${t.emoji||'📚'}</div><div class="emoji-name">${t.titol}</div></div>`;});h+=`</div>`;}else{h+=`<button class="btn btn-sec" onclick="tornarAGuia()">← Tornar</button><div class="grammar-card"><div class="grammar-title">Tema</div></div>`;}}cont.innerHTML=h;}
 function setGramaticaMode(m){gramaticaMode=m;gramaticaTemaSeleccionat=null;generarGramatica();}
@@ -302,4 +402,4 @@ function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)tots
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
 function renderBotiga(){const c=document.getElementById('botiga-contenidor');if(!c)return;if(!PACKS_BOTIGA||PACKS_BOTIGA.length===0){c.innerHTML=`<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;return;}c.innerHTML='';PACKS_BOTIGA.forEach(pack=>{let subs=[];if(pack.emojis.length>6){for(let i=0;i<pack.emojis.length;i+=6){const ch=pack.emojis.slice(i,i+6),num=Math.floor(i/6)+1,tot=Math.ceil(pack.emojis.length/6),preu=Math.ceil(pack.preu/tot);subs.push({id:`${pack.id}_p${num}`,nom:`${pack.nom} ${num}/${tot}`,descripcio:pack.descripcio,preu,emojis:ch});}}else subs=[{id:pack.id,nom:pack.nom,descripcio:pack.descripcio,preu:pack.preu,emojis:pack.emojis}];subs.forEach(sp=>{const comp=estat.compres.includes(sp.id) || estat.compres.includes(pack.id),card=document.createElement('div');card.className='capitol-card';card.innerHTML=`<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa;margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e=>e.emoji).join(' ')}</p><button class="btn ${comp?'btn-sec':''}" onclick="comprarPack('${sp.id}',${sp.preu})" ${comp?'disabled':''}>${comp?'Desbloquejat':'🪙 '+sp.preu}</button>`;c.appendChild(card);});});}
 function comprarPack(id,preu){if(estat.monedes<preu){mostrarMissatge('No tens prou monedes');return;}estat.monedes-=preu;estat.compres.push(id);NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();construirCategories();construirMapaDet();renderBotiga();renderDiccionari();mostrarMissatge('Pack desbloquejat!');}
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});} 
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});}
