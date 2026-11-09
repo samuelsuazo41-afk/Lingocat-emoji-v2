@@ -1,4 +1,4 @@
-// main.js v19.1 FUSIO DEFINITIU - 50 PLANTILLAS KATLINGO - A1 15 + A2 25 + B1/B2 10 - Motor lectura v19 + PARCHE VISIBILIDAD v19.1
+// main.js v19.2 FIX MOTOR LECTURA - 50 PLANTILLAS KATLINGO - A1 15 + A2 25 + B1/B2 10 - Motor lectura v19.2 - SOLO FIX LECTURA, RESTO IGUAL v19.1
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -60,7 +60,8 @@ function construirMapaDet(){
   for(const cat in CATEGORIES_TOTS){ const arr = CATEGORIES_TOTS[cat] || []; arr.forEach(obj => { if(!obj) return; const emoji = obj.emoji || obj; const base = quitarSkinTone(emoji); const det = obj.det || (cat==='roba'?'La':"El"); const nom = obj.nom || obj.nom_cat || base; const genere = obj.genere || (cat==='roba'?'f':"m"); if(!MAPA_DET[base]){ MAPA_DET[base] = { det, nom, genere, categoria: cat, emojiOriginal: emoji }; } }); }
   BIBLIOTECA_PLA.forEach(e=>{ const base = quitarSkinTone(e.emoji); if(!MAPA_DET[base]){ MAPA_DET[base] = { det: "El", nom: e.nom_cat, genere: "m", categoria: e.categoria, emojiOriginal: e.emoji }; } else { if(e.categoria) MAPA_DET[base].categoria = e.categoria; } });
 }
-function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; const llista = BANCO_LECTURA?.personatges || ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
+// FIX v19.2 - No dejar nomPersonatge undefined si personatges es []
+function inicialitzarNomPersonatgeDefault(){if(nomPersonatge) return; let llista = BANCO_LECTURA?.personatges; if(!llista || !llista.length) llista = ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc"]; const triat = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = triat; localStorage.setItem('cat_nom_personatge', triat);}
 function agruparBibliotecaPorCategoria(){BIBLIOTECA_POR_CAT={};BIBLIOTECA_PLA.forEach(e=>{if(!BIBLIOTECA_POR_CAT[e.categoria])BIBLIOTECA_POR_CAT[e.categoria]=[];BIBLIOTECA_POR_CAT[e.categoria].push(e);});}
 function construirCategories(){
   const d=new Set(PACK_INICIAL.map(e=>quitarSkinTone(e)));
@@ -72,13 +73,11 @@ function construirCategories(){
 function construirTotsEmojis(){TOTS_EMOJIS=BIBLIOTECA_PLA.map(e=>({...e}));}
 document.addEventListener('DOMContentLoaded',async()=>{regenerarEnergia();iniciarRegeneracioAutomatica();mostrarIntro();await carregarDades();await carregarDadesMinijoc();actualitzarUI();canviarTab('mapa',null);setTimeout(()=>{if(!lecturaActualText)generarLectura();},500);});
 function canviarTab(tab,e){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab)?.classList.add('active');if(e&&e.target)e.target.closest('.nav-item')?.classList.add('active');else document.querySelector(`.nav-item[onclick*="'${tab}'"]`)?.classList.add('active');if(tab==='mapa')renderMapa();if(tab==='missio')renderMissio();if(tab==='gremi')mostrarSubTab('biblioteca');if(tab==='lectura'){mostrarSubTab('lectura');if(!lecturaActualHTML)setTimeout(()=>generarLectura(),100);}if(tab==='tips')carregarTips();if(tab==='botiga')renderBotiga();}
-// --- PARCHE v19.1 - FORZAR VISIBILIDAD LECTURA ---
 function forcarLecturaVisible(){
   const c = document.getElementById('lectura-texto');
   if(c){ c.style.display='block'; c.style.visibility='visible'; c.style.opacity='1'; }
   const card = document.querySelector('.lectura-card');
   if(card){ card.style.display='block'; card.style.visibility='visible'; }
-  // Sube por los padres por si alguno quedó en display:none
   let p = c ? c.parentElement : null;
   while(p){
     if(p.classList && p.classList.contains('sub-tab-content')) p.style.display='block';
@@ -135,9 +134,10 @@ function generarOpcionsMinijoc(solucio){
 function triarEmojiMinijoc(idx){vibrar();const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);document.getElementById('minijoc-triats').textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +5 🪙</p>`;estat.monedes+=5;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;if(estat.progres.frasesDesDeUltimNivell>=25&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);}NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
 
-// --- MOTOR LECTURA v19.0 + PARCHE v19.1 - VOCABULARI INTEL·LIGENT PER PLANTILLA ---
+// --- MOTOR LECTURA v19.2 FIX ---
 async function cargarBancoLectura(){
-  if(BANCO_LECTURA && BANCO_LECTURA.regles_globals) return BANCO_LECTURA;
+  // FIX: cachea si ya hay plantillas, no exige regles_globals
+  if(BANCO_LECTURA && BANCO_LECTURA.a1 && BANCO_LECTURA.a1.plantillas) return BANCO_LECTURA;
   try{
     const r = await fetch('./data/banco_lectura.json');
     if(!r.ok) throw new Error('HTTP '+r.status);
@@ -157,11 +157,26 @@ async function cargarBancoLectura(){
   if(!nomPersonatge) inicialitzarNomPersonatgeDefault();
   return BANCO_LECTURA;
 }
-let _lecturaUsades = new Set(); let _lecturaConnectorsUsats = [];
+let _lecturaUsades = new Set(); let _lecturaConnectorsUsats = []; let _ultimaPlantillaId = null;
 function _pickSenseRepetir(arr, clau){ if(!arr || !arr.length) return clau; let disponibles = arr.filter(v => !_lecturaUsades.has(v)); if(!disponibles.length) disponibles = [...arr]; const v = disponibles[Math.floor(Math.random()*disponibles.length)]; _lecturaUsades.add(v); if(!lecturaActualVocab.includes(v)) lecturaActualVocab.push(v); return v; }
 function _pickConector(connectors, num){ let disponibles = connectors.filter(c => !_lecturaConnectorsUsats.includes(c)); if(!disponibles.length){ _lecturaConnectorsUsats = []; disponibles = [...connectors]; } let pool = disponibles; if(num === 1) pool = disponibles.filter(c => ["Després","Més tard","Aleshores","Mentrestant"].includes(c)); if(num >= 3) pool = disponibles.filter(c => ["Per tant","En conclusió","Tot i això","Per això","Tanmateix"].includes(c)); if(!pool.length) pool = disponibles; const chosen = pool[Math.floor(Math.random()*pool.length)]; _lecturaConnectorsUsats.push(chosen); return chosen; }
 function _aplicarApostrofacio(text, regles){ let t = text; const apost = regles.apostrofacio || {"a el":"al","de el":"del","per el":"pel","a els":"als","de els":"dels","per els":"pels","de un":"d'un","de una":"d'una"}; Object.keys(apost).sort((a,b)=>b.length-a.length).forEach(k=>{ const v = apost[k]; t = t.replace(new RegExp("\\b"+k+"\\b","gi"), v); }); t = t.replace(/En home/g,"L'home").replace(/Na dona/g,"La dona"); t = t.replace(/centre de els /gi,"centre dels ").replace(/centre de el /gi,"centre del "); t = t.replace(/de els /gi,"dels ").replace(/de el /gi,"del ").replace(/a el /gi,"al ").replace(/per el /gi,"pel "); t = t.replace(/ +/g," ").trim(); return t; }
 function _barrejar(arr){ const a = [...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+// FIX v19.2 - Limpia conectores duplicados y espacios: "Després, Després" / "Finalment, Per tant" / "Després,  va"
+function _netejarConnectorsDuplicats(text){
+  let t = text;
+  t = t.replace(/Després,\s*Després/gi, 'Després');
+  t = t.replace(/Després,\s*Aleshores/gi, 'Aleshores');
+  t = t.replace(/Després,\s*Més tard/gi, 'Més tard');
+  t = t.replace(/Finalment,\s*Després/gi, 'Finalment');
+  t = t.replace(/Finalment,\s*Per tant/gi, 'Finalment');
+  t = t.replace(/Finalment,\s*Aleshores/gi, 'Finalment');
+  t = t.replace(/Després,\s*Per tant/gi, 'Per tant');
+  t = t.replace(/,\s*,/g, ',');
+  t = t.replace(/\s+,/g, ',');
+  t = t.replace(/ +/g, ' ');
+  return t.trim();
+}
 function renderVocabLectura(){
   const c = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab'); if(!c) return;
   if(!lecturaActualVocab.length){ c.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p></div>'; return; }
@@ -175,28 +190,73 @@ async function generarLectura(){
   const nivell = getCurrentLevel(); const data = banco[nivell];
   if(!data || !data.plantillas || !data.plantillas.length){ const c=document.getElementById('lectura-texto'); if(c){ c.innerHTML='<p>No hi ha lectures per aquest nivell</p>'; c.style.display='block'; forcarLecturaVisible(); } return; }
   _lecturaUsades = new Set(); _lecturaConnectorsUsats = []; lecturaActualVocab = []; lecturaContext = {};
-  const llista = banco.personatges || ["La Laia","En Pau"]; let pers = llista[Math.floor(Math.random()*llista.length)]; nomPersonatge = pers;
+  // FIX v19.2 - personatges [] es truthy en JS, hay que comprobar .length
+  let llista = banco.personatges;
+  if(!llista || !llista.length) llista = ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc"];
+  let pers = llista[Math.floor(Math.random()*llista.length)];
+  if(!pers) pers = "La Laia";
+  nomPersonatge = pers;
+  localStorage.setItem('cat_nom_personatge', pers);
   let genereRaw = banco.personatges_detall ? banco.personatges_detall[pers] : 'm'; let genere = (typeof genereRaw === 'object' ? (genereRaw.g || 'm') : genereRaw) || 'm'; genere = genere.toLowerCase().startsWith('f') ? 'f' : 'm';
+  // FIX v19.2 - Si el nombre empieza por La/L' es femeni, si es En/El es masculi, aunque no haya personatges_detall
+  if(!banco.personatges_detall){
+    if(/^La\s|^L'/i.test(pers)) genere = 'f';
+    if(/^En\s|^El\s/i.test(pers)) genere = 'm';
+  }
   const pronom = genere === 'f' ? 'ella' : 'ell'; const genereParaula = banco.generes_paraules?.content?.[genere] || (genere === 'f' ? 'contenta' : 'content');
-  let plantilla = data.plantillas[Math.floor(Math.random()*data.plantillas.length)];
+  // FIX v19.2 - No repetir la misma plantilla 2 veces seguidas
+  let candidates = data.plantillas.filter(p => p.id !== _ultimaPlantillaId);
+  if(!candidates.length) candidates = data.plantillas;
+  let plantilla = candidates[Math.floor(Math.random()*candidates.length)];
+  _ultimaPlantillaId = plantilla.id;
   const regles = banco.regles_globals || {};
   let connectors = []; if(nivell === 'a1') connectors = banco.connectors_a1 || ["Després","Més tard","Al final","Aleshores","Per tant"]; else if(nivell === 'a2') connectors = banco.connectors_a2 || ["Després","Mentrestant","Més tard","Al final","De sobte","En canvi","Per tant"]; else connectors = banco.connectors_b1 || ["Després","Mentrestant","De sobte","Al final","Tanmateix","En canvi","D'altra banda","Per tant","En conclusió","Segons l'estudi"];
   const banc = plantilla.banc || {}; const vocabCat = banc.vocab_cat || []; const verbsCat = banc.verbs_cat || [];
   lecturaContext = { genere, personatge: pers, pronom, _vocabCat: vocabCat, _verbsCat: verbsCat, _plantillaNom: plantilla.name, _ultimaPlantillaId: plantilla.id };
-  _barrejar(vocabCat).slice(0,6).forEach(w=>{ _lecturaUsades.add(w); if(!lecturaActualVocab.includes(w)) lecturaActualVocab.push(w); });
+  // FIX v19.2 - NO meter vocab_cat en _lecturaUsades, eso quitaba palabras buenas del banc
+  // Solo vocab para mostrar, no para bloquear
+  _barrejar(vocabCat).slice(0,6).forEach(w=>{ if(!lecturaActualVocab.includes(w)) lecturaActualVocab.push(w); });
   function reempla(t){
     if(!t) return "";
     return t.replace(/\$\{(\w+)\}/g,(m,k)=>{
       if(k === 'personatge') return pers; if(k === 'pronom') return pronom; if(k === 'tema') return plantilla.topic_cat || plantilla.topic || plantilla.name; if(k === 'name') return plantilla.name || ''; if(k === 'estat') return genereParaula;
-      if(k.startsWith('conector')){ const num = parseInt(k.replace('conector','')) || 1; const chosen = _pickConector(connectors, num); lecturaContext[k] = chosen; return chosen; }
-      if((k === 'accio_grup' || k === 'accio_prota') && verbsCat.length && Math.random() < 0.6){ const verbo = verbsCat[Math.floor(Math.random()*verbsCat.length)]; const obj = banc.cosa1 ? banc.cosa1[Math.floor(Math.random()*banc.cosa1.length)] : 'el tema'; return `${verbo} ${obj}`; }
+      // FIX v19.2 - Conector: la seq ya trae "Després, / Finalment," -> devolver "" para no duplicar
+      if(k.startsWith('conector')){ return ""; }
+      // FIX v19.2 - BORRADO EL BLOQUE DEL 60% QUE HACIA "verbo + cosa1" = "menjar una botiga"
+      // Ahora accio_prota / accio_grup SIEMPRE vienen del banc, frase completa
       if(banc[k]) return _pickSenseRepetir(banc[k], k); if(lecturaContext[k]) return lecturaContext[k]; return k;
     });
   }
-  const tit = reempla(plantilla.titol); let frases = plantilla.seq.map(l=>reempla(l)); let textBase = frases.join(' '); textBase = _aplicarApostrofacio(textBase, regles); lecturaActualText = textBase;
-  const altres = _barrejar(data.plantillas.filter(p=>p.id !== plantilla.id)).slice(0,2);
+  const tit = reempla(plantilla.titol); let frases = plantilla.seq.map(l=>reempla(l)); let textBase = frases.join(' '); textBase = _aplicarApostrofacio(textBase, regles); textBase = _netejarConnectorsDuplicats(textBase); lecturaActualText = textBase;
+  // FIX v19.2 - Preguntas: distractores SOLO de esta plantilla, no de otras
   lecturaActualPreguntes = (plantilla.preguntes || []).map(p=>{
-    const correctaText = reempla(p.opcions?.[p.correcta||0] || ''); let distractores = altres.map(ap => { const b = ap.banc || {}; const arr = b.accio_final || ["una altra idea"]; return arr[Math.floor(Math.random()*arr.length)]; }); if(distractores.length < 2) distractores.push("una idea diferent del tema"); let opcions = _barrejar([correctaText, ...distractores.slice(0,2)]); let correctaIdx = opcions.indexOf(correctaText); return { q: reempla(p.q), opcions, correcta: correctaIdx };
+    const correctaText = reempla(p.opcions?.[p.correcta||0] || '');
+    let poolDistractores = [];
+    if(banc.accio_final) poolDistractores.push(...banc.accio_final);
+    if(banc.accio_grup) poolDistractores.push(...banc.accio_grup);
+    if(banc.accio_prota) poolDistractores.push(...banc.accio_prota);
+    // Quitar la correcta y duplicados, y pasar por reempla una sola vez
+    let vistos = new Set([correctaText]);
+    let distractores = [];
+    _barrejar(poolDistractores).forEach(raw => {
+      if(distractores.length >= 2) return;
+      const txt = reempla(raw);
+      if(!txt || vistos.has(txt)) return;
+      vistos.add(txt); distractores.push(txt);
+    });
+    // Fallback si esta plantilla tiene menos de 2 distractores: usar opciones de la pregunta, no otras plantillas
+    if(distractores.length < 2){
+      (p.opcions || []).forEach((op, idx) => {
+        if(distractores.length >= 2) return;
+        if(idx === (p.correcta||0)) return;
+        const txt = reempla(op);
+        if(txt && !vistos.has(txt)){ vistos.add(txt); distractores.push(txt); }
+      });
+    }
+    while(distractores.length < 2) distractores.push("una idea diferent del tema");
+    let opcions = _barrejar([correctaText, ...distractores.slice(0,2)]);
+    let correctaIdx = opcions.indexOf(correctaText);
+    return { q: reempla(p.q), opcions, correcta: correctaIdx };
   });
   const badge = `<span style="font-size:11px;background:#22c55e;color:#000;padding:2px 6px;border-radius:10px;margin-left:8px;">${plantilla.level || nivell.toUpperCase()} · ${plantilla.name} · ${plantilla.grammar_LAYA ? plantilla.grammar_LAYA[0] : ''} · ${vocabCat.length} paraules</span>`;
   const html = `<div class="lectura-card"><h3>${tit} ${badge}</h3><p class="lectura-text" style="line-height:1.7;font-size:16px;">${lecturaActualText}</p><div style="margin-top:10px;font-size:12px;color:#aaa;">Tema: ${plantilla.topic||''} | ${plantilla.topic_cat||''} | Vocabulari: ${vocabCat.slice(0,5).join(', ')}</div><div class="lectura-preguntes" style="margin-top:20px;">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" style="margin-top:8px;"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">🔄 Nova lectura (${data.plantillas.length} disponibles)</button></div>`;
@@ -213,4 +273,4 @@ function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)tots
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
 function renderBotiga(){const c=document.getElementById('botiga-contenidor');if(!c)return;if(!PACKS_BOTIGA||PACKS_BOTIGA.length===0){c.innerHTML=`<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;return;}c.innerHTML='';PACKS_BOTIGA.forEach(pack=>{let subs=[];if(pack.emojis.length>6){for(let i=0;i<pack.emojis.length;i+=6){const ch=pack.emojis.slice(i,i+6),num=Math.floor(i/6)+1,tot=Math.ceil(pack.emojis.length/6),preu=Math.ceil(pack.preu/tot);subs.push({id:`${pack.id}_p${num}`,nom:`${pack.nom} ${num}/${tot}`,descripcio:pack.descripcio,preu,emojis:ch});}}else subs=[{id:pack.id,nom:pack.nom,descripcio:pack.descripcio,preu:pack.preu,emojis:pack.emojis}];subs.forEach(sp=>{const comp=estat.compres.includes(sp.id) || estat.compres.includes(pack.id),card=document.createElement('div');card.className='capitol-card';card.innerHTML=`<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa;margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e=>e.emoji).join(' ')}</p><button class="btn ${comp?'btn-sec':''}" onclick="comprarPack('${sp.id}',${sp.preu})" ${comp?'disabled':''}>${comp?'Desbloquejat':'🪙 '+sp.preu}</button>`;c.appendChild(card);});});}
 function comprarPack(id,preu){if(estat.monedes<preu){mostrarMissatge('No tens prou monedes');return;}estat.monedes-=preu;estat.compres.push(id);NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();construirCategories();construirMapaDet();renderBotiga();renderDiccionari();mostrarMissatge('Pack desbloquejat!');}
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});} 
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});}
