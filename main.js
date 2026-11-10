@@ -1,4 +1,4 @@
-// main.js v19.3 PRESENTADOR - 50 PLANTILLAS KATLINGO - A1 15 + A2 25 + B1/B2 10 - Motor lectura v19.3 PRESENTADOR V3 + V2 - SOLO FIX LECTURA, RESTO IGUAL v19.2
+// main.js v20 LIMPIO - 50 PLANTILLAS KATLINGO - A1 15 + A2 25 + B1/B2 10 - Motor lectura v20 LIMPIO V3 LECTURA DIRECTA + VOCAB AMPLIAT + GRAMATICA POR PLANTILLA - RESTO IGUAL v19.3, NO TOCAR
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -133,7 +133,7 @@ function generarOpcionsMinijoc(solucio){
 function triarEmojiMinijoc(idx){vibrar();const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);document.getElementById('minijoc-triats').textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +5 🪙</p>`;estat.monedes+=5;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;if(estat.progres.frasesDesDeUltimNivell>=25&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);}NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
 
-// --- MOTOR LECTURA v19.3 PRESENTADOR - SOPORTA V3 LECTURA DIRECTA + V2 SEQ ---
+// --- MOTOR LECTURA v20 LIMPIO - V3 LECTURA DIRECTA + VOCAB AMPLIAT + GRAMATICA POR PLANTILLA - SIN V2 ---
 async function cargarBancoLectura(){
   if(BANCO_LECTURA && BANCO_LECTURA.a1 && BANCO_LECTURA.a1.plantillas) return BANCO_LECTURA;
   try{
@@ -155,30 +155,34 @@ async function cargarBancoLectura(){
   if(!nomPersonatge) inicialitzarNomPersonatgeDefault();
   return BANCO_LECTURA;
 }
-let _lecturaUsades = new Set(); let _lecturaConnectorsUsats = []; let _ultimaPlantillaId = null;
-function _pickSenseRepetir(arr, clau){ if(!arr || !arr.length) return clau; let disponibles = arr.filter(v => !_lecturaUsades.has(v)); if(!disponibles.length) disponibles = [...arr]; const v = disponibles[Math.floor(Math.random()*disponibles.length)]; _lecturaUsades.add(v); if(!lecturaActualVocab.includes(v)) lecturaActualVocab.push(v); return v; }
-function _pickConector(connectors, num){ let disponibles = connectors.filter(c => !_lecturaConnectorsUsats.includes(c)); if(!disponibles.length){ _lecturaConnectorsUsats = []; disponibles = [...connectors]; } let pool = disponibles; if(num === 1) pool = disponibles.filter(c => ["Després","Més tard","Aleshores","Mentrestant"].includes(c)); if(num >= 3) pool = disponibles.filter(c => ["Per tant","En conclusió","Tot i això","Per això","Tanmateix"].includes(c)); if(!pool.length) pool = disponibles; const chosen = pool[Math.floor(Math.random()*pool.length)]; _lecturaConnectorsUsats.push(chosen); return chosen; }
-function _aplicarApostrofacio(text, regles){ let t = text; const apost = regles.apostrofacio || {"a el":"al","de el":"del","per el":"pel","a els":"als","de els":"dels","per els":"pels","de un":"d'un","de una":"d'una"}; Object.keys(apost).sort((a,b)=>b.length-a.length).forEach(k=>{ const v = apost[k]; t = t.replace(new RegExp("\\b"+k+"\\b","gi"), v); }); t = t.replace(/En home/g,"L'home").replace(/Na dona/g,"La dona"); t = t.replace(/centre de els /gi,"centre dels ").replace(/centre de el /gi,"centre del "); t = t.replace(/de els /gi,"dels ").replace(/de el /gi,"del ").replace(/a el /gi,"al ").replace(/per el /gi,"pel "); t = t.replace(/ +/g," ").trim(); return t; }
+let _ultimaPlantillaId = null;
 function _barrejar(arr){ const a = [...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function _netejarConnectorsDuplicats(text){
-  let t = text;
-  t = t.replace(/Després,\s*Després/gi, 'Després');
-  t = t.replace(/Després,\s*Aleshores/gi, 'Aleshores');
-  t = t.replace(/Després,\s*Més tard/gi, 'Més tard');
-  t = t.replace(/Finalment,\s*Després/gi, 'Finalment');
-  t = t.replace(/Finalment,\s*Per tant/gi, 'Finalment');
-  t = t.replace(/Finalment,\s*Aleshores/gi, 'Finalment');
-  t = t.replace(/Després,\s*Per tant/gi, 'Per tant');
-  t = t.replace(/,\s*,/g, ',');
-  t = t.replace(/\s+,/g, ',');
-  t = t.replace(/ +/g, ' ');
-  return t.trim();
+function _reemplaLectura(t, pers, pronom){
+  if(!t) return "";
+  return t.replace(/\$\{(\w+)\}/g,(m,k)=>{
+    if(k==='personatge') return pers; if(k==='pronom') return pronom; return k;
+  });
 }
 function renderVocabLectura(){
   const c = document.getElementById('lectura-vocab-inner') || document.getElementById('lectura-vocab'); if(!c) return;
-  if(!lecturaActualVocab.length){ c.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p></div>'; return; }
-  const vocab = lecturaContext._vocabCat || lecturaActualVocab; const verbs = lecturaContext._verbsCat || [];
-  c.innerHTML = `<div style="padding:12px;"><h4 style="margin:10px 0 8px;">📚 Vocabulari d'aquesta lectura - ${lecturaContext._plantillaNom || ''}</h4><div class="vocab-grid">${vocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div></div>`).join('')}</div>${verbs.length ? `<h4 style="margin:16px 0 8px;">⚡ Verbs clau</h4><div class="vocab-grid">${verbs.map(w=>`<div class="vocab-card" style="border-color:#f59e0b;"><div class="vocab-word">${w}</div></div>`).join('')}</div>` : ''}<p style="font-size:12px;color:#aaa;margin-top:12px;">Cada plantilla té el seu propi vocabulari. Aquestes paraules només surten en aquest tema.</p></div>`;
+  if(!lecturaActualText){ c.innerHTML = '<div style="padding:20px;text-align:center;opacity:0.6"><p>Genera una lectura</p></div>'; return; }
+  const va = lecturaContext._vocabAmpliat;
+  const vocab = lecturaContext._vocabCat || lecturaActualVocab;
+  const verbs = lecturaContext._verbsCat || [];
+  if(!va){
+    c.innerHTML = `<div style="padding:12px;"><h4 style="margin:10px 0 8px;">📚 Vocabulari d'aquesta lectura - ${lecturaContext._plantillaNom || ''}</h4><div class="vocab-grid">${vocab.map(w=>`<div class="vocab-card"><div class="vocab-word">${w}</div></div>`).join('')}</div>${verbs.length ? `<h4 style="margin:16px 0 8px;">⚡ Verbs clau</h4><div class="vocab-grid">${verbs.map(w=>`<div class="vocab-card" style="border-color:#f59e0b;"><div class="vocab-word">${w}</div></div>`).join('')}</div>` : ''}<p style="font-size:12px;color:#aaa;margin-top:12px;">Cada plantilla té el seu propi vocabulari. Aquestes paraules només surten en aquest tema.</p></div>`;
+    return;
+  }
+  const bloc = (titol, arr, color) => arr && arr.length ? `<h4 style="margin:16px 0 8px;">${titol}</h4><div class="vocab-grid">${arr.map(w=>`<div class="vocab-card" style="border-color:${color}"><div class="vocab-word">${w}</div></div>`).join('')}</div>` : '';
+  c.innerHTML = `<div style="padding:12px;"><h3>📚 Vocabulari - ${lecturaContext._plantillaNom||''}</h3><p style="font-size:13px;color:#aaa;">Totes aquestes paraules surten a la lectura que acabes de llegir. No són d'un altre tema.</p>${bloc('📖 Noms', va.noms, '#22c55e')}${bloc('⚡ Verbs', va.verbs, '#f59e0b')}${bloc('🎨 Adjectius', va.adjectius, '#3b82f6')}${bloc('💬 Expressions', va.expressions, '#a855f7')}<button class="btn btn-primari" onclick="repassarVocab()" style="margin-top:16px;width:100%;">🔁 Repassar amb targetes</button><div id="vocab-repas" style="margin-top:12px;"></div></div>`;
+}
+function repassarVocab(){
+  const va = lecturaContext._vocabAmpliat; if(!va) return;
+  const totes = [...(va.noms||[]), ...(va.verbs||[]), ...(va.adjectius||[])];
+  if(!totes.length) return;
+  const w = totes[Math.floor(Math.random()*totes.length)];
+  const el = document.getElementById('vocab-repas');
+  if(el) el.innerHTML = `<div style="padding:16px;background:#222;border:2px solid #22c55e;border-radius:12px;text-align:center;"><div style="font-size:28px;font-weight:800;">${w}</div><div style="font-size:13px;color:#aaa;margin-top:6px;">Digues una frase amb aquesta paraula. Després, prem Repassar per una altra.</div></div>`;
 }
 async function generarLectura(){
   if(!gastarEnergia(30)){ alert('No tens energia'); return; }
@@ -186,80 +190,42 @@ async function generarLectura(){
   if(!banco){ const c=document.getElementById('lectura-texto'); if(c){ c.style.display='block'; forcarLecturaVisible(); } return; }
   const nivell = getCurrentLevel(); const data = banco[nivell];
   if(!data || !data.plantillas || !data.plantillas.length){ const c=document.getElementById('lectura-texto'); if(c){ c.innerHTML='<p>No hi ha lectures per aquest nivell</p>'; c.style.display='block'; forcarLecturaVisible(); } return; }
-  _lecturaUsades = new Set(); _lecturaConnectorsUsats = []; lecturaActualVocab = []; lecturaContext = {};
+  lecturaActualVocab = []; lecturaContext = {};
   let llista = banco.personatges;
   if(!llista || !llista.length) llista = ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc"];
   let pers = llista[Math.floor(Math.random()*llista.length)];
   if(!pers) pers = "La Laia";
   nomPersonatge = pers;
   localStorage.setItem('cat_nom_personatge', pers);
-  let genereRaw = banco.personatges_detall ? banco.personatges_detall[pers] : 'm'; let genere = (typeof genereRaw === 'object' ? (genereRaw.g || 'm') : genereRaw) || 'm'; genere = genere.toLowerCase().startsWith('f') ? 'f' : 'm';
-  if(!banco.personatges_detall){
+  let genere = 'm';
+  if(banco.personatges_detall && banco.personatges_detall[pers]){
+    const gRaw = banco.personatges_detall[pers]; genere = (typeof gRaw === 'object' ? (gRaw.g || 'm') : gRaw) || 'm';
+  } else {
     if(/^La\s|^L'/i.test(pers)) genere = 'f';
     if(/^En\s|^El\s/i.test(pers)) genere = 'm';
   }
-  const pronom = genere === 'f' ? 'ella' : 'ell'; const genereParaula = banco.generes_paraules?.content?.[genere] || (genere === 'f' ? 'contenta' : 'content');
+  genere = genere.toLowerCase().startsWith('f') ? 'f' : 'm';
+  const pronom = genere === 'f' ? 'ella' : 'ell';
   let candidates = data.plantillas.filter(p => p.id !== _ultimaPlantillaId);
   if(!candidates.length) candidates = data.plantillas;
   let plantilla = candidates[Math.floor(Math.random()*candidates.length)];
   _ultimaPlantillaId = plantilla.id;
-  const regles = banco.regles_globals || {};
-  let connectors = []; if(nivell === 'a1') connectors = banco.connectors_a1 || ["Després","Més tard","Al final","Aleshores","Per tant"]; else if(nivell === 'a2') connectors = banco.connectors_a2 || ["Després","Mentrestant","Més tard","Al final","De sobte","En canvi","Per tant"]; else connectors = banco.connectors_b1 || ["Després","Mentrestant","De sobte","Al final","Tanmateix","En canvi","D'altra banda","Per tant","En conclusió","Segons l'estudi"];
-  // PARCHE v19.3 - SOPORTA V3 (lectura, vocab) Y V2 (banc, vocab_cat, seq, titol)
-  const banc = plantilla.banc || {};
-  const vocabCat = plantilla.vocab || banc.vocab_cat || [];
-  const verbsCat = plantilla.verbs || banc.verbs_cat || [];
-  lecturaContext = { genere, personatge: pers, pronom, _vocabCat: vocabCat, _verbsCat: verbsCat, _plantillaNom: plantilla.name, _ultimaPlantillaId: plantilla.id };
+  // v20 LIMPIO - La plantilla ya trae todo: lectura, vocab, vocab_ampliat, gramatica, preguntes
+  const vocabCat = plantilla.vocab || [];
+  const verbsCat = plantilla.verbs || [];
+  const vocabAmpliat = plantilla.vocab_ampliat || null;
+  const gramaticaPlantilla = plantilla.gramatica || null;
+  lecturaContext = { genere, personatge: pers, pronom, _vocabCat: vocabCat, _verbsCat: verbsCat, _vocabAmpliat: vocabAmpliat, _gramatica: gramaticaPlantilla, _plantillaNom: plantilla.name, _plantillaId: plantilla.id, _ultimaPlantillaId: plantilla.id };
   _barrejar(vocabCat).slice(0,6).forEach(w=>{ if(!lecturaActualVocab.includes(w)) lecturaActualVocab.push(w); });
-  function reempla(t){
-    if(!t) return "";
-    return t.replace(/\$\{(\w+)\}/g,(m,k)=>{
-      if(k === 'personatge') return pers; if(k === 'pronom') return pronom; if(k === 'tema') return plantilla.topic_cat || plantilla.topic || plantilla.name; if(k === 'name') return plantilla.name || ''; if(k === 'estat') return genereParaula;
-      if(k.startsWith('conector')){ return ""; }
-      if(banc[k]) return _pickSenseRepetir(banc[k], k); if(lecturaContext[k]) return lecturaContext[k]; return k;
-    });
-  }
-  // PARCHE v19.3 - PRESENTADOR: Si tiene lectura directa, la muestra tal cual, no monta seq
-  let textBase = "";
-  let tit = plantilla.name || plantilla.titol || "Lectura";
-  if(plantilla.lectura){
-    textBase = plantilla.lectura;
-  } else if(plantilla.seq){
-    const frases = plantilla.seq.map(l=>reempla(l));
-    textBase = frases.join(' ');
-    textBase = _aplicarApostrofacio(textBase, regles);
-    textBase = _netejarConnectorsDuplicats(textBase);
-    tit = reempla(plantilla.titol || plantilla.name || "Lectura");
-  } else {
-    textBase = "No hi ha text per aquesta lectura.";
-  }
+  let textBase = plantilla.lectura ? _reemplaLectura(plantilla.lectura, pers, pronom) : "No hi ha text per aquesta lectura.";
+  let tit = plantilla.name || "Lectura";
   lecturaActualText = textBase;
   lecturaActualPreguntes = (plantilla.preguntes || []).map(p=>{
-    const correctaText = reempla(p.opcions?.[p.correcta||0] || '');
-    let poolDistractores = [];
-    if(banc.accio_final) poolDistractores.push(...banc.accio_final);
-    if(banc.accio_grup) poolDistractores.push(...banc.accio_grup);
-    if(banc.accio_prota) poolDistractores.push(...banc.accio_prota);
-    let vistos = new Set([correctaText]);
-    let distractores = [];
-    // V3: primero usa las opciones de la propia pregunta, no otras plantillas
-    (p.opcions || []).forEach((op, idx) => {
-      if(distractores.length >= 2) return;
-      if(idx === (p.correcta||0)) return;
-      const txt = reempla(op);
-      if(txt && !vistos.has(txt)){ vistos.add(txt); distractores.push(txt); }
-    });
-    // V2: si faltan, usa el banc viejo
-    _barrejar(poolDistractores).forEach(raw => {
-      if(distractores.length >= 2) return;
-      const txt = reempla(raw);
-      if(!txt || vistos.has(txt)) return;
-      vistos.add(txt); distractores.push(txt);
-    });
-    while(distractores.length < 2) distractores.push("una idea diferent del tema");
-    let opcions = _barrejar([correctaText, ...distractores.slice(0,2)]);
+    const opcionsBrutes = (p.opcions || []).map(op=>_reemplaLectura(op, pers, pronom));
+    const correctaText = opcionsBrutes[p.correcta||0] || '';
+    let opcions = _barrejar(opcionsBrutes);
     let correctaIdx = opcions.indexOf(correctaText);
-    return { q: reempla(p.q), opcions, correcta: correctaIdx };
+    return { q: _reemplaLectura(p.q, pers, pronom), opcions, correcta: correctaIdx };
   });
   const badge = `<span style="font-size:11px;background:#22c55e;color:#000;padding:2px 6px;border-radius:10px;margin-left:8px;">${plantilla.level || nivell.toUpperCase()} · ${plantilla.name} · ${vocabCat.length} paraules</span>`;
   const html = `<div class="lectura-card"><h3>${tit} ${badge}</h3><p class="lectura-text" style="line-height:1.7;font-size:16px;">${lecturaActualText}</p><div style="margin-top:10px;font-size:12px;color:#aaa;">Tema: ${plantilla.topic||''} | ${plantilla.topic_cat||''} | Vocabulari: ${vocabCat.slice(0,5).join(', ')}</div><div class="lectura-preguntes" style="margin-top:20px;">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" style="margin-top:8px;"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">🔄 Nova lectura (${data.plantillas.length} disponibles)</button></div>`;
@@ -270,20 +236,20 @@ function slugGramatica(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'
 async function generarGramatica(){
   const cont=document.getElementById('lectura-gramatica-inner')||document.getElementById('lectura-gramatica');
   if(!cont) return;
-  // PARCHE v19.3 - Gramática sigue activa aunque no haya gramatica.guia en V3, usa la lectura actual
-  const banco=await cargarBancoLectura();
-  const G = banco?.gramatica?.guia || null;
-  if(!G){
-    if(!lecturaActualText){ cont.innerHTML=`<div style="padding:20px;"><p>Genera primer una lectura</p></div>`; return; }
-    cont.innerHTML=`<div style="padding:12px;"><div class="grammar-card"><div class="grammar-title">Gramàtica contextual - ${lecturaContext._plantillaNom||''}</div><div class="grammar-explanation">${lecturaActualText.slice(0,300)}...</div><p style="font-size:12px;color:#aaa;margin-top:10px;">Vocabulari: ${(lecturaContext._vocabCat||[]).join(', ')}</p></div><div style="display:flex;gap:8px;margin-top:12px;"><button class="btn btn-primari" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn btn-sec" onclick="setGramaticaMode('guia')">Guia</button></div></div>`;
+  if(!lecturaActualText){ cont.innerHTML=`<div style="padding:20px;"><p>Genera primer una lectura</p></div>`; return; }
+  const g = lecturaContext._gramatica;
+  const btns = `<div style="display:flex;gap:8px;margin-bottom:15px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;
+  if(!g){
+    cont.innerHTML = btns + `<div style="padding:12px;"><div class="grammar-card"><div class="grammar-title">Gramàtica contextual - ${lecturaContext._plantillaNom||''}</div><div class="grammar-explanation">${lecturaActualText.slice(0,300)}...</div><p style="font-size:12px;color:#aaa;margin-top:10px;">Vocabulari: ${(lecturaContext._vocabCat||[]).join(', ')}</p></div></div>`;
     return;
   }
-  const keys=Object.keys(G);let h=`<div style="display:flex;gap:8px;margin-bottom:15px;"><button class="btn ${gramaticaMode==='contextual'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('contextual')">Contextual</button><button class="btn ${gramaticaMode==='guia'?'btn-primari':'btn-sec'}" onclick="setGramaticaMode('guia')">Guia</button></div>`;if(gramaticaMode==='contextual'){if(!lecturaActualText){cont.innerHTML=h+`<div style="padding:20px;"><p>Genera primer una lectura</p></div>`;return;}h+=`<div class="grammar-card"><div class="grammar-title">Gramàtica contextual</div><div class="grammar-explanation">${lecturaActualText.slice(0,200)}...</div></div>`;}else{if(!gramaticaTemaSeleccionat){h+=`<div class="emoji-grid">`;keys.forEach(k=>{const t=G[k];h+=`<div class="emoji-item" onclick="seleccionarTemaGramatica('${slugGramatica(k)}')" style="cursor:pointer;"><div class="emoji-large">${t.emoji||'📚'}</div><div class="emoji-name">${t.titol}</div></div>`;});h+=`</div>`;}else{h+=`<button class="btn btn-sec" onclick="tornarAGuia()">← Tornar</button><div class="grammar-card"><div class="grammar-title">Tema</div></div>`;}}cont.innerHTML=h;
+  const exemplesHtml = (g.exemples||[]).map(e=>`<li style="margin:6px 0;">${e}</li>`).join('');
+  cont.innerHTML = btns + `<div style="padding:12px;"><h3>📚 Gramàtica - ${lecturaContext._plantillaNom||''}</h3><div class="grammar-card" style="border-left:4px solid #22c55e;"><div class="grammar-title" style="font-size:18px;">${g.titol||''}</div><div class="grammar-explanation" style="margin:10px 0;">${g.regla||''}</div>${exemplesHtml ? `<h4>✅ Exemples d'aquesta lectura</h4><ul>${exemplesHtml}</ul>` : ''}${g.error_comu ? `<div style="background:#3f1d1d;padding:10px;border-radius:8px;margin-top:12px;"><b>⚠️ Error comú:</b> ${g.error_comu}</div>` : ''}${g.practica ? `<div style="background:#1e293b;padding:10px;border-radius:8px;margin-top:10px;"><b>✍️ Practica:</b> ${g.practica}</div>` : ''}</div></div>`;
 }
 function setGramaticaMode(m){gramaticaMode=m;gramaticaTemaSeleccionat=null;generarGramatica();}
 function seleccionarTemaGramatica(s){gramaticaTemaSeleccionat=s;generarGramatica();}
 function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
-window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;
+window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;
 function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)totsElsTips=dadesTips[n]||[];mostrarTipRandom();}
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
 function renderBotiga(){const c=document.getElementById('botiga-contenidor');if(!c)return;if(!PACKS_BOTIGA||PACKS_BOTIGA.length===0){c.innerHTML=`<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;return;}c.innerHTML='';PACKS_BOTIGA.forEach(pack=>{let subs=[];if(pack.emojis.length>6){for(let i=0;i<pack.emojis.length;i+=6){const ch=pack.emojis.slice(i,i+6),num=Math.floor(i/6)+1,tot=Math.ceil(pack.emojis.length/6),preu=Math.ceil(pack.preu/tot);subs.push({id:`${pack.id}_p${num}`,nom:`${pack.nom} ${num}/${tot}`,descripcio:pack.descripcio,preu,emojis:ch});}}else subs=[{id:pack.id,nom:pack.nom,descripcio:pack.descripcio,preu:pack.preu,emojis:pack.emojis}];subs.forEach(sp=>{const comp=estat.compres.includes(sp.id) || estat.compres.includes(pack.id),card=document.createElement('div');card.className='capitol-card';card.innerHTML=`<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa;margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e=>e.emoji).join(' ')}</p><button class="btn ${comp?'btn-sec':''}" onclick="comprarPack('${sp.id}',${sp.preu})" ${comp?'disabled':''}>${comp?'Desbloquejat':'🪙 '+sp.preu}</button>`;c.appendChild(card);});});}
