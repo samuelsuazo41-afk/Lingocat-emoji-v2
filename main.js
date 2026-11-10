@@ -1,4 +1,4 @@
-// main.js v21.3 COMPLET - 54 PLANTILLAS MINIJOC - A1 1-33 VERD + A2 34-66 TARONJA + B1 67-100 BLAU - Motor lectura v21 + PARCHE MINIJOC v21.3 NETEJA FINAL GENERICA El/La -> el/la + a el -> al + troba numero -> troba objecte numero - RESTO IGUAL v21.2, NO TOCAR
+// main.js v21.4 COMPLET - 54 PLANTILLAS - A1 1-33 VERD + A2 34-66 TARONJA + B1 67-100 BLAU - PARCHE v21.4: CATS_SENSE_ARTICLE reduit + FLEXIO EMOCIO genere/nombre + formatDireccio net + so/simbol/menjar/festa AMB article - RESTO IGUAL v21.3
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -32,7 +32,8 @@ let minijoc={fraseObjectiu:null,emojisTriats:[],emojisDisponibles:[]}; let minij
 const INTRO_SLIDES=[{emoji:"🙀",titol:"Benvingut a Cat Lingo",text:"Aprèn català en 5 minuts al dia."},{emoji:"⛷️",titol:"Vocabulari visual",text:"Toca emojis i aprèn paraules."},{emoji:"📝",titol:"Gramàtica fàcil",text:"Explicacions curtes amb exemples."},{emoji:"📚",titol:"Lectures adaptades",text:"Textos al teu nivell A1, A2 o B1."},{emoji:"🚀",titol:"A jugar!",text:"Prem Saltar per començar"}];
 let gramaticaMode='contextual'; let gramaticaTemaSeleccionat=null;
 let MAPA_DET = {};
-const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','forma_color','so','simbol','festa','emocio','clima','accio','menjar']);
+// v21.4: NOMES aquestes van sense article. so, simbol, festa, menjar JA PORTEN article: sent l'altaveu, marca correcte, menja la poma, rep el regal
+const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','forma_color','emocio','clima','accio']);
 function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
 function vibrar(){if(navigator.vibrate)navigator.vibrate(50);}
 function mostrarMissatge(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#22c55e;color:#000;padding:12px 20px;border-radius:8px;font-weight:700;z-index:10000;';document.body.appendChild(d);setTimeout(()=>d.remove(),2000);}
@@ -41,7 +42,6 @@ function regenerarEnergia(){const a=Date.now(),d=Math.floor((a-estat.ultimaRecar
 function iniciarRegeneracioAutomatica(){setInterval(()=>{if(estat.progres.energia<100){estat.progres.energia=Math.min(100,estat.progres.energia+30);guardarEstat();actualitzarUI();if(document.getElementById('tab-missio')?.classList.contains('active'))renderMissio();}},5*60*1000);}
 function guardarEstat(){localStorage.setItem('cat_monedes',estat.monedes);localStorage.setItem('cat_compres',JSON.stringify(estat.compres));localStorage.setItem('cat_nivell',estat.progres.nivellActualMapa);localStorage.setItem('cat_encerts',estat.progres.encerts);localStorage.setItem('cat_frasesContador',estat.progres.frasesDesDeUltimNivell);localStorage.setItem('cat_energia',estat.progres.energia);localStorage.setItem('cat_ultimaEnergia',estat.ultimaRecargaEnergia);localStorage.setItem('cat_intro',JSON.stringify(estat.introVist));localStorage.setItem('cat_desbloquejats',JSON.stringify(estat.desbloquejats));localStorage.setItem('cat_nivell_minijoc',NIVELL_MINIJOC.nivelActual);localStorage.setItem('cat_personatge',estat.personatgeTriat);localStorage.setItem('cat_xp',estat.progres.xp);}
 function getCurrentLevel(){if(estat.progres.nivellActualMapa<=33)return'a1';if(estat.progres.nivellActualMapa<=66)return'a2';return'b1';}
-// --- PORTADA MAPA 1-100 EN 3 COLORS: A1 VERD / A2 TARONJA / B1 BLAU ---
 function getGrupNivell(n){ if(n<=33) return 'A1'; if(n<=66) return 'A2'; return 'B1'; }
 function getColorNivell(n){ if(n<=33) return '#22c55e'; if(n<=66) return '#f59e0b'; return '#3b82f6'; }
 function getFonsNivell(n){ if(n<=33) return 'rgba(34,197,94,0.15)'; if(n<=66) return 'rgba(245,158,11,0.15)'; return 'rgba(59,130,246,0.15)'; }
@@ -106,31 +106,36 @@ function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');
 function obtenirArticleNet(emoji){ const base = quitarSkinTone(emoji); const info = MAPA_DET[base]; if(!info) return emoji; if(CATS_SENSE_ARTICLE.has(info.categoria)) return info.nom; let det = info.det; let nom = info.nom; if(det==="En"){ if(nom.toLowerCase()==="home") det="L'"; else det="El"; } if(nom.toLowerCase()==="dona" && det==="Na") det="La"; if(det==="El" && /^[aeiouàèéíòóú]/i.test(nom)) det="L'"; if(det==="L'" || det==="l'") return det+nom; return det+" "+nom; }
 function obtenirNomSenseArticle(emoji){ const b=quitarSkinTone(emoji); const i=MAPA_DET[b]; return i?i.nom:emoji; }
 function obtenirArticle(emoji){ return obtenirArticleNet(emoji); }
-// --- MINIJOC v21.3 REPARAT ---
-function formatDireccio(elegido){
-  const info = MAPA_DET[quitarSkinTone(elegido)]; if(!info) return obtenirNomSenseArticle(elegido);
-  const nom = info.nom; const det = info.det || '';
-  if(!det) return nom;
-  if(det==="L'" || det==="l'") return "a l'" + nom;
-  return "a " + det.toLowerCase() + " " + nom;
-}
-function formatTemps(elegido){
-  const nom = obtenirNomSenseArticle(elegido);
+// --- MINIJOC v21.4 ---
+function flexionarEmocio(nom, genere, plural){
+  nom = (nom||'').toLowerCase();
+  if(nom==='riure') return plural?'rient':'rient';
+  if(nom==='somriure') return plural?'somrient':'somrient';
+  if(nom==='feliç') return plural ? (genere==='f'?'felices':'feliços') : 'feliç';
+  if(nom==='content') return plural ? (genere==='f'?'contentes':'contents') : (genere==='f'?'contenta':'content');
+  if(nom==='trist') return plural ? (genere==='f'?'tristes':'trists') : (genere==='f'?'trista':'trist');
+  if(nom==='enfadat') return plural ? (genere==='f'?'enfadades':'enfadats') : (genere==='f'?'enfadada':'enfadat');
+  if(nom==='enamorat') return plural ? (genere==='f'?'enamorades':'enamorats') : (genere==='f'?'enamorada':'enamorat');
   return nom;
 }
-// PARCHE v21.3: neteja final generica. Nomes la primera paraula queda en majuscula. La resta: El->el, La->la, L'->l', a el->al, de el->del
+function formatDireccio(elegido){
+  const info = MAPA_DET[quitarSkinTone(elegido)]; if(!info) return obtenirNomSenseArticle(elegido);
+  const nom = info.nom;
+  if(nom==='amunt' || nom==='avall' || nom==='amunt a la dreta' || nom==='avall a la dreta' || nom==='avall a l\'esquerra' || nom==='amunt a l\'esquerra') return nom;
+  if(nom==='dreta') return 'a la dreta';
+  if(nom==='esquerra') return "a l'esquerra";
+  return nom;
+}
+function formatTemps(elegido){ return obtenirNomSenseArticle(elegido); }
 function netejarFraseFinal(text){
   text = text.replace(/En home/g, "L'home").replace(/Na dona/g, 'La dona');
-  // Defensa p5_4 vella: troba set L'ordinador -> troba l'ordinador numero set
   text = text.replace(/\btroba (zero|dos|tres|quatre|cinc|sis|set|vuit|nou|deu) (El |La |L')([A-Za-zÀ-ÿ]+)/g, function(m,num,art,nom){ return 'troba ' + art.toLowerCase() + nom + ' número ' + num; });
-  // Separa primera paraula (es queda tal qual) i neteja la resta
   const parts = text.split(' ');
   if(parts.length > 1){
     const cap = parts[0];
     let cua = parts.slice(1).join(' ');
     cua = cua.replace(/\bEl\b/g,'el').replace(/\bLa\b/g,'la').replace(/\bL'/g,"l'").replace(/\bEn\b/g,'en');
     cua = cua.replace(/\ba el\b/g,'al').replace(/\bde el\b/g,'del').replace(/\bal el\b/g,'al');
-    cua = cua.replace(/\ba la\b/g,'a la').replace(/\bamb el\b/g,'amb el').replace(/\bamb la\b/g,'amb la');
     text = cap + ' ' + cua;
   }
   text = text.replace(/ +/g,' ').trim();
@@ -141,6 +146,8 @@ function netejarFraseFinal(text){
 function generarFraseDinamicaLogica(pl, jug){
   let text=pl.text; let sol=[]; let usats=new Set(); let claus = pl.roles? Object.keys(pl.roles) : [];
   if(!pl.roles){ const all = text.match(/\{(\w+)\}/g) || []; all.forEach(m=>{ const k=m.replace(/[{}]/g,''); if(!claus.includes(k)) claus.push(k); }); }
+  let generePersona='m'; let esPluralEmocio=false;
+  if(pl.roles && (pl.roles.persona_2 || (pl.text||'').includes('{persona_2}'))) esPluralEmocio=true;
   for(const rol of claus){
     const baseKey = rol.split('_')[0]; const cats = pl.roles? pl.roles[rol] : [baseKey]; let pool=[];
     cats.forEach(cat=>{ (CATEGORIES_TOTS[cat]||[]).forEach(o=>{ const em=o.emoji||o; const base=quitarSkinTone(em); if(!usats.has(base)) pool.push(em); }); (BIBLIOTECA_POR_CAT[cat]||[]).forEach(e=>{ const base=quitarSkinTone(e.emoji); if(!usats.has(base)){ if(!pool.some(p=>quitarSkinTone(p)===base)) pool.push(e.emoji); } }); });
@@ -153,11 +160,15 @@ function generarFraseDinamicaLogica(pl, jug){
       });
       if(filtrat.length>0) pool = filtrat;
     }
-    if(pool.length===0){
-      text = text.replaceAll('{'+rol+'}', '');
-      continue;
+    if(pool.length===0){ text = text.replaceAll('{'+rol+'}', ''); continue; }
+    const elegido=pool[Math.floor(Math.random()*pool.length)]; usats.add(quitarSkinTone(elegido)); const infoElegido = MAPA_DET[quitarSkinTone(elegido)]; const categoriaElegida = infoElegido ? infoElegido.categoria : baseKey;
+    if(rol==='persona' && infoElegido) generePersona = infoElegido.genere || 'm';
+    if(categoriaElegida==='emocio'){
+      const flex = flexionarEmocio(obtenirNomSenseArticle(elegido), generePersona, esPluralEmocio);
+      text = text.replaceAll('{'+rol+'}', flex);
+      sol.push(elegido); continue;
     }
-    const elegido=pool[Math.floor(Math.random()*pool.length)]; usats.add(quitarSkinTone(elegido)); const infoElegido = MAPA_DET[quitarSkinTone(elegido)]; const categoriaElegida = infoElegido ? infoElegido.categoria : baseKey; const esSenseArticle = infoElegido && CATS_SENSE_ARTICLE.has(infoElegido.categoria); let reemplazo = esSenseArticle? obtenirNomSenseArticle(elegido) : obtenirArticleNet(elegido);
+    const esSenseArticle = infoElegido && CATS_SENSE_ARTICLE.has(infoElegido.categoria); let reemplazo = esSenseArticle? obtenirNomSenseArticle(elegido) : obtenirArticleNet(elegido);
     const esNumeroU = (categoriaElegida==='numero' && (obtenirNomSenseArticle(elegido)==='u' || obtenirNomSenseArticle(elegido)==='un'));
     if(categoriaElegida==='direccio'){
       const dir = formatDireccio(elegido);
@@ -207,9 +218,7 @@ function generarOpcionsMinijoc(solucio){
 }
 function triarEmojiMinijoc(idx){vibrar();if(!minijoc.fraseObjectiu) return;const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(!emoji) return;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);const el=document.getElementById('minijoc-triats');if(el) el.textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +5 🪙</p>`;estat.monedes+=5;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;if(estat.progres.frasesDesDeUltimNivell>=25&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);}NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
-// --- FI MINIJOC REPARAT ---
-
-// --- MOTOR LECTURA v21 LIMPIO ---
+// --- FI MINIJOC ---
 async function cargarBancoLectura(){
   if(BANCO_LECTURA && BANCO_LECTURA.a1 && BANCO_LECTURA.a1.plantillas) return BANCO_LECTURA;
   try{
