@@ -1,4 +1,4 @@
-// main.js v21.2 COMPLET - 54 PLANTILLAS MINIJOC - A1 1-33 VERD + A2 34-66 TARONJA + B1 67-100 BLAU - Motor lectura v21 + PARCHE MINIJOC v21.2 COHERENCIA + NO_COMBINA + \b + EN NOI -> EL NOI - RESTO IGUAL v21, NO TOCAR
+// main.js v21.3 COMPLET - 54 PLANTILLAS MINIJOC - A1 1-33 VERD + A2 34-66 TARONJA + B1 67-100 BLAU - Motor lectura v21 + PARCHE MINIJOC v21.3 NETEJA FINAL GENERICA El/La -> el/la + a el -> al + troba numero -> troba objecte numero - RESTO IGUAL v21.2, NO TOCAR
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -106,7 +106,7 @@ function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');
 function obtenirArticleNet(emoji){ const base = quitarSkinTone(emoji); const info = MAPA_DET[base]; if(!info) return emoji; if(CATS_SENSE_ARTICLE.has(info.categoria)) return info.nom; let det = info.det; let nom = info.nom; if(det==="En"){ if(nom.toLowerCase()==="home") det="L'"; else det="El"; } if(nom.toLowerCase()==="dona" && det==="Na") det="La"; if(det==="El" && /^[aeiouàèéíòóú]/i.test(nom)) det="L'"; if(det==="L'" || det==="l'") return det+nom; return det+" "+nom; }
 function obtenirNomSenseArticle(emoji){ const b=quitarSkinTone(emoji); const i=MAPA_DET[b]; return i?i.nom:emoji; }
 function obtenirArticle(emoji){ return obtenirArticleNet(emoji); }
-// --- MINIJOC v21.2 REPARAT ---
+// --- MINIJOC v21.3 REPARAT ---
 function formatDireccio(elegido){
   const info = MAPA_DET[quitarSkinTone(elegido)]; if(!info) return obtenirNomSenseArticle(elegido);
   const nom = info.nom; const det = info.det || '';
@@ -117,6 +117,26 @@ function formatDireccio(elegido){
 function formatTemps(elegido){
   const nom = obtenirNomSenseArticle(elegido);
   return nom;
+}
+// PARCHE v21.3: neteja final generica. Nomes la primera paraula queda en majuscula. La resta: El->el, La->la, L'->l', a el->al, de el->del
+function netejarFraseFinal(text){
+  text = text.replace(/En home/g, "L'home").replace(/Na dona/g, 'La dona');
+  // Defensa p5_4 vella: troba set L'ordinador -> troba l'ordinador numero set
+  text = text.replace(/\btroba (zero|dos|tres|quatre|cinc|sis|set|vuit|nou|deu) (El |La |L')([A-Za-zÀ-ÿ]+)/g, function(m,num,art,nom){ return 'troba ' + art.toLowerCase() + nom + ' número ' + num; });
+  // Separa primera paraula (es queda tal qual) i neteja la resta
+  const parts = text.split(' ');
+  if(parts.length > 1){
+    const cap = parts[0];
+    let cua = parts.slice(1).join(' ');
+    cua = cua.replace(/\bEl\b/g,'el').replace(/\bLa\b/g,'la').replace(/\bL'/g,"l'").replace(/\bEn\b/g,'en');
+    cua = cua.replace(/\ba el\b/g,'al').replace(/\bde el\b/g,'del').replace(/\bal el\b/g,'al');
+    cua = cua.replace(/\ba la\b/g,'a la').replace(/\bamb el\b/g,'amb el').replace(/\bamb la\b/g,'amb la');
+    text = cap + ' ' + cua;
+  }
+  text = text.replace(/ +/g,' ').trim();
+  if(text.length>0) text = text.charAt(0).toUpperCase()+text.slice(1);
+  text = text.replace(/\{[^}]+\}/g, '').replace(/ +/g,' ').trim();
+  return text;
 }
 function generarFraseDinamicaLogica(pl, jug){
   let text=pl.text; let sol=[]; let usats=new Set(); let claus = pl.roles? Object.keys(pl.roles) : [];
@@ -166,7 +186,8 @@ function generarFraseDinamicaLogica(pl, jug){
     else { text=text.replaceAll('{'+rol+'}', reemplazo); }
     sol.push(elegido);
   }
-  text=text.replace(/En home/g, "L'home").replace(/Na dona/g, 'La dona'); text=text.replace(/\bal El /gi,'al ').replace(/\ba La /gi,'a la ').replace(/\bamb El /g,'amb el ').replace(/\bamb La /g,'amb la '); text=text.replace(/ +/g,' ').trim(); if(text.length>0) text=text.charAt(0).toUpperCase()+text.slice(1); text=text.replace(/\{[^}]+\}/g, ''); text=text.replace(/ +/g,' ').trim(); return {text, solucio:sol};
+  text = netejarFraseFinal(text);
+  return {text, solucio:sol};
 }
 function generarFraseDinamica(pl, jug){ return generarFraseDinamicaLogica(pl, jug); }
 function novaFraseMinijoc(){
