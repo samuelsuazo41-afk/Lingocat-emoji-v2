@@ -1,4 +1,4 @@
-// main.js v21.4 COMPLET - 54 PLANTILLAS - A1 1-33 VERD + A2 34-66 TARONJA + B1 67-100 BLAU - PARCHE v21.4: CATS_SENSE_ARTICLE reduit + FLEXIO EMOCIO genere/nombre + formatDireccio net + so/simbol/menjar/festa AMB article - RESTO IGUAL v21.3
+// main.js v22 COMPLET - 54 PLANTILLAS - A1 1-33 VERD + A2 34-66 TARONJA + B1 67-100 BLAU - PARCHE v22: llegeix permet (blanca) + esport SENSE article + forma_color SEMPRE amb article + emocio plural mixt + compta fins a u + Són la una -> És la una - RESTO IGUAL v21.4
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -32,8 +32,8 @@ let minijoc={fraseObjectiu:null,emojisTriats:[],emojisDisponibles:[]}; let minij
 const INTRO_SLIDES=[{emoji:"🙀",titol:"Benvingut a Cat Lingo",text:"Aprèn català en 5 minuts al dia."},{emoji:"⛷️",titol:"Vocabulari visual",text:"Toca emojis i aprèn paraules."},{emoji:"📝",titol:"Gramàtica fàcil",text:"Explicacions curtes amb exemples."},{emoji:"📚",titol:"Lectures adaptades",text:"Textos al teu nivell A1, A2 o B1."},{emoji:"🚀",titol:"A jugar!",text:"Prem Saltar per començar"}];
 let gramaticaMode='contextual'; let gramaticaTemaSeleccionat=null;
 let MAPA_DET = {};
-// v21.4: NOMES aquestes van sense article. so, simbol, festa, menjar JA PORTEN article: sent l'altaveu, marca correcte, menja la poma, rep el regal
-const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','forma_color','emocio','clima','accio']);
+// v22: forma_color FORA (al teu categories tots tenen det: El -> veu el cercle vermell). esport DINS (juga a ping-pong, sense article). so, simbol, festa, menjar JA PORTEN article segons det.
+const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','emocio','clima','accio','esport']);
 function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
 function vibrar(){if(navigator.vibrate)navigator.vibrate(50);}
 function mostrarMissatge(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#22c55e;color:#000;padding:12px 20px;border-radius:8px;font-weight:700;z-index:10000;';document.body.appendChild(d);setTimeout(()=>d.remove(),2000);}
@@ -106,11 +106,11 @@ function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');
 function obtenirArticleNet(emoji){ const base = quitarSkinTone(emoji); const info = MAPA_DET[base]; if(!info) return emoji; if(CATS_SENSE_ARTICLE.has(info.categoria)) return info.nom; let det = info.det; let nom = info.nom; if(det==="En"){ if(nom.toLowerCase()==="home") det="L'"; else det="El"; } if(nom.toLowerCase()==="dona" && det==="Na") det="La"; if(det==="El" && /^[aeiouàèéíòóú]/i.test(nom)) det="L'"; if(det==="L'" || det==="l'") return det+nom; return det+" "+nom; }
 function obtenirNomSenseArticle(emoji){ const b=quitarSkinTone(emoji); const i=MAPA_DET[b]; return i?i.nom:emoji; }
 function obtenirArticle(emoji){ return obtenirArticleNet(emoji); }
-// --- MINIJOC v21.4 ---
+// --- MINIJOC v22 ---
 function flexionarEmocio(nom, genere, plural){
   nom = (nom||'').toLowerCase();
-  if(nom==='riure') return plural?'rient':'rient';
-  if(nom==='somriure') return plural?'somrient':'somrient';
+  if(nom==='riure') return 'rient';
+  if(nom==='somriure') return 'somrient';
   if(nom==='feliç') return plural ? (genere==='f'?'felices':'feliços') : 'feliç';
   if(nom==='content') return plural ? (genere==='f'?'contentes':'contents') : (genere==='f'?'contenta':'content');
   if(nom==='trist') return plural ? (genere==='f'?'tristes':'trists') : (genere==='f'?'trista':'trist');
@@ -129,6 +129,7 @@ function formatDireccio(elegido){
 function formatTemps(elegido){ return obtenirNomSenseArticle(elegido); }
 function netejarFraseFinal(text){
   text = text.replace(/En home/g, "L'home").replace(/Na dona/g, 'La dona');
+  text = text.replace(/^Són la una\b/, 'És la una').replace(/^Són la una i/, 'És la una i');
   text = text.replace(/\btroba (zero|dos|tres|quatre|cinc|sis|set|vuit|nou|deu) (El |La |L')([A-Za-zÀ-ÿ]+)/g, function(m,num,art,nom){ return 'troba ' + art.toLowerCase() + nom + ' número ' + num; });
   const parts = text.split(' ');
   if(parts.length > 1){
@@ -146,11 +147,20 @@ function netejarFraseFinal(text){
 function generarFraseDinamicaLogica(pl, jug){
   let text=pl.text; let sol=[]; let usats=new Set(); let claus = pl.roles? Object.keys(pl.roles) : [];
   if(!pl.roles){ const all = text.match(/\{(\w+)\}/g) || []; all.forEach(m=>{ const k=m.replace(/[{}]/g,''); if(!claus.includes(k)) claus.push(k); }); }
-  let generePersona='m'; let esPluralEmocio=false;
+  let generesPersones=[]; let esPluralEmocio=false;
   if(pl.roles && (pl.roles.persona_2 || (pl.text||'').includes('{persona_2}'))) esPluralEmocio=true;
   for(const rol of claus){
     const baseKey = rol.split('_')[0]; const cats = pl.roles? pl.roles[rol] : [baseKey]; let pool=[];
     cats.forEach(cat=>{ (CATEGORIES_TOTS[cat]||[]).forEach(o=>{ const em=o.emoji||o; const base=quitarSkinTone(em); if(!usats.has(base)) pool.push(em); }); (BIBLIOTECA_POR_CAT[cat]||[]).forEach(e=>{ const base=quitarSkinTone(e.emoji); if(!usats.has(base)){ if(!pool.some(p=>quitarSkinTone(p)===base)) pool.push(e.emoji); } }); });
+    if(pl.permet && pl.permet[rol] && pl.permet[rol].length){
+      const permesos = pl.permet[rol].map(s=>s.toLowerCase());
+      const filtrat = pool.filter(em => {
+        const info = MAPA_DET[quitarSkinTone(em)];
+        const nom = (info ? info.nom : em).toLowerCase();
+        return permesos.includes(nom);
+      });
+      if(filtrat.length>0) pool = filtrat;
+    }
     if(pl.no_combina && pl.no_combina[rol]){
       const prohibits = pl.no_combina[rol].map(s=>s.toLowerCase());
       const filtrat = pool.filter(em => {
@@ -162,13 +172,20 @@ function generarFraseDinamicaLogica(pl, jug){
     }
     if(pool.length===0){ text = text.replaceAll('{'+rol+'}', ''); continue; }
     const elegido=pool[Math.floor(Math.random()*pool.length)]; usats.add(quitarSkinTone(elegido)); const infoElegido = MAPA_DET[quitarSkinTone(elegido)]; const categoriaElegida = infoElegido ? infoElegido.categoria : baseKey;
-    if(rol==='persona' && infoElegido) generePersona = infoElegido.genere || 'm';
+    if((rol==='persona' || rol==='persona_2') && infoElegido) generesPersones.push(infoElegido.genere || 'm');
     if(categoriaElegida==='emocio'){
-      const flex = flexionarEmocio(obtenirNomSenseArticle(elegido), generePersona, esPluralEmocio);
+      let genereEmocio='m';
+      if(generesPersones.length){ genereEmocio = generesPersones.every(g=>g==='f') ? 'f' : 'm'; }
+      const flex = flexionarEmocio(obtenirNomSenseArticle(elegido), genereEmocio, esPluralEmocio);
       text = text.replaceAll('{'+rol+'}', flex);
       sol.push(elegido); continue;
     }
-    const esSenseArticle = infoElegido && CATS_SENSE_ARTICLE.has(infoElegido.categoria); let reemplazo = esSenseArticle? obtenirNomSenseArticle(elegido) : obtenirArticleNet(elegido);
+    let esSenseArticle = infoElegido && CATS_SENSE_ARTICLE.has(infoElegido.categoria);
+    if(categoriaElegida==='forma_color'){ esSenseArticle = false; }
+    if(categoriaElegida==='simbol' && infoElegido){
+      if(infoElegido.det === '') esSenseArticle = true; else esSenseArticle = false;
+    }
+    let reemplazo = esSenseArticle? obtenirNomSenseArticle(elegido) : obtenirArticleNet(elegido);
     const esNumeroU = (categoriaElegida==='numero' && (obtenirNomSenseArticle(elegido)==='u' || obtenirNomSenseArticle(elegido)==='un'));
     if(categoriaElegida==='direccio'){
       const dir = formatDireccio(elegido);
@@ -187,9 +204,9 @@ function generarFraseDinamicaLogica(pl, jug){
       sol.push(elegido); continue;
     }
     if(esNumeroU){
-      const numText = 'un';
-      if(text.includes('Són {'+rol+'}')){ text=text.replace('Són {'+rol+'}', 'És ' + numText); }
-      else { text=text.replaceAll('{'+rol+'}', numText); }
+      if(text.includes('fins a {'+rol+'}')){ text=text.replaceAll('{'+rol+'}', 'u'); }
+      else if(text.includes('Són {'+rol+'}')){ text=text.replace('Són {'+rol+'}', 'És un'); }
+      else { text=text.replaceAll('{'+rol+'}', 'un'); }
       sol.push(elegido); continue;
     }
     if(text.includes('a {'+rol+'}')){ if(!esSenseArticle){ if(reemplazo.startsWith('El ')) reemplazo='el '+obtenirNomSenseArticle(elegido); if(reemplazo.startsWith("L'")) reemplazo="l'"+obtenirNomSenseArticle(elegido); if(reemplazo.startsWith('La ')) reemplazo='la '+obtenirNomSenseArticle(elegido); } text=text.replace('a {'+rol+'}','a '+reemplazo); }
