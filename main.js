@@ -1,4 +1,4 @@
-// main.js v20 LIMPIO - 50 PLANTILLAS KATLINGO - A1 15 + A2 25 + B1/B2 10 - Motor lectura v20 LIMPIO V3 LECTURA DIRECTA + VOCAB AMPLIAT + GRAMATICA POR PLANTILLA - RESTO IGUAL v19.3, NO TOCAR
+// main.js v21 LIMPIO - 50 PLANTILLAS KATLINGO - A1 15 + A2 25 + B1/B2 10 - Motor lectura v21 LLICO GRAMATICA COMPLETA ORTOGRAFIA + PRONUNCIA + TAULA + QUIZ - RESTO IGUAL v20, NO TOCAR
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -133,7 +133,7 @@ function generarOpcionsMinijoc(solucio){
 function triarEmojiMinijoc(idx){vibrar();const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);document.getElementById('minijoc-triats').textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +5 🪙</p>`;estat.monedes+=5;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;if(estat.progres.frasesDesDeUltimNivell>=25&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat!`);}NIVELL_MINIJOC.nivelActual=Math.min(NIVELL_MINIJOC.nivelActual+1,5);guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')}</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
 
-// --- MOTOR LECTURA v20 LIMPIO - V3 LECTURA DIRECTA + VOCAB AMPLIAT + GRAMATICA POR PLANTILLA - SIN V2 ---
+// --- MOTOR LECTURA v21 LIMPIO - V3.3 LECTURA DIRECTA + VOCAB AMPLIAT + LLICO GRAMATICA V21 ---
 async function cargarBancoLectura(){
   if(BANCO_LECTURA && BANCO_LECTURA.a1 && BANCO_LECTURA.a1.plantillas) return BANCO_LECTURA;
   try{
@@ -210,7 +210,6 @@ async function generarLectura(){
   if(!candidates.length) candidates = data.plantillas;
   let plantilla = candidates[Math.floor(Math.random()*candidates.length)];
   _ultimaPlantillaId = plantilla.id;
-  // v20 LIMPIO - La plantilla ya trae todo: lectura, vocab, vocab_ampliat, gramatica, preguntes
   const vocabCat = plantilla.vocab || [];
   const verbsCat = plantilla.verbs || [];
   const vocabAmpliat = plantilla.vocab_ampliat || null;
@@ -243,13 +242,42 @@ async function generarGramatica(){
     cont.innerHTML = btns + `<div style="padding:12px;"><div class="grammar-card"><div class="grammar-title">Gramàtica contextual - ${lecturaContext._plantillaNom||''}</div><div class="grammar-explanation">${lecturaActualText.slice(0,300)}...</div><p style="font-size:12px;color:#aaa;margin-top:10px;">Vocabulari: ${(lecturaContext._vocabCat||[]).join(', ')}</p></div></div>`;
     return;
   }
-  const exemplesHtml = (g.exemples||[]).map(e=>`<li style="margin:6px 0;">${e}</li>`).join('');
-  cont.innerHTML = btns + `<div style="padding:12px;"><h3>📚 Gramàtica - ${lecturaContext._plantillaNom||''}</h3><div class="grammar-card" style="border-left:4px solid #22c55e;"><div class="grammar-title" style="font-size:18px;">${g.titol||''}</div><div class="grammar-explanation" style="margin:10px 0;">${g.regla||''}</div>${exemplesHtml ? `<h4>✅ Exemples d'aquesta lectura</h4><ul>${exemplesHtml}</ul>` : ''}${g.error_comu ? `<div style="background:#3f1d1d;padding:10px;border-radius:8px;margin-top:12px;"><b>⚠️ Error comú:</b> ${g.error_comu}</div>` : ''}${g.practica ? `<div style="background:#1e293b;padding:10px;border-radius:8px;margin-top:10px;"><b>✍️ Practica:</b> ${g.practica}</div>` : ''}</div></div>`;
+  if(!g.ortografia){
+    const exemplesHtml = (g.exemples||[]).map(e=>`<li style="margin:6px 0;">${e}</li>`).join('');
+    cont.innerHTML = btns + `<div style="padding:12px;"><h3>📚 Gramàtica - ${lecturaContext._plantillaNom||''}</h3><div class="grammar-card" style="border-left:4px solid #22c55e;"><div class="grammar-title" style="font-size:18px;">${g.titol||''}</div><div class="grammar-explanation" style="margin:10px 0;">${g.regla||''}</div>${exemplesHtml ? `<h4>✅ Exemples d'aquesta lectura</h4><ul>${exemplesHtml}</ul>` : ''}${g.error_comu ? `<div style="background:#3f1d1d;padding:10px;border-radius:8px;margin-top:12px;"><b>⚠️ Error comú:</b> ${g.error_comu}</div>` : ''}${g.practica ? `<div style="background:#1e293b;padding:10px;border-radius:8px;margin-top:10px;"><b>✍️ Practica:</b> ${g.practica}</div>` : ''}</div></div>`;
+    return;
+  }
+  const taulaHtml = (g.taula||[]).map(f=>`<div style="display:flex;gap:8px;padding:8px;background:#222;border-radius:8px;margin:4px 0;"><b style="min-width:60px;">${f[0]}</b><span>${f[1]}</span></div>`).join('');
+  const errorsHtml = (g.errors_frequents||[]).map(e=>`<li style="margin:6px 0;">${e}</li>`).join('');
+  const quizHtml = (g.mini_quiz||[]).map((p,i)=>`<div style="margin-bottom:12px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec grammar-quiz-btn" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarQuizGramatica(${i},${j},this)">${op}</button>`).join('')}<div id="quiz-gram-${i}" style="margin-top:6px;"></div></div>`).join('');
+  cont.innerHTML = btns + `<div style="padding:12px;">
+    <h3>📚 Lliçó de Gramàtica - ${lecturaContext._plantillaNom||''}</h3>
+    <div class="grammar-card" style="border-left:4px solid #22c55e;">
+      <div class="grammar-title" style="font-size:20px;">${g.titol}</div>
+      ${g.que_aprens ? `<div class="grammar-que-aprens"><b>🎯 Què aprens avui:</b> ${g.que_aprens}</div>` : ''}
+      <h4>📖 Regla</h4><div class="grammar-explanation">${g.regla}</div>
+      ${g.ortografia ? `<div class="grammar-ortografia"><b>✍️ Ortografia - Com s'escriu:</b><br>${g.ortografia}</div>` : ''}
+      ${g.pronuncia ? `<div class="grammar-pronuncia"><b>🗣️ Pronunciació - Com es diu:</b><br>${g.pronuncia}</div>` : ''}
+      ${taulaHtml ? `<h4 style="margin-top:14px;">📋 Taula</h4>${taulaHtml}` : ''}
+      <h4 style="margin-top:14px;">✅ Exemples d'aquesta lectura</h4><ul>${(g.exemples||[]).map(e=>`<li style="margin:6px 0;">${e}</li>`).join('')}</ul>
+      ${g.error_comu ? `<div class="grammar-error"><b>⚠️ Error comú:</b> ${g.error_comu}</div>` : ''}
+      ${errorsHtml ? `<h4 style="margin-top:12px;">⚠️ 3 Errors freqüents</h4><ul>${errorsHtml}</ul>` : ''}
+      ${g.practica ? `<div class="grammar-practica"><b>✍️ Practica:</b> ${g.practica}</div>` : ''}
+      ${quizHtml ? `<h4 style="margin-top:16px;">🧠 Mini-quiz - Prova't</h4>${quizHtml}` : ''}
+    </div>
+  </div>`;
+}
+function comprovarQuizGramatica(i, j, btn){
+  const g = lecturaContext._gramatica; if(!g || !g.mini_quiz) return;
+  const p = g.mini_quiz[i]; const fb = document.getElementById('quiz-gram-'+i);
+  if(!fb) return;
+  if(j === p.correcta){ fb.innerHTML = '<span style="color:#4CAF50">✅ Correcte! +0.5 XP</span>'; estat.progres.xp+=1; guardarEstat(); actualitzarUI(); if(btn){ btn.style.borderColor='#22c55e'; btn.style.background='#1a3a1a'; } }
+  else { fb.innerHTML = `<span style="color:#f44336">❌ No. Era: ${p.opcions[p.correcta]}</span>`; if(btn){ btn.style.borderColor='#f44336'; btn.style.background='#3a1a1a'; } }
 }
 function setGramaticaMode(m){gramaticaMode=m;gramaticaTemaSeleccionat=null;generarGramatica();}
 function seleccionarTemaGramatica(s){gramaticaTemaSeleccionat=s;generarGramatica();}
 function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
-window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;
+window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;window.comprovarQuizGramatica=comprovarQuizGramatica;
 function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)totsElsTips=dadesTips[n]||[];mostrarTipRandom();}
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
 function renderBotiga(){const c=document.getElementById('botiga-contenidor');if(!c)return;if(!PACKS_BOTIGA||PACKS_BOTIGA.length===0){c.innerHTML=`<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;return;}c.innerHTML='';PACKS_BOTIGA.forEach(pack=>{let subs=[];if(pack.emojis.length>6){for(let i=0;i<pack.emojis.length;i+=6){const ch=pack.emojis.slice(i,i+6),num=Math.floor(i/6)+1,tot=Math.ceil(pack.emojis.length/6),preu=Math.ceil(pack.preu/tot);subs.push({id:`${pack.id}_p${num}`,nom:`${pack.nom} ${num}/${tot}`,descripcio:pack.descripcio,preu,emojis:ch});}}else subs=[{id:pack.id,nom:pack.nom,descripcio:pack.descripcio,preu:pack.preu,emojis:pack.emojis}];subs.forEach(sp=>{const comp=estat.compres.includes(sp.id) || estat.compres.includes(pack.id),card=document.createElement('div');card.className='capitol-card';card.innerHTML=`<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa;margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e=>e.emoji).join(' ')}</p><button class="btn ${comp?'btn-sec':''}" onclick="comprarPack('${sp.id}',${sp.preu})" ${comp?'disabled':''}>${comp?'Desbloquejat':'🪙 '+sp.preu}</button>`;c.appendChild(card);});});}
