@@ -1,4 +1,4 @@
-// main.js v23.2 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - PARCHE v23.2: BOTIGA DE LUXE - Pack sencer, sense partir, amb badges PREMIUM / GENIAL / COSMÈTIC - RESTO IGUAL v23
+// main.js v23.3 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - PARCHE v23.2: BOTIGA DE LUXE - Pack sencer, sense partir, amb badges PREMIUM / GENIAL / COSMÈTIC - PARCHE v23.3: ESCOLES + BUSCADOR BIBLIOTECA - RESTO IGUAL v23
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -35,6 +35,8 @@ let MAPA_DET = {};
 // v23.1: comptadors per bonus lectura i gramàtica
 let lecturaCorrectes = 0; let lecturaTotalPreguntes = 0; let lecturaBonusDonat = false;
 let gramaticaCorrectes = 0; let gramaticaTotalQuiz = 0; let gramaticaBonusDonat = false;
+// v23.3: filtre buscador Biblioteca
+let filtreBiblioteca = '';
 const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','emocio','clima','accio','esport']);
 function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
 function vibrar(){if(navigator.vibrate)navigator.vibrate(50);}
@@ -119,7 +121,49 @@ function renderMissio(){const c=document.getElementById('missio-contenidor');if(
 function recarregarEnergia(){if(estat.progres.energia>=100){mostrarMissatge('Ja tens l\'energia al màxim!');return;}if(estat.monedes<50){mostrarMissatge('Necessites 50 monedes');return;}estat.monedes-=50;estat.progres.energia=100;estat.ultimaRecargaEnergia=Date.now();guardarEstat();actualitzarUI();renderMissio();vibrar();mostrarMissatge('Energia recarregada!');}
 function mostrarGremiPersonatges(){const c=document.getElementById('gremi-personatges');if(!c)return;let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat).emoji}</div><h3>${PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat).nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b></p><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});h+=`</div></div></div>`;c.innerHTML=h;}
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
-function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');if(!c)return;let h=`<h3 style="text-align:center;">Biblioteca</h3>`;const base=PACK_INICIAL.map(e=>quitarSkinTone(e));for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat}</h4><div class="emoji-grid">`;emojis.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid || p.id===id);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});h+=`</div>`;}c.innerHTML=h;}
+// v23.3 BIBLIOTECA AMB BUSCADOR - No toca recompenses ni Botiga
+function renderDiccionari(){
+  const c=document.getElementById('gremi-biblioteca');if(!c)return;
+  const q=(filtreBiblioteca||'').toLowerCase().trim();
+  let total=0,desbloquejats=0;
+  BIBLIOTECA_PLA.forEach(e=>{
+    const net=quitarSkinTone(e.emoji);
+    const esBase=PACK_INICIAL.some(p=>quitarSkinTone(p)===net);
+    const perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid||p.id===id);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);});
+    total++; if(esBase||perPack) desbloquejats++;
+  });
+  const pct=total?Math.round((desbloquejats/total)*100):0;
+  let h=`
+    <h3 style="text-align:center;">📚 Biblioteca</h3>
+    <p style="text-align:center;color:#aaa;font-size:13px;">${desbloquejats} de ${total} desbloquejats · ${pct}%</p>
+    <div style="width:100%;height:8px;background:#333;border-radius:4px;margin:8px 0 14px;"><div style="width:${pct}%;height:100%;background:#22c55e;border-radius:4px;"></div></div>
+    <input id="cerca-biblioteca" type="text" placeholder="🔍 Busca: gos, poma, bandera, cotxe..." value="${filtreBiblioteca.replace(/"/g,'')}" oninput="filtreBiblioteca=this.value;renderDiccionari();" style="width:100%;padding:12px;border-radius:12px;border:1px solid #333;background:#121212;color:#fff;font-size:15px;margin-bottom:6px;outline:none;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='';renderDiccionari();">Tot</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='gos';renderDiccionari();">🐶 Animals</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='poma';renderDiccionari();">🍎 Menjar</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='bandera';renderDiccionari();">🌍 Banderes</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='casa';renderDiccionari();">🏠 Casa</button>
+    </div>
+  `;
+  const base=PACK_INICIAL.map(e=>quitarSkinTone(e));
+  let trobat=false;
+  for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){
+    const filtrats=emojis.filter(e=>{
+      if(!q) return true;
+      return (e.nom_cat||'').toLowerCase().includes(q)||(e.categoria||'').toLowerCase().includes(q)||(e.para_frases||[]).join(' ').toLowerCase().includes(q)||cat.toLowerCase().includes(q);
+    });
+    if(!filtrats.length) continue;
+    trobat=true;
+    h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat} (${filtrats.length})</h4><div class="emoji-grid">`;
+    filtrats.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid || p.id===id);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});
+    h+=`</div>`;
+  }
+  if(!trobat){ h+=`<div style="text-align:center;padding:30px;opacity:.6;">No hi ha resultats per "<b>${filtreBiblioteca}</b>"<br><button class="btn btn-sec" onclick="filtreBiblioteca='';renderDiccionari();">Veure tot</button></div>`; }
+  c.innerHTML=h;
+  const input=document.getElementById('cerca-biblioteca');
+  if(input&&q){input.focus();input.setSelectionRange(input.value.length,input.value.length);}
+}
 function obtenirArticleNet(emoji){ const base = quitarSkinTone(emoji); const info = MAPA_DET[base]; if(!info) return emoji; if(CATS_SENSE_ARTICLE.has(info.categoria)) return info.nom; let det = info.det; let nom = info.nom; if(det==="En"){ if(nom.toLowerCase()==="home") det="L'"; else det="El"; } if(nom.toLowerCase()==="dona" && det==="Na") det="La"; if(det==="El" && /^[aeiouàèéíòóú]/i.test(nom)) det="L'"; if(det==="L'" || det==="l'") return det+nom; return det+" "+nom; }
 function obtenirNomSenseArticle(emoji){ const b=quitarSkinTone(emoji); const i=MAPA_DET[b]; return i?i.nom:emoji; }
 function obtenirArticle(emoji){ return obtenirArticleNet(emoji); }
