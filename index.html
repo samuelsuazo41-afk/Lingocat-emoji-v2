@@ -107,7 +107,7 @@ header {
 .intro-dots { margin-bottom: 24px; font-size: 20px; }
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1A1A1A; border-top: 1px solid var(--border); display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; padding: 8px 0; }
 .bottom-nav::-webkit-scrollbar { display: none; }
-.nav-item { flex-shrink: 0; width: 70px; background: transparent; border: none; color: var(--text-muted); padding: 8px; cursor: pointer; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.nav-item { flex-shrink: 0; width: 60px; background: transparent; border: none; color: var(--text-muted); padding: 8px 4px; cursor: pointer; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .nav-item.active { color: var(--accent); }
 .nav-icon { font-size: 20px; }
 .app-message { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent), var(--accent-soft)); color: #000; padding: 12px 20px; border-radius: 8px; font-weight: 700; z-index: 9999; animation: slideDown 0.3s ease; max-width: 90%; text-align: center; }
@@ -155,6 +155,16 @@ header {
   width:100%;margin-top:10px;padding:12px !important;
   font-size:15px !important;font-weight:800 !important;
   border-radius:12px !important;
+}
+/* ===== v23.3 ESCOLES + BUSCADOR - NO TOCAR LA RESTA ===== */
+.escoles-card{
+  background:#1A1A1A;border:1px solid #2A2A2A;border-radius:12px;
+  padding:16px;margin:12px 0;line-height:1.7;font-size:14px;
+}
+.escoles-card h3{ margin-bottom:8px;color:#2ECC71;font-size:16px; }
+.cerca-biblioteca{
+  width:100%;padding:12px;border-radius:12px;border:1px solid #333;
+  background:#121212;color:#fff;font-size:15px;margin-bottom:6px;outline:none;
 }
 </style>
 </head>
@@ -252,6 +262,53 @@ header {
   </div>
 </div>
 
+<div id="tab-escoles" class="tab-content">
+  <div style="max-width:600px;margin:0 auto;">
+    <div style="background:linear-gradient(135deg,#22c55e,#00D4AA);border-radius:16px;padding:24px;text-align:center;color:#000;">
+      <div style="font-size:48px;">🏫</div>
+      <h2 style="font-size:24px;margin:8px 0;">Per a escoles i ajuntaments</h2>
+      <p style="font-weight:700;">Aprendre català jugant. Sense pagar res. Sense anuncis. Sense compte.</p>
+    </div>
+    <div class="escoles-card">
+      <h3>📚 Què aprenen els alumnes?</h3>
+      <p>✅ <b>100 nivells</b> - A1 (1-33) · A2 (34-66) · B1 (67-100)</p>
+      <p>✅ <b>Minijoc</b> - 68 plantilles de frases amb emojis</p>
+      <p>✅ <b>Lectura</b> adaptada al nivell + Vocabulari + Gramàtica</p>
+      <p>✅ <b>500+ emojis</b> - 57 packs de Biblioteca</p>
+      <p>✅ <b>5 minuts al dia</b> - Ideal per a aula o casa</p>
+    </div>
+    <div class="escoles-card">
+      <h3>🪙 Com guanyen monedes? Sense pagar res.</h3>
+      <p>🎯 Minijoc: <b>5-15 🪙</b> per frase correcta</p>
+      <p>📚 Lectura: <b>+5 🪙</b> per pregunta + <b>+15 🪙</b> bonus</p>
+      <p>📖 Gramàtica: <b>+3 🪙</b> per quiz + <b>+10 🪙</b> si fa 3/3</p>
+      <p>🔥 Ratxa 5: <b>+10 🪙</b> bonus</p>
+      <p>🎁 Bonus diari: <b>+10 🪙</b> per tornar</p>
+      <p style="font-size:13px;color:#aaa;margin-top:8px;">Amb aquestes monedes desbloquegen tota la Biblioteca. No hi ha pagament extern.</p>
+    </div>
+    <div class="escoles-card">
+      <h3>🛡️ Seguretat per al centre</h3>
+      <p>🔒 Sense registre, sense correu, sense nom dels alumnes</p>
+      <p>🚫 Sense anuncis, sense compres amb diners reals</p>
+      <p>📱 Funciona a mòbil, tauleta i ordinador</p>
+      <p>🏠 Tot es guarda al dispositiu de l'alumne</p>
+    </div>
+    <div class="escoles-card" style="border-color:#fbbf24;">
+      <h3>👩‍🏫 Per a mestres - Com usar-la a classe?</h3>
+      <p><b>1.</b> 5 min Minijoc per començar la classe</p>
+      <p><b>2.</b> 1 Lectura del nivell de l'alumne</p>
+      <p><b>3.</b> 1 Lliçó de Gramàtica contextual</p>
+      <p><b>4.</b> L'alumne desbloqueja 1 pack de Biblioteca amb les monedes</p>
+      <p style="margin-top:10px;">Ex: Avui toquem <b>Fruites</b> -> Minijoc amb 🍎🍐🍊 -> Lectura de fruites -> Desbloquegen pack Fruites</p>
+    </div>
+    <div style="text-align:center;margin:20px 0;">
+      <button class="btn btn-primari" style="font-size:16px;padding:14px 24px;" onclick="canviarTab('botiga',null)">🎁 Veure la Botiga · 57 packs</button>
+      <br>
+      <button class="btn btn-sec" style="margin-top:10px;" onclick="canviarTab('gremi',null);mostrarSubTab('biblioteca')">📚 Veure la Biblioteca</button>
+    </div>
+  </div>
+</div>
+
 <div id="tab-botiga" class="tab-content">
   <div id="botiga-contenidor"></div>
 </div>
@@ -277,6 +334,10 @@ header {
     <span class="nav-icon">💡</span>
     <span>Tips</span>
   </button>
+  <button class="nav-item" onclick="canviarTab('escoles', event)">
+    <span class="nav-icon">🏫</span>
+    <span>Escoles</span>
+  </button>
   <button class="nav-item" onclick="canviarTab('botiga', event)">
     <span class="nav-icon">🛒</span>
     <span>Botiga</span>
@@ -286,5 +347,77 @@ header {
 <div id="app-message" style="display:none;"></div>
 
 <script src="./main.js"></script>
+<script>
+// v23.3 BUSCADOR BIBLIOTECA - PARCHE SOLO EN INDEX, NO TOCA MAIN.JS NI RECOMPENSAS
+let filtreBiblioteca = '';
+function renderDiccionari(){
+  const c = document.getElementById('gremi-biblioteca');
+  if(!c) return;
+  const q = (filtreBiblioteca || '').toLowerCase().trim();
+  let total = 0, desbloquejats = 0;
+  (typeof BIBLIOTECA_PLA !== 'undefined' ? BIBLIOTECA_PLA : []).forEach(e => {
+    const net = quitarSkinTone(e.emoji);
+    const esBase = PACK_INICIAL.some(p => quitarSkinTone(p) === net);
+    const perPack = estat.compres.some(id => {
+      const pid = id.includes('_p') ? id.split('_p')[0] : id;
+      const pack = PACKS_BOTIGA.find(p => p.id === pid || p.id === id);
+      return pack && pack.emojis.some(pe => quitarSkinTone((pe.emoji || pe)) === net);
+    });
+    total++;
+    if(esBase || perPack) desbloquejats++;
+  });
+  const pct = total ? Math.round((desbloquejats / total) * 100) : 0;
+  let h = `
+    <h3 style="text-align:center;">📚 Biblioteca</h3>
+    <p style="text-align:center;color:#aaa;font-size:13px;">${desbloquejats} de ${total} desbloquejats · ${pct}%</p>
+    <div style="width:100%;height:8px;background:#333;border-radius:4px;margin:8px 0 14px;">
+      <div style="width:${pct}%;height:100%;background:#22c55e;border-radius:4px;"></div>
+    </div>
+    <input id="cerca-biblioteca" type="text" placeholder="🔍 Busca: gos, poma, bandera, cotxe..."
+      value="${filtreBiblioteca.replace(/"/g,'')}"
+      oninput="filtreBiblioteca=this.value;renderDiccionari();"
+      class="cerca-biblioteca">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='';renderDiccionari();">Tot</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='gos';renderDiccionari();">🐶 Animals</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='poma';renderDiccionari();">🍎 Menjar</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='bandera';renderDiccionari();">🌍 Banderes</button>
+      <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='casa';renderDiccionari();">🏠 Casa</button>
+    </div>
+  `;
+  const base = PACK_INICIAL.map(e => quitarSkinTone(e));
+  let trobat = false;
+  for(const [cat, emojis] of Object.entries(BIBLIOTECA_POR_CAT || {})){
+    const filtrats = emojis.filter(e => {
+      if(!q) return true;
+      return (e.nom_cat || '').toLowerCase().includes(q) ||
+             (e.categoria || '').toLowerCase().includes(q) ||
+             (e.para_frases || []).join(' ').toLowerCase().includes(q) ||
+             cat.toLowerCase().includes(q);
+    });
+    if(!filtrats.length) continue;
+    trobat = true;
+    h += `<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat} (${filtrats.length})</h4><div class="emoji-grid">`;
+    filtrats.forEach(e => {
+      const net = quitarSkinTone(e.emoji);
+      const esBase = base.includes(net);
+      const perPack = estat.compres.some(id => {
+        const pid = id.includes('_p') ? id.split('_p')[0] : id;
+        const pack = PACKS_BOTIGA.find(p => p.id === pid || p.id === id);
+        return pack && pack.emojis.some(pe => quitarSkinTone((pe.emoji || pe)) === net);
+      });
+      const des = esBase || perPack;
+      h += `<div class="emoji-item" style="opacity:${des ? '1' : '0.12'};filter:${des ? '' : 'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;
+    });
+    h += `</div>`;
+  }
+  if(!trobat){
+    h += `<div style="text-align:center;padding:30px;opacity:.6;">No hi ha resultats per "<b>${filtreBiblioteca}</b>"<br><button class="btn btn-sec" onclick="filtreBiblioteca='';renderDiccionari();">Veure tot</button></div>`;
+  }
+  c.innerHTML = h;
+  const input = document.getElementById('cerca-biblioteca');
+  if(input && q){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+}
+</script>
 </body>
 </html>
