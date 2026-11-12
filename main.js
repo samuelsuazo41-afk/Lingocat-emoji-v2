@@ -576,4 +576,4 @@ function comprarPack(id, preu){
   vibrar();
   mostrarMissatge('Pack desbloquejat! 🎉');
 }
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});} 
