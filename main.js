@@ -1,4 +1,4 @@
-// main.js v23.3 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - PARCHE v23.2: BOTIGA DE LUXE - Pack sencer, sense partir, amb badges PREMIUM / GENIAL / COSMÈTIC - PARCHE v23.3: ESCOLES + BUSCADOR BIBLIOTECA - RESTO IGUAL v23
+// main.js v23.4 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - PARCHE v23.2: BOTIGA DE LUXE - Pack sencer, sense partir, amb badges PREMIUM / GENIAL / COSMÈTIC - PARCHE v23.3: ESCOLES + BUSCADOR BIBLIOTECA - PARCHE v23.4 MINIJOC: 12 emojis + línia info minimizada sense p2_10 - RESTO IGUAL v23
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -304,10 +304,10 @@ function novaFraseMinijoc(){
   let candidates = disponibles.filter(p=>p.id!==_ultimaPlantillaMinijoc);
   if(!candidates.length) candidates = disponibles;
   const pl=candidates[Math.floor(Math.random()*candidates.length)]; _ultimaPlantillaMinijoc=pl.id;
-  const{text,solucio}=generarFraseDinamicaLogica(pl,emojisUsables); minijoc.fraseObjectiu={text,solucio}; minijoc.plantillaActual=pl; minijoc.emojisTriats=[]; if(fraseEl) fraseEl.textContent=text; if(triatsEl) triatsEl.textContent='👆 Toca els emojis de baix per construir la frase'; if(feedbackEl) feedbackEl.innerHTML=''; if(nivellEl) nivellEl.textContent=`Nivell ${estat.progres.nivellActualMapa} (${getGrupNivell(estat.progres.nivellActualMapa)}) · ${pl.id} · ${solucio.length} emojis · Ratxa ${estat.progres.ratxa||0}/5 · Falten ${Math.max(0,encertsNecessarisPerNivell(estat.progres.nivellActualMapa)-(estat.progres.frasesDesDeUltimNivell||0))}`; generarOpcionsMinijoc(solucio);
+  const{text,solucio}=generarFraseDinamicaLogica(pl,emojisUsables); minijoc.fraseObjectiu={text,solucio}; minijoc.plantillaActual=pl; minijoc.emojisTriats=[]; if(fraseEl) fraseEl.textContent=text; if(triatsEl) triatsEl.textContent='👆 Toca els emojis de baix per construir la frase'; if(feedbackEl) feedbackEl.innerHTML=''; if(nivellEl) nivellEl.textContent=`Nivell ${estat.progres.nivellActualMapa} · ${getGrupNivell(estat.progres.nivellActualMapa)} · ${solucio.length} emojis · 🔥 ${estat.progres.ratxa||0}/5 · Falten ${Math.max(0,encertsNecessarisPerNivell(estat.progres.nivellActualMapa)-(estat.progres.frasesDesDeUltimNivell||0))}`; generarOpcionsMinijoc(solucio);
 }
 function generarOpcionsMinijoc(solucio){
-  const grid=document.getElementById('minijoc-emojis');if(!grid)return; const num=solucio.length<=3?16:20,numF=num-solucio.length;
+  const grid=document.getElementById('minijoc-emojis');if(!grid)return; const num=12,numF=num-solucio.length;
   let baseTot = BIBLIOTECA_PLA.map(e=>e.emoji);
   ['🎵','❤️'].forEach(e=>{ if(!baseTot.some(x=>quitarSkinTone(x)===quitarSkinTone(e))) baseTot.push(e); });
   if(baseTot.length===0) baseTot = PACK_INICIAL;
