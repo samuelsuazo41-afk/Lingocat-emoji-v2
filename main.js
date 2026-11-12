@@ -1,4 +1,4 @@
-// main.js v23.1 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - RESTO IGUAL v23
+// main.js v23.2 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - PARCHE v23.2: BOTIGA DE LUXE - Pack sencer, sense partir, amb badges PREMIUM / GENIAL / COSMÈTIC - RESTO IGUAL v23
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -329,7 +329,6 @@ async function generarLectura(){
   const nivell = getCurrentLevel(); const data = banco[nivell];
   if(!data || !data.plantillas || !data.plantillas.length){ const c=document.getElementById('lectura-texto'); if(c){ c.innerHTML='<p>No hi ha lectures per aquest nivell</p>'; c.style.display='block'; forcarLecturaVisible(); } return; }
   lecturaActualVocab = []; lecturaContext = {};
-  // v23.1: reset comptador lectura
   lecturaCorrectes = 0; lecturaBonusDonat = false;
   let llista = banco.personatges;
   if(!llista || !llista.length) llista = ["La Laia","En Pau","La Mercè","En Biel","L'Ona","En Roc"];
@@ -375,14 +374,12 @@ async function generarLectura(){
 function comprovarPregunta(i,r){
   const p=lecturaActualPreguntes[i],fb=document.getElementById(`feedback-${i}`);if(!fb)return;
   if(r===p.correcta){
-    // Evita doble premi si ja ho havia encertat
     if(fb.dataset.premiat === '1'){ fb.innerHTML='<span style="color:#4CAF50">✅ Correcte! +5 🪙</span>'; return; }
     fb.dataset.premiat = '1';
     lecturaCorrectes++;
     estat.monedes += 5;
     estat.progres.encerts+=0.5; estat.progres.xp+=1;
     fb.innerHTML='<span style="color:#4CAF50">✅ Correcte! +5 🪙 +1 XP</span>';
-    // Bonus lectura completada
     if(!lecturaBonusDonat && lecturaTotalPreguntes>0 && lecturaCorrectes>=lecturaTotalPreguntes){
       lecturaBonusDonat = true;
       estat.monedes += 15; estat.progres.xp += 5;
@@ -407,7 +404,6 @@ async function generarGramatica(){
     cont.innerHTML = btns + `<div style="padding:12px;"><h3>📚 Gramàtica - ${lecturaContext._plantillaNom||''}</h3><div class="grammar-card" style="border-left:4px solid #22c55e;"><div class="grammar-title" style="font-size:18px;">${g.titol||''}</div><div class="grammar-explanation" style="margin:10px 0;">${g.regla||''}</div>${exemplesHtml ? `<h4>✅ Exemples d'aquesta lectura</h4><ul>${exemplesHtml}</ul>` : ''}${g.error_comu ? `<div style="background:#3f1d1d;padding:10px;border-radius:8px;margin-top:12px;"><b>⚠️ Error comú:</b> ${g.error_comu}</div>` : ''}${g.practica ? `<div style="background:#1e293b;padding:10px;border-radius:8px;margin-top:10px;"><b>✍️ Practica:</b> ${g.practica}</div>` : ''}</div></div>`;
     return;
   }
-  // v23.1: reset comptador gramàtica quan es genera nova lliçó
   gramaticaCorrectes = 0; gramaticaBonusDonat = false; gramaticaTotalQuiz = (g.mini_quiz||[]).length;
   const taulaHtml = (g.taula||[]).map(f=>`<div style="display:flex;gap:8px;padding:8px;background:#222;border-radius:8px;margin:4px 0;"><b style="min-width:60px;">${f[0]}</b><span>${f[1]}</span></div>`).join('');
   const errorsHtml = (g.errors_frequents||[]).map(e=>`<li style="margin:6px 0;">${e}</li>`).join('');
@@ -456,12 +452,84 @@ function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
 window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;window.comprovarQuizGramatica=comprovarQuizGramatica;
 function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)totsElsTips=dadesTips[n]||[];mostrarTipRandom();}
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
-function renderBotiga(){
-  const c=document.getElementById('botiga-contenidor');if(!c)return;
-  if(!PACKS_BOTIGA||PACKS_BOTIGA.length===0){c.innerHTML=`<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;return;}
-  // v23.1: missatge clar per venda institucional - sense pagament extern, tot amb monedes guanyades
-  c.innerHTML=`<div style="padding:12px;background:#1e293b;border:1px solid #22c55e;border-radius:12px;margin-bottom:12px;text-align:center;"><b>⭐ Guanya monedes jugant, llegint i aprenent gramàtica. Sense pagar res.</b><br><span style="font-size:12px;color:#aaa;">Minijoc 5-15 🪙 · Lectura +5 per pregunta · Gramàtica +3 per quiz · Bonus diari +10 🪙</span></div>`;
-  PACKS_BOTIGA.forEach(pack=>{let subs=[];if(pack.emojis.length>6){for(let i=0;i<pack.emojis.length;i+=6){const ch=pack.emojis.slice(i,i+6),num=Math.floor(i/6)+1,tot=Math.ceil(pack.emojis.length/6),preu=Math.ceil(pack.preu/tot);subs.push({id:`${pack.id}_p${num}`,nom:`${pack.nom} ${num}/${tot}`,descripcio:pack.descripcio,preu,emojis:ch});}}else subs=[{id:pack.id,nom:pack.nom,descripcio:pack.descripcio,preu:pack.preu,emojis:pack.emojis}];subs.forEach(sp=>{const comp=estat.compres.includes(sp.id) || estat.compres.includes(pack.id),card=document.createElement('div');card.className='capitol-card';card.innerHTML=`<div class="capitol-icona">🎁</div><h3>${sp.nom}</h3><p style="color:#aaa;margin:8px 0;">${sp.descripcio}</p><p style="font-size:24px;">${sp.emojis.map(e=>e.emoji).join(' ')}</p><button class="btn ${comp?'btn-sec':''}" onclick="comprarPack('${sp.id}',${sp.preu})" ${comp?'disabled':''}>${comp?'Desbloquejat':'🪙 '+sp.preu}</button>`;c.appendChild(card);});});
+
+// ===== v23.2 BOTIGA DE LUXE - Pack sencer, sense partir, amb badges =====
+function esPackComprat(pack){
+  if(estat.compres.includes(pack.id)) return true;
+  return estat.compres.some(id => id === pack.id || id.startsWith(pack.id + '_p'));
 }
-function comprarPack(id,preu){if(estat.monedes<preu){mostrarMissatge('No tens prou monedes');return;}estat.monedes-=preu;estat.compres.push(id);guardarEstat();actualitzarUI();construirCategories();construirMapaDet();renderBotiga();renderDiccionari();mostrarMissatge('Pack desbloquejat!');}
+function getBadgeBotiga(pack){
+  const id = pack.id || '';
+  const nom = (pack.nom || '').toLowerCase();
+  const desc = (pack.descripcio || '').toLowerCase();
+  if(id === 'pack_persones_base') return { text: '⭐ RECOMANAT', cls: 'badge-recomanat' };
+  if(id.startsWith('pack_persones_skin')) return { text: '🎨 COSMÈTIC', cls: 'badge-cosmetic' };
+  if(nom.includes('⭐') || desc.includes('premium')) return { text: '⭐ PREMIUM', cls: 'badge-premium' };
+  if(nom.includes('🌍') || desc.includes('genial')) return { text: '🌍 GENIAL', cls: 'badge-genial' };
+  if(nom.includes('✨')) return { text: '✨ PREMIUM', cls: 'badge-premium' };
+  return null;
+}
+function renderBotiga(){
+  const c = document.getElementById('botiga-contenidor');
+  if(!c) return;
+  if(!PACKS_BOTIGA || PACKS_BOTIGA.length === 0){
+    c.innerHTML = `<div style="text-align:center;padding:40px;opacity:0.6;">No hi ha packs</div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div class="botiga-header-luxe">
+      <div style="font-size:28px;">⭐ Botiga · Biblioteca</div>
+      <div style="font-size:14px;margin-top:4px;"><b>Guanya monedes jugant, llegint i aprenent gramàtica. Sense pagar res.</b></div>
+      <div style="font-size:12px;color:#aaa;margin-top:4px;">Minijoc 5-15 🪙 · Lectura +5 per pregunta · Gramàtica +3 per quiz · Bonus diari +10 🪙</div>
+      <div style="font-size:12px;color:#fbbf24;margin-top:6px;">${PACKS_BOTIGA.length} packs · ${PACKS_BOTIGA.reduce((a,p)=>a+(p.emojis?p.emojis.length:0),0)} emojis · Compra el pack sencer, no per trossos</div>
+    </div>
+    <div class="botiga-seccio-titol">⭐ Comença aquí</div>
+    <div id="botiga-recomanat"></div>
+    <div class="botiga-seccio-titol">📚 Tota la Biblioteca</div>
+    <div id="botiga-tots" class="botiga-grid-luxe"></div>
+    <div class="botiga-seccio-titol">🎨 Cosmètics - Només aspecte</div>
+    <div id="botiga-cosmetic" class="botiga-grid-luxe"></div>
+  `;
+  const elRecomanat = document.getElementById('botiga-recomanat');
+  const elTots = document.getElementById('botiga-tots');
+  const elCosmetic = document.getElementById('botiga-cosmetic');
+  PACKS_BOTIGA.forEach(pack => {
+    const comp = esPackComprat(pack);
+    const badge = getBadgeBotiga(pack);
+    const card = document.createElement('div');
+    card.className = 'capitol-card botiga-card-luxe' + (pack.id === 'pack_persones_base' ? ' card-recomanat' : '') + (comp ? ' card-comprat' : '');
+    const nomNet = (pack.nom || '').replace(/^[⭐🌍✨🎨\s]+/, '');
+    card.innerHTML = `
+      ${badge ? `<span class="badge-botiga ${badge.cls}">${badge.text}</span>` : ''}
+      <div class="capitol-icona">🎁</div>
+      <h3>${nomNet}</h3>
+      <p style="color:#aaa;margin:8px 0;font-size:13px;">${pack.descripcio || ''}</p>
+      <p style="font-size:24px;line-height:1.5;">${(pack.emojis || []).map(e => e.emoji).join(' ')}</p>
+      <div style="font-size:12px;color:#888;margin:6px 0;">${(pack.emojis || []).length} emojis · Pack sencer</div>
+      <button class="btn ${comp ? 'btn-sec' : 'btn-primari'} btn-comprar-luxe" onclick="comprarPack('${pack.id}',${pack.preu})" ${comp ? 'disabled' : ''}>${comp ? '✅ Desbloquejat' : '🪙 ' + pack.preu + ' · Comprar'}</button>
+    `;
+    if(pack.id === 'pack_persones_base'){
+      elRecomanat.appendChild(card);
+    } else if(pack.id.startsWith('pack_persones_skin')){
+      elCosmetic.appendChild(card);
+    } else {
+      elTots.appendChild(card);
+    }
+  });
+}
+function comprarPack(id, preu){
+  const pack = PACKS_BOTIGA.find(p => p.id === id);
+  if(pack && esPackComprat(pack)){
+    mostrarMissatge('Ja el tens desbloquejat!');
+    return;
+  }
+  if(estat.monedes < preu){ mostrarMissatge('No tens prou monedes'); return; }
+  estat.monedes -= preu;
+  if(!estat.compres.includes(id)) estat.compres.push(id);
+  guardarEstat(); actualitzarUI();
+  construirCategories(); construirMapaDet();
+  renderBotiga(); renderDiccionari();
+  vibrar();
+  mostrarMissatge('Pack desbloquejat! 🎉');
+}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});}
