@@ -8,7 +8,6 @@
 <meta name="theme-color" content="#000">
 <style>
 :root {
-  /* Paleta Lingocat - Negro + Verde + Gradiente */
   --bg: #000;
   --bg-elevated: #121212;
   --card: #1A1A1A;
@@ -89,7 +88,6 @@ header {
 .grammar-example { background: var(--bg-elevated); padding: 8px 12px; border-radius: 6px; margin: 6px 0; color: var(--text); font-size: 14px; }
 .grammar-exercise-item { background: #252525; padding: 10px 12px; border-radius: 6px; margin: 8px 0; color: var(--text); font-size: 14px; border-left: 3px solid var(--accent); }
 .grammar-tip { background: rgba(46, 204, 113, 0.1); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px; margin-top: 12px; color: var(--accent-soft); font-size: 13px; }
-/* --- GRAMATICA V21 - LLICO COMPLETA - NO TOCAR LA RESTA --- */
 .grammar-que-aprens { background: #1e293b; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 14px; line-height: 1.5; }
 .grammar-ortografia { background: #3b2f0b; border: 1px solid #a07c00; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 14px; line-height: 1.6; }
 .grammar-pronuncia { background: #0b2f3b; border: 1px solid #0ea5e9; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 14px; line-height: 1.6; }
@@ -117,7 +115,6 @@ header {
 .glow-ok-btn { box-shadow: 0 0 12px rgba(46,204,113,0.6) !important; border-color: var(--accent) !important; }
 .glow-err-btn { box-shadow: 0 0 12px rgba(255,107,107,0.4) !important; }
 .feedback { min-height: 24px; margin-top: 6px; font-size: 14px; }
-/* ===== v23.2 BOTIGA DE LUXE - NO TOCAR LA RESTA ===== */
 .botiga-header-luxe{
   padding:16px;background:linear-gradient(135deg,#1e293b,#0f172a);
   border:1px solid #22c55e;border-radius:16px;
@@ -156,7 +153,6 @@ header {
   font-size:15px !important;font-weight:800 !important;
   border-radius:12px !important;
 }
-/* ===== v23.3 ESCOLES + BUSCADOR - NO TOCAR LA RESTA ===== */
 .escoles-card{
   background:#1A1A1A;border:1px solid #2A2A2A;border-radius:12px;
   padding:16px;margin:12px 0;line-height:1.7;font-size:14px;
@@ -166,7 +162,7 @@ header {
   width:100%;padding:12px;border-radius:12px;border:1px solid #333;
   background:#121212;color:#fff;font-size:15px;margin-bottom:6px;outline:none;
 }
-/* ===== v23.4 MINIJOC - 3 CANVIS CERRADOS, NO TOCAR LA RESTA ===== */
+/* ===== v23.4 MINIJOC - 3 CANVIS CERRADOS ===== */
 #minijoc-nivell{
   font-size:11px !important;
   color:#888 !important;
@@ -187,6 +183,41 @@ header {
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+}
+/* ===== v23.5 MINIJOC - UNA SOLA PANTALLA, 10 EMOJIS, SENSE 1a LINIA ===== */
+#tab-gremi{ padding:8px 12px 8px !important; }
+#tab-gremi.minijoc-actiu .sub-tabs{ display:none !important; }
+#gremi-minijoc .minijoc-container{ max-width:600px; }
+#minijoc-frase{
+  padding:10px 12px !important;
+  font-size:17px !important;
+  margin-bottom:8px !important;
+  border-radius:10px !important;
+  line-height:1.35 !important;
+}
+#minijoc-triats{
+  margin-bottom:8px !important;
+}
+#minijoc-emojis{
+  gap:8px !important;
+  grid-template-columns:repeat(2,1fr) !important;
+}
+#minijoc-emojis .emoji-item{
+  padding:7px 4px !important;
+  border-radius:8px !important;
+}
+#minijoc-emojis .emoji-large{
+  font-size:26px !important;
+  margin-bottom:2px !important;
+}
+#minijoc-emojis .emoji-name{
+  font-size:11px !important;
+  line-height:1.2 !important;
+}
+#minijoc-feedback{
+  min-height:22px !important;
+  margin-top:8px !important;
+  font-size:14px !important;
 }
 </style>
 </head>
@@ -247,7 +278,6 @@ header {
   </div>
 </div>
 
-<!-- TAB LECTURA - FIX FINAL IDS CORREGITS -->
 <div id="tab-lectura" class="tab-content">
   <div class="sub-tabs">
     <button class="sub-tab-btn active" onclick="mostrarSubTab('lectura')">Lectura</button>
@@ -265,7 +295,6 @@ header {
       <div id="lectura-gramatica-inner"></div>
     </div>
   </div>
-  <!-- Compatibilitat amb IDs antics per si el main.js encara busca gremi- -->
   <div style="display:none;">
     <div id="gremi-lectura"></div>
     <div id="gremi-vocab"></div>
@@ -370,7 +399,6 @@ header {
 
 <script src="./main.js"></script>
 <script>
-// v23.3 BUSCADOR BIBLIOTECA - PARCHE SOLO EN INDEX, NO TOCA MAIN.JS NI RECOMPENSAS
 let filtreBiblioteca = '';
 function renderDiccionari(){
   const c = document.getElementById('gremi-biblioteca');
