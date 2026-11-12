@@ -1,4 +1,4 @@
-// main.js v23.4 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - FINS AL 100 - Basat en el teu v23 tal qual - PARCHE v23.1: RECOMPENSES UNIFICADES per venda institucional (colegis / ajuntament) - Minijoc + Lectura + Gramàtica + Bonus Diari - PARCHE v23.2: BOTIGA DE LUXE - Pack sencer, sense partir, amb badges PREMIUM / GENIAL / COSMÈTIC - PARCHE v23.3: ESCOLES + BUSCADOR BIBLIOTECA - PARCHE v23.4 MINIJOC: 12 emojis + línia info minimizada sense p2_10 - RESTO IGUAL v23
+// main.js v23.5 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - PARCHE v23.5 MINIJOC: 10 emojis + 1 sola pantalla sense 1a linia - RESTO IGUAL v23
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -32,10 +32,8 @@ let minijoc={fraseObjectiu:null,emojisTriats:[],emojisDisponibles:[],plantillaAc
 const INTRO_SLIDES=[{emoji:"🙀",titol:"Benvingut a Cat Lingo",text:"Aprèn català en 5 minuts al dia."},{emoji:"⛷️",titol:"Vocabulari visual",text:"Toca emojis i aprèn paraules."},{emoji:"📝",titol:"Gramàtica fàcil",text:"Explicacions curtes amb exemples."},{emoji:"📚",titol:"Lectures adaptades",text:"Textos al teu nivell A1, A2 o B1."},{emoji:"🚀",titol:"A jugar!",text:"Prem Saltar per començar"}];
 let gramaticaMode='contextual'; let gramaticaTemaSeleccionat=null;
 let MAPA_DET = {};
-// v23.1: comptadors per bonus lectura i gramàtica
 let lecturaCorrectes = 0; let lecturaTotalPreguntes = 0; let lecturaBonusDonat = false;
 let gramaticaCorrectes = 0; let gramaticaTotalQuiz = 0; let gramaticaBonusDonat = false;
-// v23.3: filtre buscador Biblioteca
 let filtreBiblioteca = '';
 const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','emocio','clima','accio','esport']);
 function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
@@ -45,7 +43,6 @@ function actualitzarUI(){const m=document.getElementById('monedes'),n=document.g
 function regenerarEnergia(){const a=Date.now(),d=Math.floor((a-estat.ultimaRecargaEnergia)/60000);if(d>=5&&estat.progres.energia<100){const bl=Math.floor(d/5);estat.progres.energia=Math.min(100,estat.progres.energia+bl*30);estat.ultimaRecargaEnergia=a-((d%5)*60000);guardarEstat();actualitzarUI();}}
 function iniciarRegeneracioAutomatica(){setInterval(()=>{if(estat.progres.energia<100){estat.progres.energia=Math.min(100,estat.progres.energia+30);guardarEstat();actualitzarUI();if(document.getElementById('tab-missio')?.classList.contains('active'))renderMissio();}},5*60*1000);}
 function guardarEstat(){localStorage.setItem('cat_monedes',estat.monedes);localStorage.setItem('cat_compres',JSON.stringify(estat.compres));localStorage.setItem('cat_nivell',estat.progres.nivellActualMapa);localStorage.setItem('cat_encerts',estat.progres.encerts);localStorage.setItem('cat_frasesContador',estat.progres.frasesDesDeUltimNivell);localStorage.setItem('cat_energia',estat.progres.energia);localStorage.setItem('cat_ultimaEnergia',estat.ultimaRecargaEnergia);localStorage.setItem('cat_intro',JSON.stringify(estat.introVist));localStorage.setItem('cat_desbloquejats',JSON.stringify(estat.desbloquejats));localStorage.setItem('cat_personatge',estat.personatgeTriat);localStorage.setItem('cat_xp',estat.progres.xp);localStorage.setItem('cat_ratxa',estat.progres.ratxa||0);}
-// v23.1: BONUS DIARI - primera obertura del dia
 function donarBonusDiari(){
   const avui = new Date().toDateString();
   const ultim = localStorage.getItem('cat_bonus_diari');
@@ -61,7 +58,6 @@ function getGrupNivell(n){ if(n<=33) return 'A1'; if(n<=66) return 'A2'; return 
 function getColorNivell(n){ if(n<=33) return '#22c55e'; if(n<=66) return '#f59e0b'; return '#3b82f6'; }
 function getFonsNivell(n){ if(n<=33) return 'rgba(34,197,94,0.15)'; if(n<=66) return 'rgba(245,158,11,0.15)'; return 'rgba(59,130,246,0.15)'; }
 function encertsNecessarisPerNivell(n){ return 25 + Math.floor((Math.max(1,n)-1)/10)*5; }
-// v23.1: RECOMPENSES UNIFICADES I BONIFICADES
 function recompensaPerPlantilla(pl){ if(!pl) return 6; const id=(pl.id||''); if(id.startsWith('p7')||id.startsWith('p8')) return 15; if(id.startsWith('p4')||id.startsWith('p5')) return 10; if(id.startsWith('p1')) return 5; return 6; }
 function getPlantillesDisponibles(){ const nivell=estat.progres.nivellActualMapa||1; let llista=FRASES_MINIJOC.filter(p=>{ const minMapa=p.minMapa||1; return minMapa<=nivell; }); if(!llista.length) llista=FRASES_MINIJOC.filter(p=>(p.id||'').startsWith('p1')); if(!llista.length) llista=FRASES_MINIJOC; return llista; }
 function gastarEnergia(c){if(DEBUG_NO_ENERGIA)return true;if(estat.progres.energia<c)return false;estat.progres.energia-=c;guardarEstat();actualitzarUI();return true;}
@@ -110,7 +106,7 @@ function forcarLecturaVisible(){
     p = p.parentElement;
   }
 }
-function mostrarSubTab(sub){const tabActiva=document.querySelector('.tab-content.active');if(!tabActiva)return;tabActiva.querySelectorAll('.sub-tab-content').forEach(t=>t.style.display='none');document.querySelectorAll('.sub-tab-btn').forEach(b=>b.classList.remove('active'));const ids=[`lectura-${sub}`,`lectura-${sub}-inner`,`gremi-${sub}`,`lectura-${sub}-content`,`lectura-${sub}-texto`,`lectura-texto`,`gremi-${sub}-inner`,sub];let target=null;for(let id of ids){target=document.getElementById(id);if(target&&(tabActiva.contains(target)||sub==='lectura'))break;}if(!target){const todos=tabActiva.querySelectorAll('.sub-tab-content');if(sub==='lectura'&&todos[0])target=todos[0];if(sub==='vocab'&&todos[1])target=todos[1];if(sub==='gramatica'&&todos[2])target=todos[2];}if(target){target.style.display='block';const p=target.closest('.sub-tab-content');if(p)p.style.display='block';}document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));if(sub==='personatges')mostrarGremiPersonatges();if(sub==='biblioteca')renderDiccionari();if(sub==='minijoc')setTimeout(()=>novaFraseMinijoc(),100);if(sub==='gramatica')setTimeout(()=>generarGramatica(),10);if(sub==='vocab')setTimeout(()=>renderVocabLectura(),10);if(sub==='lectura'){const c=document.getElementById('lectura-texto');if(c&&lecturaActualHTML&&!c.innerHTML.trim())c.innerHTML=lecturaActualHTML;if(c)c.style.display='block';forcarLecturaVisible();}}
+function mostrarSubTab(sub){const tabActiva=document.querySelector('.tab-content.active');if(!tabActiva)return;if(tabActiva.id==='tab-gremi'){tabActiva.classList.toggle('minijoc-actiu', sub==='minijoc');}else{tabActiva.classList.remove('minijoc-actiu');}tabActiva.querySelectorAll('.sub-tab-content').forEach(t=>t.style.display='none');document.querySelectorAll('.sub-tab-btn').forEach(b=>b.classList.remove('active'));const ids=[`lectura-${sub}`,`lectura-${sub}-inner`,`gremi-${sub}`,`lectura-${sub}-content`,`lectura-${sub}-texto`,`lectura-texto`,`gremi-${sub}-inner`,sub];let target=null;for(let id of ids){target=document.getElementById(id);if(target&&(tabActiva.contains(target)||sub==='lectura'))break;}if(!target){const todos=tabActiva.querySelectorAll('.sub-tab-content');if(sub==='lectura'&&todos[0])target=todos[0];if(sub==='vocab'&&todos[1])target=todos[1];if(sub==='gramatica'&&todos[2])target=todos[2];}if(target){target.style.display='block';const p=target.closest('.sub-tab-content');if(p)p.style.display='block';}document.querySelectorAll(`.sub-tab-btn[onclick*="'${sub}'"]`).forEach(b=>b.classList.add('active'));if(sub==='personatges')mostrarGremiPersonatges();if(sub==='biblioteca')renderDiccionari();if(sub==='minijoc')setTimeout(()=>novaFraseMinijoc(),100);if(sub==='gramatica')setTimeout(()=>generarGramatica(),10);if(sub==='vocab')setTimeout(()=>renderVocabLectura(),10);if(sub==='lectura'){const c=document.getElementById('lectura-texto');if(c&&lecturaActualHTML&&!c.innerHTML.trim())c.innerHTML=lecturaActualHTML;if(c)c.style.display='block';forcarLecturaVisible();}}
 function mostrarIntro(){const el=document.getElementById('intro');if(!el)return;el.style.display='flex';slideActual=0;pintarSlide();el.onclick=()=>seguentSlide();}
 function pintarSlide(){const s=INTRO_SLIDES[slideActual];document.getElementById('intro-emoji').textContent=s.emoji;document.getElementById('intro-titol').textContent=s.titol;document.getElementById('intro-text').textContent=s.text;const d=document.getElementById('intro-dots');if(d)d.innerHTML=INTRO_SLIDES.map((_,i)=>`<span style="opacity:${i===slideActual?1:0.3}">●</span>`).join(' ');const b=document.getElementById('intro-btn');if(b){b.textContent=slideActual===INTRO_SLIDES.length-1?'Començar':'Següent';b.onclick=e=>{e.stopPropagation();seguentSlide();};}}
 function seguentSlide(){vibrar();if(slideActual<INTRO_SLIDES.length-1){slideActual++;pintarSlide();}else saltarIntro();}
@@ -121,7 +117,6 @@ function renderMissio(){const c=document.getElementById('missio-contenidor');if(
 function recarregarEnergia(){if(estat.progres.energia>=100){mostrarMissatge('Ja tens l\'energia al màxim!');return;}if(estat.monedes<50){mostrarMissatge('Necessites 50 monedes');return;}estat.monedes-=50;estat.progres.energia=100;estat.ultimaRecargaEnergia=Date.now();guardarEstat();actualitzarUI();renderMissio();vibrar();mostrarMissatge('Energia recarregada!');}
 function mostrarGremiPersonatges(){const c=document.getElementById('gremi-personatges');if(!c)return;let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat).emoji}</div><h3>${PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat).nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b></p><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});h+=`</div></div></div>`;c.innerHTML=h;}
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
-// v23.3 BIBLIOTECA AMB BUSCADOR - No toca recompenses ni Botiga
 function renderDiccionari(){
   const c=document.getElementById('gremi-biblioteca');if(!c)return;
   const q=(filtreBiblioteca||'').toLowerCase().trim();
@@ -307,14 +302,13 @@ function novaFraseMinijoc(){
   const{text,solucio}=generarFraseDinamicaLogica(pl,emojisUsables); minijoc.fraseObjectiu={text,solucio}; minijoc.plantillaActual=pl; minijoc.emojisTriats=[]; if(fraseEl) fraseEl.textContent=text; if(triatsEl) triatsEl.textContent='👆 Toca els emojis de baix per construir la frase'; if(feedbackEl) feedbackEl.innerHTML=''; if(nivellEl) nivellEl.textContent=`Nivell ${estat.progres.nivellActualMapa} · ${getGrupNivell(estat.progres.nivellActualMapa)} · ${solucio.length} emojis · 🔥 ${estat.progres.ratxa||0}/5 · Falten ${Math.max(0,encertsNecessarisPerNivell(estat.progres.nivellActualMapa)-(estat.progres.frasesDesDeUltimNivell||0))}`; generarOpcionsMinijoc(solucio);
 }
 function generarOpcionsMinijoc(solucio){
-  const grid=document.getElementById('minijoc-emojis');if(!grid)return; const num=12,numF=num-solucio.length;
+  const grid=document.getElementById('minijoc-emojis');if(!grid)return; const num=10,numF=num-solucio.length;
   let baseTot = BIBLIOTECA_PLA.map(e=>e.emoji);
   ['🎵','❤️'].forEach(e=>{ if(!baseTot.some(x=>quitarSkinTone(x)===quitarSkinTone(e))) baseTot.push(e); });
   if(baseTot.length===0) baseTot = PACK_INICIAL;
   const falsos=baseTot.filter(e=>!solucio.some(s=>quitarSkinTone(e)===quitarSkinTone(s))).sort(()=>0.5-Math.random()).slice(0,numF); const opcions=[...solucio,...falsos].sort(()=>0.5-Math.random()); minijoc.emojisDisponibles=opcions; grid.innerHTML=''; opcions.forEach((emoji,i)=>{ const ed=BIBLIOTECA_PLA.find(e=>quitarSkinTone(e.emoji)===quitarSkinTone(emoji)); const info = MAPA_DET[quitarSkinTone(emoji)]; const nomMostrar = ed?.nom_cat || info?.nom || ''; const div=document.createElement('div');div.className='emoji-item'; div.innerHTML=`<div class="emoji-large">${emoji}</div><div class="emoji-name">${nomMostrar}</div>`; div.onclick=()=>triarEmojiMinijoc(i); grid.appendChild(div); });
 }
 function triarEmojiMinijoc(idx){vibrar();if(!minijoc.fraseObjectiu) return;const emoji=minijoc.emojisDisponibles[idx],max=minijoc.fraseObjectiu.solucio.length;if(!emoji) return;if(minijoc.emojisTriats.length<max){minijoc.emojisTriats.push(emoji);const el=document.getElementById('minijoc-triats');if(el) el.textContent=minijoc.emojisTriats.join(' ');if(minijoc.emojisTriats.length===max)setTimeout(comprovarMinijoc,300);}}
-// v23.1: MINIJOC - ratxa bonus 10
 function comprovarMinijoc(){const fb=document.getElementById('minijoc-feedback');if(!fb||!minijoc.fraseObjectiu)return;const sol=minijoc.fraseObjectiu.solucio.map(quitarSkinTone).join(''),tri=minijoc.emojisTriats.map(quitarSkinTone).join('');if(sol===tri){const recompensa=recompensaPerPlantilla(minijoc.plantillaActual);let bonus=0;estat.progres.ratxa=(estat.progres.ratxa||0)+1;if(estat.progres.ratxa>=5){bonus=10;estat.progres.ratxa=0;mostrarMissatge('🔥 Ratxa de 5! +10 bonus');}estat.monedes+=recompensa+bonus;fb.innerHTML=`<p style="color:#4CAF50;font-weight:bold;">Correcte! +${recompensa} 🪙${bonus?` +${bonus} bonus ratxa`:''} · Ratxa ${estat.progres.ratxa}/5</p>`;estat.progres.encerts++;estat.progres.frasesDesDeUltimNivell++;const necessaris=encertsNecessarisPerNivell(estat.progres.nivellActualMapa);if(estat.progres.frasesDesDeUltimNivell>=necessaris&&estat.progres.nivellActualMapa<100){estat.progres.nivellActualMapa++;estat.progres.frasesDesDeUltimNivell=0;mostrarMissatge(`🔓 Nivell ${estat.progres.nivellActualMapa} desbloquejat! (${getGrupNivell(estat.progres.nivellActualMapa)})`);}guardarEstat();actualitzarUI();setTimeout(()=>novaFraseMinijoc(),1500);}else{estat.progres.ratxa=0;guardarEstat();fb.innerHTML=`<p style="color:#f44336;">No és així. Era: ${minijoc.fraseObjectiu.solucio.join(' ')} · Ratxa a 0</p>`;setTimeout(()=>novaFraseMinijoc(),2000);}}
 async function cargarBancoLectura(){
   if(BANCO_LECTURA && BANCO_LECTURA.a1 && BANCO_LECTURA.a1.plantillas) return BANCO_LECTURA;
@@ -414,7 +408,6 @@ async function generarLectura(){
   const html = `<div class="lectura-card"><h3>${tit} ${badge}</h3><p class="lectura-text" style="line-height:1.7;font-size:16px;">${lecturaActualText}</p><div style="margin-top:10px;font-size:12px;color:#aaa;">Tema: ${plantilla.topic||''} | ${plantilla.topic_cat||''} | Vocabulari: ${vocabCat.slice(0,5).join(', ')}</div><div class="lectura-preguntes" style="margin-top:20px;">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" style="margin-top:8px;"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">🔄 Nova lectura (${data.plantillas.length} disponibles)</button></div>`;
   lecturaActualHTML = html; const el = document.getElementById('lectura-texto'); if(el){ el.innerHTML = html; el.style.display = 'block'; el.style.visibility='visible'; forcarLecturaVisible(); } renderVocabLectura();
 }
-// v23.1: LECTURA - cada pregunta +5, completar lectura +15
 function comprovarPregunta(i,r){
   const p=lecturaActualPreguntes[i],fb=document.getElementById(`feedback-${i}`);if(!fb)return;
   if(r===p.correcta){
@@ -469,7 +462,6 @@ async function generarGramatica(){
     </div>
   </div>`;
 }
-// v23.1: GRAMÀTICA - cada quiz +3, 3/3 +10 bonus
 function comprovarQuizGramatica(i, j, btn){
   const g = lecturaContext._gramatica; if(!g || !g.mini_quiz) return;
   const p = g.mini_quiz[i]; const fb = document.getElementById('quiz-gram-'+i);
@@ -496,8 +488,6 @@ function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
 window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;window.comprovarQuizGramatica=comprovarQuizGramatica;
 function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)totsElsTips=dadesTips[n]||[];mostrarTipRandom();}
 function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
-
-// ===== v23.2 BOTIGA DE LUXE - Pack sencer, sense partir, amb badges =====
 function esPackComprat(pack){
   if(estat.compres.includes(pack.id)) return true;
   return estat.compres.some(id => id === pack.id || id.startsWith(pack.id + '_p'));
@@ -576,4 +566,4 @@ function comprarPack(id, preu){
   vibrar();
   mostrarMissatge('Pack desbloquejat! 🎉');
 }
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});} 
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW error:',e));});}
