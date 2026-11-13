@@ -307,6 +307,19 @@ header {
   font-size:10px !important;
 }
 .nav-item:last-child{ margin-right:6px !important; }
+/* ===== v24.5 TIPS - PANTALLA COMPLETA, 14 TARGETES, SENSE 1 LÍNIA ===== */
+#tab-tips { padding: 12px !important; }
+#tab-tips .tip-card { max-width: 960px !important; width: 100% !important; padding: 18px 14px 16px !important; text-align: left !important; }
+#tab-tips .tip-text { text-align: center !important; font-size: 22px !important; line-height: 1.35 !important; margin: 14px 0 6px !important; }
+#tab-tips h3 { text-align: center !important; }
+#tip-exemple { background: transparent !important; border: none !important; padding: 0 !important; font-style: normal !important; white-space: normal !important; overflow: visible !important; display: block !important; }
+.tips-llista { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-top: 14px !important; text-align: left !important; }
+.tip-item { background: #1a2e1a !important; border: 1px solid #2e7d32 !important; border-radius: 12px !important; padding: 12px 10px !important; font-size: 15px !important; line-height: 1.35 !important; color: #fff !important; display: flex !important; gap: 8px !important; align-items: flex-start !important; }
+.tip-item b { background: #22c55e !important; color: #000 !important; min-width: 26px !important; height: 26px !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 13px !important; flex-shrink: 0 !important; }
+.tip-item span { flex: 1 !important; }
+#tip-lectura, #tip-num { text-align: center !important; font-size: 12px !important; color: var(--accent-soft) !important; font-weight: 700 !important; margin-top: 8px !important; }
+#tip-num { color: #aaa !important; font-weight: 400 !important; margin-top: 4px !important; }
+@media (max-width: 380px) { .tips-llista { grid-template-columns: 1fr !important; } .tip-item { font-size: 16px !important; padding: 14px 12px !important; } }
 </style>
 </head>
 <body>
@@ -382,6 +395,8 @@ header {
     <p id="tip-text" class="tip-text">Carregant...</p>
     <p id="tip-exemple" class="tip-exemple"></p>
     <p id="tip-tema" class="tip-tema"></p>
+    <p id="tip-lectura" class="tip-tema"></p>
+    <p id="tip-num" class="tip-tema" style="color:#aaa;font-weight:400;"></p>
     <div class="tip-actions">
       <button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip ➡️</button>
       <button class="btn tip-btn-lectura" onclick="canviarTab('lectura',null)">📖 Anar a Lectura</button>
@@ -472,4 +487,4 @@ function renderDiccionari(){
 }
 </script>
 </body>
-</html> 
+</html>
