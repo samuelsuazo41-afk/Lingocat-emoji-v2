@@ -240,25 +240,40 @@ header {
 #gremi-minijoc.minijoc-molt-llarg #minijoc-emojis .emoji-item{ padding:4px 2px !important; }
 #gremi-minijoc.minijoc-molt-llarg #minijoc-emojis .emoji-large{ font-size:20px !important; }
 #gremi-minijoc.minijoc-molt-llarg #minijoc-frase{ padding:8px 10px !important; font-size:16px !important; }
+/* ===== v23.7 MINIJOC - INSTRUCCIO SEMPRE VISIBLE + CAIXA VERDA QUAN COMPLET ===== */
+#minijoc-instruccio{
+  font-size:11px !important;
+  color:#888 !important;
+  text-align:center;
+  margin-bottom:8px !important;
+  margin-top:-2px !important;
+  line-height:1.3 !important;
+}
+#minijoc-triats.complet{
+  border-color:#2ECC71 !important;
+  background:rgba(46,204,113,0.12) !important;
+  border-style:solid !important;
+  box-shadow:0 0 10px rgba(46,204,113,0.25) !important;
+}
+#minijoc-instruccio.complet{
+  color:#2ECC71 !important;
+  font-weight:700 !important;
+}
 </style>
 </head>
 <body>
-
 <header>
   <div style="font-weight: bold; font-size: 18px;">🐱 Cat Lingo Emoji</div>
   <div class="header-stats">
     <span>🪙 <span id="monedes">0</span></span>
     <div class="stat-progress">
       <span id="header-personatge">👨</span>
-      <div class="progress-bar">
-        <div id="barra-progres" class="progress-fill"></div>
-      </div>
+      <div class="progress-bar"><div id="barra-progres" class="progress-fill"></div></div>
       <span class="stat-level"><span id="nivell">1</span></span>
     </div>
     <span>⚡ <span id="energia">100</span></span>
   </div>
 </header>
-
 <div id="intro" class="intro-overlay" style="display:none;">
   <div class="intro-content">
     <div id="intro-emoji" class="intro-emoji">👋</div>
@@ -269,15 +284,8 @@ header {
     <button class="btn btn-sec" onclick="saltarIntro()" style="margin-top:8px;">Saltar</button>
   </div>
 </div>
-
-<div id="tab-mapa" class="tab-content">
-  <div id="mapa-contenidor"></div>
-</div>
-
-<div id="tab-missio" class="tab-content">
-  <div id="missio-contenidor"></div>
-</div>
-
+<div id="tab-mapa" class="tab-content"><div id="mapa-contenidor"></div></div>
+<div id="tab-missio" class="tab-content"><div id="missio-contenidor"></div></div>
 <div id="tab-gremi" class="tab-content">
   <div class="sub-tabs">
     <button class="sub-tab-btn active" onclick="mostrarSubTab('personatges')">Personatges</button>
@@ -293,13 +301,13 @@ header {
         <div id="minijoc-frase" class="minijoc-frase">Carregant...</div>
         <div id="minijoc-professor">👩‍🏫 A classe: llegeix en veu alta, després tria els emojis</div>
         <div id="minijoc-triats" class="minijoc-triats"></div>
+        <div id="minijoc-instruccio">👆 Toca els emojis en ordre per completar la frase</div>
         <div id="minijoc-emojis" class="emoji-grid"></div>
         <div id="minijoc-feedback" class="minijoc-feedback"></div>
       </div>
     </div>
   </div>
 </div>
-
 <div id="tab-lectura" class="tab-content">
   <div class="sub-tabs">
     <button class="sub-tab-btn active" onclick="mostrarSubTab('lectura')">Lectura</button>
@@ -307,118 +315,36 @@ header {
     <button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">Gramàtica</button>
   </div>
   <div id="lectura-contenidor">
-    <div id="lectura-lectura" class="sub-tab-content" style="display:block;">
-      <div id="lectura-texto"></div>
-    </div>
-    <div id="lectura-vocab" class="sub-tab-content" style="display:none;">
-      <div id="lectura-vocab-inner"></div>
-    </div>
-    <div id="lectura-gramatica" class="sub-tab-content" style="display:none;">
-      <div id="lectura-gramatica-inner"></div>
-    </div>
+    <div id="lectura-lectura" class="sub-tab-content" style="display:block;"><div id="lectura-texto"></div></div>
+    <div id="lectura-vocab" class="sub-tab-content" style="display:none;"><div id="lectura-vocab-inner"></div></div>
+    <div id="lectura-gramatica" class="sub-tab-content" style="display:none;"><div id="lectura-gramatica-inner"></div></div>
   </div>
-  <div style="display:none;">
-    <div id="gremi-lectura"></div>
-    <div id="gremi-vocab"></div>
-    <div id="gremi-gramatica"></div>
-    <div id="lectura-vocab-content"></div>
-    <div id="lectura-gramatica-content"></div>
-  </div>
+  <div style="display:none;"><div id="gremi-lectura"></div><div id="gremi-vocab"></div><div id="gremi-gramatica"></div><div id="lectura-vocab-content"></div><div id="lectura-gramatica-content"></div></div>
 </div>
-
 <div id="tab-tips" class="tab-content">
-  <div class="tip-card">
-    <h3 style="color:#000;">💡 Truc del dia</h3>
-    <p id="tip-text" class="tip-text">Carregant...</p>
-    <p id="tip-exemple" class="tip-exemple"></p>
-    <button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip</button>
-  </div>
+  <div class="tip-card"><h3 style="color:#000;">💡 Truc del dia</h3><p id="tip-text" class="tip-text">Carregant...</p><p id="tip-exemple" class="tip-exemple"></p><button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip</button></div>
 </div>
-
 <div id="tab-escoles" class="tab-content">
   <div style="max-width:600px;margin:0 auto;">
-    <div style="background:linear-gradient(135deg,#22c55e,#00D4AA);border-radius:16px;padding:24px;text-align:center;color:#000;">
-      <div style="font-size:48px;">🏫</div>
-      <h2 style="font-size:24px;margin:8px 0;">Per a escoles i ajuntaments</h2>
-      <p style="font-weight:700;">Aprendre català jugant. Sense pagar res. Sense anuncis. Sense compte.</p>
-    </div>
-    <div class="escoles-card">
-      <h3>📚 Què aprenen els alumnes?</h3>
-      <p>✅ <b>100 nivells</b> - A1 (1-33) · A2 (34-66) · B1 (67-100)</p>
-      <p>✅ <b>Minijoc</b> - 68 plantilles de frases amb emojis</p>
-      <p>✅ <b>Lectura</b> adaptada al nivell + Vocabulari + Gramàtica</p>
-      <p>✅ <b>500+ emojis</b> - 57 packs de Biblioteca</p>
-      <p>✅ <b>5 minuts al dia</b> - Ideal per a aula o casa</p>
-    </div>
-    <div class="escoles-card">
-      <h3>🪙 Com guanyen monedes? Sense pagar res.</h3>
-      <p>🎯 Minijoc: <b>5-15 🪙</b> per frase correcta</p>
-      <p>📚 Lectura: <b>+5 🪙</b> per pregunta + <b>+15 🪙</b> bonus</p>
-      <p>📖 Gramàtica: <b>+3 🪙</b> per quiz + <b>+10 🪙</b> si fa 3/3</p>
-      <p>🔥 Ratxa 5: <b>+10 🪙</b> bonus</p>
-      <p>🎁 Bonus diari: <b>+10 🪙</b> per tornar</p>
-      <p style="font-size:13px;color:#aaa;margin-top:8px;">Amb aquestes monedes desbloquegen tota la Biblioteca. No hi ha pagament extern.</p>
-    </div>
-    <div class="escoles-card">
-      <h3>🛡️ Seguretat per al centre</h3>
-      <p>🔒 Sense registre, sense correu, sense nom dels alumnes</p>
-      <p>🚫 Sense anuncis, sense compres amb diners reals</p>
-      <p>📱 Funciona a mòbil, tauleta i ordinador</p>
-      <p>🏠 Tot es guarda al dispositiu de l'alumne</p>
-    </div>
-    <div class="escoles-card" style="border-color:#fbbf24;">
-      <h3>👩‍🏫 Per a mestres - Com usar-la a classe?</h3>
-      <p><b>1.</b> 5 min Minijoc per començar la classe</p>
-      <p><b>2.</b> 1 Lectura del nivell de l'alumne</p>
-      <p><b>3.</b> 1 Lliçó de Gramàtica contextual</p>
-      <p><b>4.</b> L'alumne desbloqueja 1 pack de Biblioteca amb les monedes</p>
-      <p style="margin-top:10px;">Ex: Avui toquem <b>Fruites</b> -> Minijoc amb 🍎🍐🍊 -> Lectura de fruites -> Desbloquegen pack Fruites</p>
-    </div>
-    <div style="text-align:center;margin:20px 0;">
-      <button class="btn btn-primari" style="font-size:16px;padding:14px 24px;" onclick="canviarTab('botiga',null)">🎁 Veure la Botiga · 57 packs</button>
-      <br>
-      <button class="btn btn-sec" style="margin-top:10px;" onclick="canviarTab('gremi',null);mostrarSubTab('biblioteca')">📚 Veure la Biblioteca</button>
-    </div>
+    <div style="background:linear-gradient(135deg,#22c55e,#00D4AA);border-radius:16px;padding:24px;text-align:center;color:#000;"><div style="font-size:48px;">🏫</div><h2 style="font-size:24px;margin:8px 0;">Per a escoles i ajuntaments</h2><p style="font-weight:700;">Aprendre català jugant. Sense pagar res. Sense anuncis. Sense compte.</p></div>
+    <div class="escoles-card"><h3>📚 Què aprenen els alumnes?</h3><p>✅ <b>100 nivells</b> - A1 (1-33) · A2 (34-66) · B1 (67-100)</p><p>✅ <b>Minijoc</b> - 68 plantilles de frases amb emojis</p><p>✅ <b>Lectura</b> adaptada al nivell + Vocabulari + Gramàtica</p><p>✅ <b>500+ emojis</b> - 57 packs de Biblioteca</p><p>✅ <b>5 minuts al dia</b> - Ideal per a aula o casa</p></div>
+    <div class="escoles-card"><h3>🪙 Com guanyen monedes? Sense pagar res.</h3><p>🎯 Minijoc: <b>5-15 🪙</b> per frase correcta</p><p>📚 Lectura: <b>+5 🪙</b> per pregunta + <b>+15 🪙</b> bonus</p><p>📖 Gramàtica: <b>+3 🪙</b> per quiz + <b>+10 🪙</b> si fa 3/3</p><p>🔥 Ratxa 5: <b>+10 🪙</b> bonus</p><p>🎁 Bonus diari: <b>+10 🪙</b> per tornar</p><p style="font-size:13px;color:#aaa;margin-top:8px;">Amb aquestes monedes desbloquegen tota la Biblioteca. No hi ha pagament extern.</p></div>
+    <div class="escoles-card"><h3>🛡️ Seguretat per al centre</h3><p>🔒 Sense registre, sense correu, sense nom dels alumnes</p><p>🚫 Sense anuncis, sense compres amb diners reals</p><p>📱 Funciona a mòbil, tauleta i ordinador</p><p>🏠 Tot es guarda al dispositiu de l'alumne</p></div>
+    <div class="escoles-card" style="border-color:#fbbf24;"><h3>👩‍🏫 Per a mestres - Com usar-la a classe?</h3><p><b>1.</b> 5 min Minijoc per començar la classe</p><p><b>2.</b> 1 Lectura del nivell de l'alumne</p><p><b>3.</b> 1 Lliçó de Gramàtica contextual</p><p><b>4.</b> L'alumne desbloqueja 1 pack de Biblioteca amb les monedes</p><p style="margin-top:10px;">Ex: Avui toquem <b>Fruites</b> -> Minijoc amb 🍎🍐🍊 -> Lectura de fruites -> Desbloquegen pack Fruites</p></div>
+    <div style="text-align:center;margin:20px 0;"><button class="btn btn-primari" style="font-size:16px;padding:14px 24px;" onclick="canviarTab('botiga',null)">🎁 Veure la Botiga · 57 packs</button><br><button class="btn btn-sec" style="margin-top:10px;" onclick="canviarTab('gremi',null);mostrarSubTab('biblioteca')">📚 Veure la Biblioteca</button></div>
   </div>
 </div>
-
-<div id="tab-botiga" class="tab-content">
-  <div id="botiga-contenidor"></div>
-</div>
-
+<div id="tab-botiga" class="tab-content"><div id="botiga-contenidor"></div></div>
 <nav class="bottom-nav">
-  <button class="nav-item active" onclick="canviarTab('mapa', event)">
-    <span class="nav-icon">🗺️</span>
-    <span>Mapa</span>
-  </button>
-  <button class="nav-item" onclick="canviarTab('missio', event)">
-    <span class="nav-icon">🎯</span>
-    <span>Missió</span>
-  </button>
-  <button class="nav-item" onclick="canviarTab('gremi', event)">
-    <span class="nav-icon">🏛️</span>
-    <span>Gremi</span>
-  </button>
-  <button class="nav-item" onclick="canviarTab('lectura', event)">
-    <span class="nav-icon">📖</span>
-    <span>Lectura</span>
-  </button>
-  <button class="nav-item" onclick="canviarTab('tips', event)">
-    <span class="nav-icon">💡</span>
-    <span>Tips</span>
-  </button>
-  <button class="nav-item" onclick="canviarTab('escoles', event)">
-    <span class="nav-icon">🏫</span>
-    <span>Escoles</span>
-  </button>
-  <button class="nav-item" onclick="canviarTab('botiga', event)">
-    <span class="nav-icon">🛒</span>
-    <span>Botiga</span>
-  </button>
+  <button class="nav-item active" onclick="canviarTab('mapa', event)"><span class="nav-icon">🗺️</span><span>Mapa</span></button>
+  <button class="nav-item" onclick="canviarTab('missio', event)"><span class="nav-icon">🎯</span><span>Missió</span></button>
+  <button class="nav-item" onclick="canviarTab('gremi', event)"><span class="nav-icon">🏛️</span><span>Gremi</span></button>
+  <button class="nav-item" onclick="canviarTab('lectura', event)"><span class="nav-icon">📖</span><span>Lectura</span></button>
+  <button class="nav-item" onclick="canviarTab('tips', event)"><span class="nav-icon">💡</span><span>Tips</span></button>
+  <button class="nav-item" onclick="canviarTab('escoles', event)"><span class="nav-icon">🏫</span><span>Escoles</span></button>
+  <button class="nav-item" onclick="canviarTab('botiga', event)"><span class="nav-icon">🛒</span><span>Botiga</span></button>
 </nav>
-
 <div id="app-message" style="display:none;"></div>
-
 <script src="./main.js"></script>
 <script>
 let filtreBiblioteca = '';
@@ -442,13 +368,8 @@ function renderDiccionari(){
   let h = `
     <h3 style="text-align:center;">📚 Biblioteca</h3>
     <p style="text-align:center;color:#aaa;font-size:13px;">${desbloquejats} de ${total} desbloquejats · ${pct}%</p>
-    <div style="width:100%;height:8px;background:#333;border-radius:4px;margin:8px 0 14px;">
-      <div style="width:${pct}%;height:100%;background:#22c55e;border-radius:4px;"></div>
-    </div>
-    <input id="cerca-biblioteca" type="text" placeholder="🔍 Busca: gos, poma, bandera, cotxe..."
-      value="${filtreBiblioteca.replace(/"/g,'')}"
-      oninput="filtreBiblioteca=this.value;renderDiccionari();"
-      class="cerca-biblioteca">
+    <div style="width:100%;height:8px;background:#333;border-radius:4px;margin:8px 0 14px;"><div style="width:${pct}%;height:100%;background:#22c55e;border-radius:4px;"></div></div>
+    <input id="cerca-biblioteca" type="text" placeholder="🔍 Busca: gos, poma, bandera, cotxe..." value="${filtreBiblioteca.replace(/"/g,'')}" oninput="filtreBiblioteca=this.value;renderDiccionari();" class="cerca-biblioteca">
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
       <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='';renderDiccionari();">Tot</button>
       <button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='gos';renderDiccionari();">🐶 Animals</button>
@@ -462,10 +383,7 @@ function renderDiccionari(){
   for(const [cat, emojis] of Object.entries(BIBLIOTECA_POR_CAT || {})){
     const filtrats = emojis.filter(e => {
       if(!q) return true;
-      return (e.nom_cat || '').toLowerCase().includes(q) ||
-             (e.categoria || '').toLowerCase().includes(q) ||
-             (e.para_frases || []).join(' ').toLowerCase().includes(q) ||
-             cat.toLowerCase().includes(q);
+      return (e.nom_cat || '').toLowerCase().includes(q) || (e.categoria || '').toLowerCase().includes(q) || (e.para_frases || []).join(' ').toLowerCase().includes(q) || cat.toLowerCase().includes(q);
     });
     if(!filtrats.length) continue;
     trobat = true;
@@ -483,9 +401,7 @@ function renderDiccionari(){
     });
     h += `</div>`;
   }
-  if(!trobat){
-    h += `<div style="text-align:center;padding:30px;opacity:.6;">No hi ha resultats per "<b>${filtreBiblioteca}</b>"<br><button class="btn btn-sec" onclick="filtreBiblioteca='';renderDiccionari();">Veure tot</button></div>`;
-  }
+  if(!trobat){ h += `<div style="text-align:center;padding:30px;opacity:.6;">No hi ha resultats per "<b>${filtreBiblioteca}</b>"<br><button class="btn btn-sec" onclick="filtreBiblioteca='';renderDiccionari();">Veure tot</button></div>`; }
   c.innerHTML = h;
   const input = document.getElementById('cerca-biblioteca');
   if(input && q){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
