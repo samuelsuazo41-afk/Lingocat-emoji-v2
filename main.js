@@ -1,4 +1,4 @@
-// main.js v23.7 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - PARCHE v23.6 MINIJOC: 10/12/14 DINAMIC + huecos - PARCHE v23.7 MINIJOC: instruccio sempre visible + caixa verda quan complet - RESTO IGUAL v23
+// main.js v23.8 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - PARCHE v23.8 MINIJOC: DESFER + BOTTOM NAV - RESTO IGUAL v23
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -288,9 +288,16 @@ function generarFraseDinamicaLogica(pl, jug){
 }
 function generarFraseDinamica(pl, jug){ return generarFraseDinamicaLogica(pl, jug); }
 let _ultimaPlantillaMinijoc = null;
-// v23.6 + v23.7: huecos + contador + profes + instruccio sempre visible + caixa verda
+// v23.6 + v23.7 + v23.8: huecos + instruccio + caixa verda + desfer
+function desferUltimEmoji(){
+  if(!minijoc.fraseObjectiu) return;
+  if(!minijoc.emojisTriats.length) return;
+  vibrar();
+  minijoc.emojisTriats.pop();
+  actualitzarTriatsMinijoc();
+}
 function actualitzarTriatsMinijoc(){
-  const el=document.getElementById('minijoc-triats'); const prof=document.getElementById('minijoc-professor'); const cont=document.getElementById('gremi-minijoc'); const inst=document.getElementById('minijoc-instruccio');
+  const el=document.getElementById('minijoc-triats'); const prof=document.getElementById('minijoc-professor'); const cont=document.getElementById('gremi-minijoc'); const inst=document.getElementById('minijoc-instruccio'); const btnDesfer=document.getElementById('minijoc-desfer');
   if(!el||!minijoc.fraseObjectiu) return;
   const total=minijoc.fraseObjectiu.solucio.length; const fets=minijoc.emojisTriats.length;
   const parts=[];
@@ -304,6 +311,7 @@ function actualitzarTriatsMinijoc(){
     inst.textContent = complet ? '✅ Frase completa! Molt bé!' : '👆 Toca els emojis en ordre per completar la frase';
     inst.classList.toggle('complet', complet);
   }
+  if(btnDesfer) btnDesfer.disabled = fets===0;
   if(cont){ cont.classList.toggle('minijoc-llarg', total===4); cont.classList.toggle('minijoc-molt-llarg', total>=5); }
 }
 function novaFraseMinijoc(){
