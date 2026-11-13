@@ -1,4 +1,4 @@
-// main.js v23.6 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - PARCHE v23.5 MINIJOC: 10 emojis + 1 sola pantalla sense 1a linia - PARCHE v23.6 MINIJOC: 10/12/14 DINAMIC + huecos 1/4 + profes - RESTO IGUAL v23
+// main.js v23.7 COMPLET - 68 PLANTILLAS - A1 1-33 + A2 34-66 + B1 67-100 - PARCHE v23.6 MINIJOC: 10/12/14 DINAMIC + huecos - PARCHE v23.7 MINIJOC: instruccio sempre visible + caixa verda quan complet - RESTO IGUAL v23
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -288,9 +288,9 @@ function generarFraseDinamicaLogica(pl, jug){
 }
 function generarFraseDinamica(pl, jug){ return generarFraseDinamicaLogica(pl, jug); }
 let _ultimaPlantillaMinijoc = null;
-// v23.6: huecos + contador + profes - NO TOCA LA LOGICA DE FRASES
+// v23.6 + v23.7: huecos + contador + profes + instruccio sempre visible + caixa verda
 function actualitzarTriatsMinijoc(){
-  const el=document.getElementById('minijoc-triats'); const prof=document.getElementById('minijoc-professor'); const cont=document.getElementById('gremi-minijoc');
+  const el=document.getElementById('minijoc-triats'); const prof=document.getElementById('minijoc-professor'); const cont=document.getElementById('gremi-minijoc'); const inst=document.getElementById('minijoc-instruccio');
   if(!el||!minijoc.fraseObjectiu) return;
   const total=minijoc.fraseObjectiu.solucio.length; const fets=minijoc.emojisTriats.length;
   const parts=[];
@@ -298,7 +298,12 @@ function actualitzarTriatsMinijoc(){
   const complet = fets===total;
   el.textContent = parts.join(' ') + '  ·  ' + fets + '/' + total + (complet ? ' ✅' : '');
   el.classList.toggle('llarg', total>=4);
+  el.classList.toggle('complet', complet);
   if(prof) prof.style.display = fets===0 ? 'block' : 'none';
+  if(inst){
+    inst.textContent = complet ? '✅ Frase completa! Molt bé!' : '👆 Toca els emojis en ordre per completar la frase';
+    inst.classList.toggle('complet', complet);
+  }
   if(cont){ cont.classList.toggle('minijoc-llarg', total===4); cont.classList.toggle('minijoc-molt-llarg', total>=5); }
 }
 function novaFraseMinijoc(){
