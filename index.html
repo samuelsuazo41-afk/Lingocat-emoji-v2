@@ -71,9 +71,20 @@ header {
 .lectura-preguntes button { display: block; width: 100%; margin: 5px 0; text-align: left; }
 .lectura-opcio { transition: all 0.15s ease; }
 .lectura-opcio:disabled { cursor: default; opacity: 0.6; }
-.tip-card { background: linear-gradient(135deg, var(--accent), var(--accent-soft)); border-radius: 16px; padding: 24px; max-width: 600px; margin: 0 auto; text-align: center; }
-.tip-text { font-size: 18px; margin: 16px 0; color: #000; font-weight: 700; }
-.tip-exemple { color: rgba(0,0,0,0.7); font-style: italic; margin-top: 12px; }
+/* ===== v24.1 TIPS 120 - Llegible, nivell + tema + comptador ===== */
+.tip-card { background: var(--card); border: 2px solid var(--accent); border-radius: 16px; padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
+.tip-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.tip-badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; background: var(--accent); color: #000; }
+.tip-badge.a1 { background: #22c55e; color: #000; }
+.tip-badge.a2 { background: #f59e0b; color: #000; }
+.tip-badge.b1 { background: #3b82f6; color: #fff; }
+.tip-comptador { font-size: 12px; color: var(--text-muted); font-weight: 700; }
+.tip-text { font-size: 20px; line-height: 1.4; margin: 12px 0; color: #fff; font-weight: 700; }
+.tip-exemple { background: rgba(46,204,113,0.12); border: 1px solid var(--accent); border-radius: 10px; padding: 12px; color: #fff; font-style: italic; margin-top: 14px; font-size: 16px; line-height: 1.4; }
+.tip-tema { font-size: 12px; color: var(--accent-soft); margin-top: 10px; font-weight: 700; }
+.tip-actions { display: flex; gap: 8px; margin-top: 16px; }
+.tip-actions .btn { flex: 1; margin-top: 0; }
+.tip-btn-lectura { background: #1e293b !important; color: #fff !important; border: 1px solid #3b82f6 !important; }
 .minijoc-container { max-width: 600px; margin: 0 auto; }
 .minijoc-frase { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-size: 20px; text-align: center; margin-bottom: 20px; }
 .minijoc-triats { min-height: 50px; background: var(--bg-elevated); border: 2px dashed var(--border); border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: center; }
@@ -362,7 +373,20 @@ header {
   <div style="display:none;"><div id="gremi-lectura"></div><div id="gremi-vocab"></div><div id="gremi-gramatica"></div><div id="lectura-vocab-content"></div><div id="lectura-gramatica-content"></div></div>
 </div>
 <div id="tab-tips" class="tab-content">
-  <div class="tip-card"><h3 style="color:#000;">💡 Truc del dia</h3><p id="tip-text" class="tip-text">Carregant...</p><p id="tip-exemple" class="tip-exemple"></p><button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip</button></div>
+  <div class="tip-card">
+    <div class="tip-top">
+      <span id="tip-nivell" class="tip-badge a1">A1</span>
+      <span id="tip-comptador" class="tip-comptador">1 / 40</span>
+    </div>
+    <h3 style="color:#fff;">💡 Truc del dia</h3>
+    <p id="tip-text" class="tip-text">Carregant...</p>
+    <p id="tip-exemple" class="tip-exemple"></p>
+    <p id="tip-tema" class="tip-tema"></p>
+    <div class="tip-actions">
+      <button class="btn btn-primari" onclick="mostrarTipRandom()">Següent tip ➡️</button>
+      <button class="btn tip-btn-lectura" onclick="canviarTab('lectura',null)">📖 Anar a Lectura</button>
+    </div>
+  </div>
 </div>
 <div id="tab-escoles" class="tab-content">
   <div style="max-width:600px;margin:0 auto;">
