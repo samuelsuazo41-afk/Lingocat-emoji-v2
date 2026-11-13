@@ -1,4 +1,4 @@
-// main.js v23.12 COMPLET - 68 PLANTILLAS VERIFICADAS - A1 1-33 + A2 34-66 + B1 67-100 - PARCHE v23.12: ELIMINADA "Frase completa! Molt bé!" + v23.11 NO REPETIR + SENSE DUPLICATS + ELS/LES + v23.10 NUMERO U + P7_1 + FA NEU + v23.9 L' + H MUDA - LECTURA NO TOCADA
+// main.js v24.1 COMPLET - 68 PLANTILLAS MINIJOC + 50 LECTURES + 120 TIPS (40 A1 + 40 A2 + 40 B1) - ENLLAÇAT: TIPS PER TEMA DE LECTURA + LECTURA -> MINIJOC - PARCHE v24.1: TIPS 120 + MOTOR LECTURA ENLLAÇAT + CONTRAURE HA D' - RESTO IGUAL v23.12
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); deferredPrompt = e;
@@ -36,6 +36,108 @@ let lecturaCorrectes = 0; let lecturaTotalPreguntes = 0; let lecturaBonusDonat =
 let gramaticaCorrectes = 0; let gramaticaTotalQuiz = 0; let gramaticaBonusDonat = false;
 let filtreBiblioteca = '';
 const CATS_SENSE_ARTICLE = new Set(['numero','direccio','temps','emocio','clima','accio','esport']);
+// ===== v24.1 ENLLAÇ TIPS 120 -> LECTURA -> MINIJOC - Per paraules clau, sense tocar tips.json net =====
+const ENLLAC_LECTURA_MINIJOC = {
+  'La Meva Rutina del Matí': ['p1_9','p3_8'],
+  'La Meva Família': ['p4_1','p5_1'],
+  'La Meva Escola': ['p2_2','p2_9'],
+  'La Meva Casa': ['p6_1','p6_4'],
+  'Els Meus Amics': ['p4_1','p5_1'],
+  'El Meu Menjar': ['p6_1','p6_2'],
+  'La Meva Ciutat': ['p2_2','p6_3'],
+  'El Meu Dia': ['p1_9','p4_3'],
+  'El Meu Hobby': ['p2_1','p4_6'],
+  'La Meva Mascota': ['p2_5','p3_10'],
+  'La Meva Mestra': ['p2_8','p8_8'],
+  'La Meva Roba': ['p1_2','p2_7'],
+  'El Meu Cos': ['p6_1','p6_4'],
+  'La Meva Setmana': ['p4_2','p8_6'],
+  'Les Meves Joguines': ['p3_2','p4_2'],
+  'Hàbits Diaris': ['p7_3','p8_2'],
+  'Vida Saludable': ['p7_3','p8_4'],
+  'Aprendre Català': ['p3_9','p6_5'],
+  'Viatjar': ['p2_9','p8_10'],
+  'La Música': ['p3_9','p8_5'],
+  'Mentalitat Positiva': ['p5_6','p7_2'],
+  'La Por': ['p5_1','p7_1'],
+  "L'Èxit": ['p7_2','p7_6'],
+  'El Progrés': ['p7_4','p7_6'],
+  'La Motivació': ['p7_2','p7_6'],
+  'La Concentració': ['p7_3','p8_2'],
+  "L'Amistat": ['p5_2','p5_4'],
+  'La Gratitud': ['p5_2','p5_4'],
+  'La Creativitat': ['p8_7','p8_9'],
+  'La Tecnologia': ['p2_6','p3_2'],
+  'El Medi Ambient': ['p1_6','p6_4'],
+  "L'Esport": ['p2_1','p4_6'],
+  'La Lectura': ['p6_5','p8_5'],
+  'Cuinar': ['p4_5','p6_1'],
+  'El Canvi Climàtic': ['p1_6','p7_3'],
+  'El Futur': ['p7_5','p8_1'],
+  'La Llibertat': ['p7_6','p8_2'],
+  'La Justícia': ['p7_4','p7_6'],
+  'La Memòria': ['p7_1','p7_2'],
+  'La Saviesa': ['p7_1','p8_5'],
+  'El Canvi': ['p7_6','p8_6'],
+  'La Pau': ['p7_1','p8_5'],
+  'El Somni': ['p7_5','p8_1']
+};
+function getParaulesClauTema(nomLectura){
+  const n = (nomLectura||'').toLowerCase();
+  if(n.includes('mascota')) return ['gat','gata','gos','animal','mascota'];
+  if(n.includes('menjar')||n.includes('cuinar')) return ['poma','pa','pasta','sopa','menjar','cuina','cuiner'];
+  if(n.includes('roba')) return ['roba','vestit','pantal','samarreta'];
+  if(n.includes('escola')||n.includes('mestra')||n.includes('lectura')) return ['llibre','escola','mestra','llegir','conte','classe'];
+  if(n.includes('casa')||n.includes('ciutat')) return ['casa','parc','botiga','ciutat','mercat'];
+  if(n.includes('rutina')||n.includes('dia')||n.includes('setmana')||n.includes('hàbits')) return ['hora','una','tres','cinc','set','matí','dia','setmana','córrer','llegir'];
+  if(n.includes('amics')||n.includes('amistat')||n.includes('família')) return ['content','contenta','amics','regal','família','mare','pare'];
+  if(n.includes('esport')||n.includes('hobby')) return ['futbol','bàsquet','tennis','partit','esport','juga'];
+  if(n.includes('clima')||n.includes('medi')) return ['sol','pluja','neu','vent','clima'];
+  if(n.includes('música')||n.includes('aprendre')) return ['so','cançó','estrella','cor','escolta','llegeix'];
+  if(n.includes('tecnologia')||n.includes('joguines')) return ['mòbil','càmera','llibre','mòbil','joguina'];
+  if(n.includes('viatjar')) return ['cotxe','bici','tren','casa','ciutat','parc'];
+  if(n.includes('futur')||n.includes('progrés')||n.includes('motivació')||n.includes('confiança')) return ['llibre','mòbil','content','contenta','partit','trobat'];
+  return [];
+}
+function getTipEnllacatLectura(){
+  if(!totsElsTips.length) return null;
+  const claus = getParaulesClauTema(lecturaContext._plantillaNom||'');
+  if(!claus.length) return null;
+  const cands = totsElsTips.filter(t=>{
+    const txt = ((t.truc||'')+' '+(t.exemple||'')).toLowerCase();
+    return claus.some(c=>txt.includes(c));
+  });
+  if(!cands.length) return null;
+  const lliures = cands.filter((t,i)=>!tipsUsats.includes(totsElsTips.indexOf(t)));
+  const llista = lliures.length ? lliures : cands;
+  return llista[Math.floor(Math.random()*llista.length)];
+}
+function getVerbsLectura(plantilla){
+  if(plantilla.verbs && plantilla.verbs.length) return plantilla.verbs;
+  if(plantilla.vocab_ampliat && plantilla.vocab_ampliat.verbs) return plantilla.vocab_ampliat.verbs.slice(0,6);
+  return [];
+}
+function contraure(text){
+  // v24.1 - Només Mini-Joc, MAI Lectura (Lectura ja està escrita a mà)
+  return text
+    .replace(/\bde el\b/g,'del').replace(/\bde els\b/g,'dels')
+    .replace(/\ba el\b/g,'al').replace(/\ba els\b/g,'als')
+    .replace(/\bha de ([aeiouàèéíòóú])/gi,"ha d'$1")
+    .replace(/\bhan de ([aeiouàèéíòóú])/gi,"han d'$1")
+    .replace(/\bde ([aeiouàèéíòóú])/gi,"d'$1");
+}
+function jugarMinijocTemaLectura(){
+  const ids = ENLLAC_LECTURA_MINIJOC[lecturaContext._plantillaNom||''];
+  canviarTab('gremi',null);
+  setTimeout(()=>mostrarSubTab('minijoc'),50);
+  if(ids && ids.length) setTimeout(()=>novaFraseMinijocTema(ids),150);
+}
+let _temaMinijocForcat = null;
+function novaFraseMinijocTema(ids){
+  _temaMinijocForcat = ids;
+  novaFraseMinijoc();
+  _temaMinijocForcat = null;
+}
 function quitarSkinTone(e){return e? e.replace(/[\u{1F3FB}-\u{1F3FF}]/gu,'') : '';}
 function vibrar(){if(navigator.vibrate)navigator.vibrate(50);}
 function mostrarMissatge(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#22c55e;color:#000;padding:12px 20px;border-radius:8px;font-weight:700;z-index:10000;';document.body.appendChild(d);setTimeout(()=>d.remove(),2000);}
@@ -74,7 +176,7 @@ function recarregarEnergia(){if(estat.progres.energia>=100){mostrarMissatge('Ja 
 function mostrarGremiPersonatges(){const c=document.getElementById('gremi-personatges');if(!c)return;let h=`<div style="text-align:center;padding:20px;"><div style="font-size:80px;">${PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat).emoji}</div><h3>${PERSONATGES_JUGADOR.find(p=>p.id===estat.personatgeTriat).nom}</h3><p style="color:#22c55e;">Preferit: <b>${nomPersonatge || 'aleatori'}</b></p><div style="border-top:1px solid #333;padding-top:20px;"><h4>Canvia avatar</h4><div class="emoji-grid">`;PERSONATGES_JUGADOR.forEach(x=>{const s=x.id===estat.personatgeTriat;h+=`<div class="emoji-item" style="border:${s?'2px solid #22c55e':'1px solid #333'};cursor:pointer;" onclick="triarPersonatge('${x.id}')"><div class="emoji-large">${x.emoji}</div><div class="emoji-name">${x.nom}</div></div>`;});h+=`</div></div></div>`;c.innerHTML=h;}
 function triarPersonatge(id){estat.personatgeTriat=id;guardarEstat();actualitzarUI();mostrarGremiPersonatges();vibrar();}
 function renderDiccionari(){const c=document.getElementById('gremi-biblioteca');if(!c)return;const q=(filtreBiblioteca||'').toLowerCase().trim();let total=0,desbloquejats=0;BIBLIOTECA_PLA.forEach(e=>{const net=quitarSkinTone(e.emoji);const esBase=PACK_INICIAL.some(p=>quitarSkinTone(p)===net);const perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid||p.id===id);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);});total++;if(esBase||perPack)desbloquejats++;});const pct=total?Math.round((desbloquejats/total)*100):0;let h=`<h3 style="text-align:center;">📚 Biblioteca</h3><p style="text-align:center;color:#aaa;font-size:13px;">${desbloquejats} de ${total} desbloquejats · ${pct}%</p><div style="width:100%;height:8px;background:#333;border-radius:4px;margin:8px 0 14px;"><div style="width:${pct}%;height:100%;background:#22c55e;border-radius:4px;"></div></div><input id="cerca-biblioteca" type="text" placeholder="🔍 Busca: gos, poma, bandera, cotxe..." value="${filtreBiblioteca.replace(/"/g,'')}" oninput="filtreBiblioteca=this.value;renderDiccionari();" style="width:100%;padding:12px;border-radius:12px;border:1px solid #333;background:#121212;color:#fff;font-size:15px;margin-bottom:6px;outline:none;"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"><button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='';renderDiccionari();">Tot</button><button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='gos';renderDiccionari();">🐶 Animals</button><button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='poma';renderDiccionari();">🍎 Menjar</button><button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='bandera';renderDiccionari();">🌍 Banderes</button><button class="btn btn-sec" style="margin:0;padding:6px 12px;font-size:12px;" onclick="filtreBiblioteca='casa';renderDiccionari();">🏠 Casa</button></div>`;const base=PACK_INICIAL.map(e=>quitarSkinTone(e));let trobat=false;for(const[cat,emojis]of Object.entries(BIBLIOTECA_POR_CAT)){const filtrats=emojis.filter(e=>{if(!q)return true;return (e.nom_cat||'').toLowerCase().includes(q)||(e.categoria||'').toLowerCase().includes(q)||(e.para_frases||[]).join(' ').toLowerCase().includes(q)||cat.toLowerCase().includes(q);});if(!filtrats.length)continue;trobat=true;h+=`<h4 style="margin:20px 0 8px;color:#4CAF50;text-transform:capitalize;">${cat} (${filtrats.length})</h4><div class="emoji-grid">`;filtrats.forEach(e=>{const net=quitarSkinTone(e.emoji),esBase=base.includes(net),perPack=estat.compres.some(id=>{const pid=id.includes('_p')?id.split('_p')[0]:id;const pack=PACKS_BOTIGA.find(p=>p.id===pid||p.id===id);return pack&&pack.emojis.some(pe=>quitarSkinTone((pe.emoji||pe))===net);}),des=esBase||perPack;h+=`<div class="emoji-item" style="opacity:${des?'1':'0.12'};filter:${des?'':'grayscale(1)'};"><div class="emoji-large">${e.emoji}</div><div class="emoji-name">${e.nom_cat}</div></div>`;});h+=`</div>`;}if(!trobat){h+=`<div style="text-align:center;padding:30px;opacity:.6;">No hi ha resultats per "<b>${filtreBiblioteca}</b>"<br><button class="btn btn-sec" onclick="filtreBiblioteca='';renderDiccionari();">Veure tot</button></div>`;}c.innerHTML=h;const input=document.getElementById('cerca-biblioteca');if(input&&q){input.focus();input.setSelectionRange(input.value.length,input.value.length);}}
-// ===== v23.12 MOTOR MINI-JOC: ARTICLES + NUMERO U + P7_1 + FA NEU + NO REPETIR + SENSE DUPLICATS + ELS/LES + SENSE "Frase completa" =====
+// ===== v24.1 MOTOR MINI-JOC: ARTICLES + NUMERO U + P7_1 + FA NEU + NO REPETIR + SENSE DUPLICATS + ELS/LES + SENSE "Frase completa" + CONTRAURE =====
 function haDeSerApostrof(nom){if(!nom)return false;const n=nom.toLowerCase().trim();if(/^[aeiouàèéíòóú]/.test(n))return true;if(/^h[aeiouàèéíòóú]/.test(n))return true;return false;}
 function obtenirArticleNet(emoji){const base=quitarSkinTone(emoji);const info=MAPA_DET[base];if(!info)return emoji;if(CATS_SENSE_ARTICLE.has(info.categoria))return info.nom;let det=info.det;let nom=info.nom;if(det==="En"||det==="Na"){if(nom.toLowerCase()==="home")return "L'"+nom;if(nom.toLowerCase()==="dona")return "La "+nom;if(haDeSerApostrof(nom))return "L'"+nom;if(det==="En")return "El "+nom;return "La "+nom;}if(haDeSerApostrof(nom))return "L'"+nom;if(det==="El")return "El "+nom;if(det==="La")return "La "+nom;if(det==="L'")return "L'"+nom;return det+" "+nom;}
 function obtenirNomSenseArticle(emoji){const b=quitarSkinTone(emoji);const i=MAPA_DET[b];return i?i.nom:emoji;}
@@ -104,6 +206,7 @@ function netejarFraseFinal(text){
     cua=cua.replace(/\bde l'/g,"de l'").replace(/\ba l'/g,"a l'");
     text=cap+' '+cua;
   }
+  text=contraure(text);
   text=text.replace(/ +/g,' ').trim();
   if(text.length>0)text=text.charAt(0).toUpperCase()+text.slice(1);
   text=text.replace(/\{[^}]+\}/g,'').replace(/ +/g,' ').trim();
@@ -225,7 +328,6 @@ function actualitzarTriatsMinijoc(){
   el.classList.toggle('complet',complet);
   if(prof)prof.style.display=fets===0?'block':'none';
   if(inst){
-    // v23.12 - ELIMINADA "Frase completa! Molt bé!" - SOBRABA, YA SALE "Correcte! +6" ABAJO
     inst.textContent='👆 Toca els emojis en ordre per completar la frase';
     inst.classList.remove('complet');
     inst.style.display=complet?'none':'block';
@@ -241,6 +343,10 @@ function novaFraseMinijoc(){
   const emojisUsables=BIBLIOTECA_PLA.length>0?BIBLIOTECA_PLA.map(e=>e.emoji):PACK_INICIAL;
   if(emojisUsables.length<2){if(fraseEl)fraseEl.textContent="Desbloqueja més packs!";if(gridEl)gridEl.innerHTML='';return;}
   let disponibles=getPlantillesDisponibles();
+  if(_temaMinijocForcat && _temaMinijocForcat.length){
+    const filtrades = disponibles.filter(p=>_temaMinijocForcat.includes(p.id));
+    if(filtrades.length) disponibles = filtrades;
+  }
   let candidates=disponibles.filter(p=>p.id!==_ultimaPlantillaMinijoc);
   if(!candidates.length)candidates=disponibles;
   const pl=candidates[Math.floor(Math.random()*candidates.length)];_ultimaPlantillaMinijoc=pl.id;
@@ -352,7 +458,7 @@ async function generarLectura(){
   let plantilla=candidates[Math.floor(Math.random()*candidates.length)];
   _ultimaPlantillaId=plantilla.id;
   const vocabCat=plantilla.vocab||[];
-  const verbsCat=plantilla.verbs||[];
+  const verbsCat=getVerbsLectura(plantilla);
   const vocabAmpliat=plantilla.vocab_ampliat||null;
   const gramaticaPlantilla=plantilla.gramatica||null;
   lecturaContext={genere,personatge:pers,pronom,_vocabCat:vocabCat,_verbsCat:verbsCat,_vocabAmpliat:vocabAmpliat,_gramatica:gramaticaPlantilla,_plantillaNom:plantilla.name,_plantillaId:plantilla.id,_ultimaPlantillaId:plantilla.id};
@@ -369,7 +475,10 @@ async function generarLectura(){
   });
   lecturaTotalPreguntes=lecturaActualPreguntes.length;
   const badge=`<span style="font-size:11px;background:#22c55e;color:#000;padding:2px 6px;border-radius:10px;margin-left:8px;">${plantilla.level||nivell.toUpperCase()} · ${plantilla.name} · ${vocabCat.length} paraules</span>`;
-  const html=`<div class="lectura-card"><h3>${tit} ${badge}</h3><p class="lectura-text" style="line-height:1.7;font-size:16px;">${lecturaActualText}</p><div style="margin-top:10px;font-size:12px;color:#aaa;">Tema: ${plantilla.topic||''} | ${plantilla.topic_cat||''} | Vocabulari: ${vocabCat.slice(0,5).join(', ')}</div><div class="lectura-preguntes" style="margin-top:20px;">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" style="margin-top:8px;"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">🔄 Nova lectura (${data.plantillas.length} disponibles)</button></div>`;
+  const tipEnllacat = getTipEnllacatLectura();
+  const tipHtml = tipEnllacat ? `<div style="background:rgba(46,204,113,0.1);border:1px solid #22c55e;border-radius:8px;padding:10px;margin-top:14px;"><b>💡 Tip d'aquest tema:</b> ${tipEnllacat.truc}<br><i style="color:#aaa;">${tipEnllacat.exemple||''}</i></div>` : '';
+  const minijocHtml = `<div style="margin-top:12px;"><button class="btn btn-primari" onclick="jugarMinijocTemaLectura()" style="width:100%;">🎯 Jugar Mini-Joc d'aquest tema · ${(ENLLAC_LECTURA_MINIJOC[plantilla.name]||[]).join(' + ')}</button></div>`;
+  const html=`<div class="lectura-card"><h3>${tit} ${badge}</h3><p style="font-size:12px;color:#22c55e;">Llegint com ${pers}</p><p class="lectura-text" style="line-height:1.7;font-size:16px;">${lecturaActualText}</p><div style="margin-top:10px;font-size:12px;color:#aaa;">Tema: ${plantilla.topic||''} | ${plantilla.topic_cat||''} | Vocabulari: ${vocabCat.slice(0,5).join(', ')}</div>${tipHtml}${minijocHtml}<div class="lectura-preguntes" style="margin-top:20px;">${lecturaActualPreguntes.map((p,i)=>`<div style="margin-bottom:15px;padding:12px;background:#222;border-radius:8px;"><p><strong>${i+1}. ${p.q}</strong></p>${p.opcions.map((op,j)=>`<button class="btn btn-sec" style="display:block;width:100%;margin:5px 0;text-align:left;" onclick="comprovarPregunta(${i},${j})">${op}</button>`).join('')}<div id="feedback-${i}" style="margin-top:8px;"></div></div>`).join('')}</div><button class="btn btn-primari" onclick="generarLectura()" style="margin-top:15px;">🔄 Nova lectura (${data.plantillas.length} disponibles)</button></div>`;
   lecturaActualHTML=html;const el=document.getElementById('lectura-texto');if(el){el.innerHTML=html;el.style.display='block';el.style.visibility='visible';forcarLecturaVisible();}renderVocabLectura();
 }
 function comprovarPregunta(i,r){
@@ -449,9 +558,35 @@ function comprovarQuizGramatica(i,j,btn){
 function setGramaticaMode(m){gramaticaMode=m;gramaticaTemaSeleccionat=null;generarGramatica();}
 function seleccionarTemaGramatica(s){gramaticaTemaSeleccionat=s;generarGramatica();}
 function tornarAGuia(){gramaticaTemaSeleccionat=null;generarGramatica();}
-window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;window.comprovarQuizGramatica=comprovarQuizGramatica;
-function carregarTips(){const n=getCurrentLevel();if(totsElsTips.length===0)totsElsTips=dadesTips[n]||[];mostrarTipRandom();}
-function mostrarTipRandom(){if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}if(tipsUsats.length===totsElsTips.length)tipsUsats=[];let idx;do{idx=Math.floor(Math.random()*totsElsTips.length);}while(tipsUsats.includes(idx));tipsUsats.push(idx);const tip=totsElsTips[idx];document.getElementById('tip-text').textContent=tip.truc;const ex=document.getElementById('tip-exemple');if(ex)ex.textContent=tip.exemple||'';}
+window.setGramaticaMode=setGramaticaMode;window.seleccionarTemaGramatica=seleccionarTemaGramatica;window.tornarAGuia=tornarAGuia;window.generarGramatica=generarGramatica;window.repassarVocab=repassarVocab;window.comprovarQuizGramatica=comprovarQuizGramatica;window.jugarMinijocTemaLectura=jugarMinijocTemaLectura;
+function carregarTips(){
+  const n=getCurrentLevel();
+  // v24.1 - Tips 120: 40 per nivell, dadesTips[n] ja té 40
+  if(totsElsTips.length===0 || totsElsTips._nivell!==n){
+    totsElsTips=dadesTips[n]||[];
+    totsElsTips._nivell=n;
+    tipsUsats=[];
+  }
+  mostrarTipRandom();
+}
+function mostrarTipRandom(){
+  if(!totsElsTips||totsElsTips.length===0){const el=document.getElementById('tip-text');if(el)el.textContent='No hi ha tips';return;}
+  // v24.1 - Primer intenta Tip del tema de la Lectura actual, si no, random sense repetir
+  const enllacat = lecturaContext && lecturaContext._plantillaNom ? getTipEnllacatLectura() : null;
+  let tip = enllacat;
+  if(!tip){
+    if(tipsUsats.length>=totsElsTips.length) tipsUsats=[];
+    let idx;
+    do{ idx=Math.floor(Math.random()*totsElsTips.length); }while(tipsUsats.includes(idx));
+    tipsUsats.push(idx);
+    tip=totsElsTips[idx];
+  } else {
+    const idx = totsElsTips.indexOf(tip);
+    if(idx>=0 && !tipsUsats.includes(idx)) tipsUsats.push(idx);
+  }
+  const elT=document.getElementById('tip-text'); if(elT) elT.textContent=tip.truc;
+  const ex=document.getElementById('tip-exemple'); if(ex) ex.textContent=tip.exemple||'';
+}
 function esPackComprat(pack){
   if(estat.compres.includes(pack.id))return true;
   return estat.compres.some(id=>id===pack.id||id.startsWith(pack.id+'_p'));
