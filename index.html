@@ -259,6 +259,47 @@ header {
   color:#2ECC71 !important;
   font-weight:700 !important;
 }
+/* ===== v23.8 MINIJOC - DESFER + BOTTOM NAV SENSE TALL ===== */
+#minijoc-triats-wrap{
+  display:flex !important;
+  gap:6px !important;
+  align-items:stretch !important;
+  margin-bottom:8px !important;
+}
+#minijoc-triats{
+  flex:1 !important;
+  margin-bottom:0 !important;
+  cursor:pointer !important;
+}
+#minijoc-desfer{
+  flex-shrink:0 !important;
+  width:44px !important;
+  background:#1A1A1A !important;
+  border:1px solid #333 !important;
+  border-radius:8px !important;
+  color:#fff !important;
+  font-size:18px !important;
+  cursor:pointer !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+#minijoc-desfer:disabled{
+  opacity:0.3 !important;
+  cursor:default !important;
+}
+#minijoc-desfer:active{ transform:scale(0.95); border-color:#2ECC71; }
+.bottom-nav{
+  justify-content:flex-start !important;
+  padding:8px 6px !important;
+  gap:2px !important;
+}
+.nav-item{
+  width:52px !important;
+  min-width:52px !important;
+  padding:8px 2px !important;
+  font-size:10px !important;
+}
+.nav-item:last-child{ margin-right:6px !important; }
 </style>
 </head>
 <body>
@@ -300,7 +341,10 @@ header {
         <div id="minijoc-nivell" style="text-align:center; margin-bottom:12px; color:#888;"></div>
         <div id="minijoc-frase" class="minijoc-frase">Carregant...</div>
         <div id="minijoc-professor">👩‍🏫 A classe: llegeix en veu alta, després tria els emojis</div>
-        <div id="minijoc-triats" class="minijoc-triats"></div>
+        <div id="minijoc-triats-wrap">
+          <div id="minijoc-triats" class="minijoc-triats" onclick="desferUltimEmoji()" title="Toca per desfer l'últim"></div>
+          <button id="minijoc-desfer" onclick="desferUltimEmoji()" disabled>↩</button>
+        </div>
         <div id="minijoc-instruccio">👆 Toca els emojis en ordre per completar la frase</div>
         <div id="minijoc-emojis" class="emoji-grid"></div>
         <div id="minijoc-feedback" class="minijoc-feedback"></div>
