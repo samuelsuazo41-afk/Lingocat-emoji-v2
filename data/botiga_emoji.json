@@ -4,6 +4,7 @@
     "nom": "Persones Base",
     "descripcio": "7 persones bàsiques sense to de pell",
     "preu": 120,
+    "icona_pack": "👨‍👩‍👧",
     "emojis": [
       {"emoji": "👨", "nom_cat": "home", "categoria": "persona", "para_frases": ["home", "persona"]},
       {"emoji": "👩", "nom_cat": "dona", "categoria": "persona", "para_frases": ["dona", "persona"]},
@@ -19,6 +20,7 @@
     "nom": "Persones Tó Clar",
     "descripcio": "Cosmètic: mateixes persones amb to de pell clar. No desbloqueja paraula nova.",
     "preu": 100,
+    "icona_pack": "👨🏻",
     "emojis": [
       {"emoji": "👨🏻", "nom_cat": "home pell clara", "categoria": "persona", "para_frases": ["home", "persona"]},
       {"emoji": "👩🏻", "nom_cat": "dona pell clara", "categoria": "persona", "para_frases": ["dona", "persona"]},
@@ -34,6 +36,7 @@
     "nom": "Persones Tó Mig Clar",
     "descripcio": "Cosmètic: mateixes persones amb to de pell mig clar. No desbloqueja paraula nova.",
     "preu": 100,
+    "icona_pack": "👨🏼",
     "emojis": [
       {"emoji": "👨🏼", "nom_cat": "home pell mig clara", "categoria": "persona", "para_frases": ["home", "persona"]},
       {"emoji": "👩🏼", "nom_cat": "dona pell mig clara", "categoria": "persona", "para_frases": ["dona", "persona"]},
@@ -49,6 +52,7 @@
     "nom": "Persones Tó Mig",
     "descripcio": "Cosmètic: mateixes persones amb to de pell mig. No desbloqueja paraula nova.",
     "preu": 100,
+    "icona_pack": "👨🏽",
     "emojis": [
       {"emoji": "👨🏽", "nom_cat": "home pell mitjana", "categoria": "persona", "para_frases": ["home", "persona"]},
       {"emoji": "👩🏽", "nom_cat": "dona pell mitjana", "categoria": "persona", "para_frases": ["dona", "persona"]},
@@ -64,6 +68,7 @@
     "nom": "Persones Tó Fosc",
     "descripcio": "Cosmètic: mateixes persones amb to de pell fosc. No desbloqueja paraula nova.",
     "preu": 100,
+    "icona_pack": "👨🏾",
     "emojis": [
       {"emoji": "👨🏾", "nom_cat": "home pell fosca", "categoria": "persona", "para_frases": ["home", "persona"]},
       {"emoji": "👩🏾", "nom_cat": "dona pell fosca", "categoria": "persona", "para_frases": ["dona", "persona"]},
@@ -79,6 +84,7 @@
     "nom": "Persones Tó Molt Fosc",
     "descripcio": "Cosmètic: mateixes persones amb to de pell molt fosc. No desbloqueja paraula nova.",
     "preu": 100,
+    "icona_pack": "👨🏿",
     "emojis": [
       {"emoji": "👨🏿", "nom_cat": "home pell molt fosca", "categoria": "persona", "para_frases": ["home", "persona"]},
       {"emoji": "👩🏿", "nom_cat": "dona pell molt fosca", "categoria": "persona", "para_frases": ["dona", "persona"]},
@@ -94,6 +100,7 @@
     "nom": "Sanitat i Rescat",
     "descripcio": "Metges, bombers i jutges",
     "preu": 180,
+    "icona_pack": "👨‍⚕️",
     "emojis": [
       {"emoji": "👨‍⚕️", "nom_cat": "metge", "categoria": "professio", "para_frases": ["metge", "feina", "salut"]},
       {"emoji": "👩‍⚕️", "nom_cat": "metgessa", "categoria": "professio", "para_frases": ["metgessa", "feina", "salut"]},
@@ -108,6 +115,7 @@
     "nom": "Educació i Ciència",
     "descripcio": "Professors, científics i informàtics",
     "preu": 180,
+    "icona_pack": "👨‍🏫",
     "emojis": [
       {"emoji": "👨‍🏫", "nom_cat": "professor", "categoria": "professio", "para_frases": ["professor", "feina", "educació"]},
       {"emoji": "👩‍🏫", "nom_cat": "professora", "categoria": "professio", "para_frases": ["professora", "feina", "educació"]},
@@ -119,18 +127,19 @@
   },
   {
     "id": "pack_oficis",
-    "nom": "Oficis",
-    "descripcio": "Mecànics, cuiners, pagesos i obrers",
+    "nom": "Oficis de Luxe",
+    "descripcio": "Xefs estrella, CEOs, advocats i dissenyadors",
     "preu": 180,
+    "icona_pack": "💎",
     "emojis": [
-      {"emoji": "👨‍🔧", "nom_cat": "mecànic", "categoria": "professio", "para_frases": ["mecànic", "feina", "taller"]},
-      {"emoji": "👩‍🔧", "nom_cat": "mecànica", "categoria": "professio", "para_frases": ["mecànica", "feina", "taller"]},
-      {"emoji": "👨‍🍳", "nom_cat": "cuiner", "categoria": "professio", "para_frases": ["cuiner", "feina", "cuina"]},
-      {"emoji": "👩‍🍳", "nom_cat": "cuinera", "categoria": "professio", "para_frases": ["cuinera", "feina", "cuina"]},
-      {"emoji": "👨‍🌾", "nom_cat": "pagès", "categoria": "professio", "para_frases": ["pagès", "feina", "granja"]},
-      {"emoji": "👩‍🌾", "nom_cat": "pagesa", "categoria": "professio", "para_frases": ["pagesa", "feina", "granja"]},
-      {"emoji": "👨‍🏭", "nom_cat": "obrer", "categoria": "professio", "para_frases": ["obrer", "feina", "fàbrica"]},
-      {"emoji": "👩‍🏭", "nom_cat": "obrera", "categoria": "professio", "para_frases": ["obrera", "feina", "fàbrica"]}
+      {"emoji": "👨‍🍳", "nom_cat": "xef estrella", "categoria": "professio", "para_frases": ["xef", "feina", "cuina", "luxe"]},
+      {"emoji": "👩‍🍳", "nom_cat": "xef estrella", "categoria": "professio", "para_frases": ["xef", "feina", "cuina", "luxe"]},
+      {"emoji": "👨‍💼", "nom_cat": "director general", "categoria": "professio", "para_frases": ["director", "feina", "oficina", "luxe", "empresari"]},
+      {"emoji": "👩‍💼", "nom_cat": "directora general", "categoria": "professio", "para_frases": ["directora", "feina", "oficina", "luxe", "empresària"]},
+      {"emoji": "👨‍⚖️", "nom_cat": "advocat", "categoria": "professio", "para_frases": ["advocat", "feina", "justícia", "luxe"]},
+      {"emoji": "👩‍⚖️", "nom_cat": "advocada", "categoria": "professio", "para_frases": ["advocada", "feina", "justícia", "luxe"]},
+      {"emoji": "👨‍🎨", "nom_cat": "dissenyador de moda", "categoria": "professio", "para_frases": ["dissenyador", "feina", "art", "luxe", "moda"]},
+      {"emoji": "👩‍🎨", "nom_cat": "dissenyadora de moda", "categoria": "professio", "para_frases": ["dissenyadora", "feina", "art", "luxe", "moda"]}
     ]
   },
   {
@@ -138,6 +147,7 @@
     "nom": "Creatius i Art",
     "descripcio": "Artistes, cantants i empresaris",
     "preu": 180,
+    "icona_pack": "👨‍🎨",
     "emojis": [
       {"emoji": "👨‍🎨", "nom_cat": "artista", "categoria": "professio", "para_frases": ["artista", "feina", "art"]},
       {"emoji": "👩‍🎨", "nom_cat": "artista", "categoria": "professio", "para_frases": ["artista", "feina", "art"]},
@@ -152,6 +162,7 @@
     "nom": "Viatge i Espai",
     "descripcio": "Pilots i astronautes",
     "preu": 180,
+    "icona_pack": "👨‍🚀",
     "emojis": [
       {"emoji": "👨‍✈️", "nom_cat": "pilot", "categoria": "professio", "para_frases": ["pilot", "feina", "aviació"]},
       {"emoji": "👩‍✈️", "nom_cat": "pilota", "categoria": "professio", "para_frases": ["pilota", "feina", "aviació"]},
@@ -164,6 +175,7 @@
     "nom": "Mascotes",
     "descripcio": "Gos, gat, hàmster i més",
     "preu": 180,
+    "icona_pack": "🐶",
     "emojis": [
       {"emoji": "🐶", "nom_cat": "gos", "categoria": "animal", "para_frases": ["gos", "animal", "mascota"]},
       {"emoji": "🐱", "nom_cat": "gat", "categoria": "animal", "para_frases": ["gat", "animal", "mascota"]},
@@ -180,6 +192,7 @@
     "nom": "Granja",
     "descripcio": "Animals de granja",
     "preu": 180,
+    "icona_pack": "🐮",
     "emojis": [
       {"emoji": "🐨", "nom_cat": "coala", "categoria": "animal", "para_frases": ["coala", "animal"]},
       {"emoji": "🐯", "nom_cat": "tigre", "categoria": "animal", "para_frases": ["tigre", "animal", "salvatge"]},
@@ -196,6 +209,7 @@
     "nom": "Aus",
     "descripcio": "Ocells, pingüins i rapinyaires",
     "preu": 180,
+    "icona_pack": "🐔",
     "emojis": [
       {"emoji": "🐔", "nom_cat": "gallina", "categoria": "animal", "para_frases": ["gallina", "animal", "aus"]},
       {"emoji": "🐧", "nom_cat": "pingüí", "categoria": "animal", "para_frases": ["pingüí", "animal", "aus"]},
@@ -212,6 +226,7 @@
     "nom": "Animals Salvatges",
     "descripcio": "Llop, cavall, insectes i més",
     "preu": 180,
+    "icona_pack": "🐺",
     "emojis": [
       {"emoji": "🐺", "nom_cat": "llop", "categoria": "animal", "para_frases": ["llop", "animal", "salvatge"]},
       {"emoji": "🐗", "nom_cat": "senglar", "categoria": "animal", "para_frases": ["senglar", "animal", "salvatge"]},
@@ -228,6 +243,7 @@
     "nom": "Vida Marina",
     "descripcio": "Animals marins",
     "preu": 250,
+    "icona_pack": "🐬",
     "emojis": [
       {"emoji": "🐬", "nom_cat": "dofí", "categoria": "animal", "para_frases": ["dofí", "animal", "mar"]},
       {"emoji": "🐳", "nom_cat": "balena", "categoria": "animal", "para_frases": ["balena", "animal", "mar"]},
@@ -248,6 +264,7 @@
     "nom": "Rèptils",
     "descripcio": "Tortuga, serp, cocodril",
     "preu": 120,
+    "icona_pack": "🐢",
     "emojis": [
       {"emoji": "🐢", "nom_cat": "tortuga", "categoria": "animal", "para_frases": ["tortuga", "animal", "rèptil"]},
       {"emoji": "🐍", "nom_cat": "serp", "categoria": "animal", "para_frases": ["serp", "animal", "rèptil"]},
@@ -260,6 +277,7 @@
     "nom": "Fruites i Verdures",
     "descripcio": "Fruites i verdures fresques",
     "preu": 250,
+    "icona_pack": "🍎",
     "emojis": [
       {"emoji": "🍎", "nom_cat": "poma", "categoria": "menjar", "para_frases": ["poma", "menjar", "fruita"]},
       {"emoji": "🍐", "nom_cat": "pera", "categoria": "menjar", "para_frases": ["pera", "menjar", "fruita"]},
@@ -288,6 +306,7 @@
     "nom": "Pa i Làctics",
     "descripcio": "Pa, formatge, ous i verdures",
     "preu": 180,
+    "icona_pack": "🍞",
     "emojis": [
       {"emoji": "🌶️", "nom_cat": "bitxo", "categoria": "menjar", "para_frases": ["bitxo", "menjar", "verdura"]},
       {"emoji": "🌽", "nom_cat": "blat de moro", "categoria": "menjar", "para_frases": ["blat de moro", "menjar", "verdura"]},
@@ -312,6 +331,7 @@
     "nom": "Menjar Ràpid",
     "descripcio": "Hamburguesa, pizza, tacos",
     "preu": 180,
+    "icona_pack": "🍔",
     "emojis": [
       {"emoji": "🥞", "nom_cat": "tortetes", "categoria": "menjar", "para_frases": ["tortetes", "menjar", "esmorzar"]},
       {"emoji": "🧇", "nom_cat": "gofre", "categoria": "menjar", "para_frases": ["gofre", "menjar", "esmorzar"]},
@@ -335,6 +355,7 @@
     "nom": "Menjar Asiàtic",
     "descripcio": "Sushi, ramen, curry",
     "preu": 180,
+    "icona_pack": "🍣",
     "emojis": [
       {"emoji": "🥗", "nom_cat": "amanida", "categoria": "menjar", "para_frases": ["amanida", "menjar"]},
       {"emoji": "🥘", "nom_cat": "paella", "categoria": "menjar", "para_frases": ["paella", "menjar"]},
@@ -356,6 +377,7 @@
     "nom": "Esports",
     "descripcio": "Futbol, bàsquet, tennis",
     "preu": 180,
+    "icona_pack": "⚽",
     "emojis": [
       {"emoji": "⚽", "nom_cat": "futbol", "categoria": "esport", "para_frases": ["futbol", "esport", "pilota"]},
       {"emoji": "🏀", "nom_cat": "bàsquet", "categoria": "esport", "para_frases": ["bàsquet", "esport", "pilota"]},
@@ -380,6 +402,7 @@
     "nom": "Esports Extrems",
     "descripcio": "Esquí, boxa, escalada",
     "preu": 180,
+    "icona_pack": "🥊",
     "emojis": [
       {"emoji": "🏹", "nom_cat": "tir amb arc", "categoria": "esport", "para_frases": ["tir amb arc", "esport"]},
       {"emoji": "🎣", "nom_cat": "pesca", "categoria": "esport", "para_frases": ["pesca", "esport", "activitat"]},
@@ -396,6 +419,7 @@
     "nom": "Transport Terrestre",
     "descripcio": "Cotxe, autobús, moto",
     "preu": 250,
+    "icona_pack": "🚗",
     "emojis": [
       {"emoji": "🚗", "nom_cat": "cotxe", "categoria": "transport", "para_frases": ["cotxe", "vehicle", "transport"]},
       {"emoji": "🚕", "nom_cat": "taxi", "categoria": "transport", "para_frases": ["taxi", "vehicle", "transport"]},
@@ -420,6 +444,7 @@
     "nom": "Transport Aeri",
     "descripcio": "Avió, helicòpter, coet",
     "preu": 180,
+    "icona_pack": "✈️",
     "emojis": [
       {"emoji": "🚲", "nom_cat": "bicicleta", "categoria": "transport", "para_frases": ["bicicleta", "vehicle", "transport"]},
       {"emoji": "🛴", "nom_cat": "patinet", "categoria": "transport", "para_frases": ["patinet", "vehicle", "transport"]},
@@ -436,6 +461,7 @@
     "nom": "Transport Marítim",
     "descripcio": "Vaixell, ferri, iot",
     "preu": 180,
+    "icona_pack": "⛵",
     "emojis": [
       {"emoji": "⛵", "nom_cat": "veler", "categoria": "transport", "para_frases": ["veler", "vehicle", "transport", "mar"]},
       {"emoji": "🚤", "nom_cat": "llanxa", "categoria": "transport", "para_frases": ["llanxa", "vehicle", "transport", "mar"]},
@@ -452,6 +478,7 @@
     "nom": "Edificis",
     "descripcio": "Casa, escola, hospital",
     "preu": 180,
+    "icona_pack": "🏠",
     "emojis": [
       {"emoji": "🏠", "nom_cat": "casa", "categoria": "lloc", "para_frases": ["casa", "lloc", "edifici", "llar"]},
       {"emoji": "🏡", "nom_cat": "casa amb jardí", "categoria": "lloc", "para_frases": ["casa", "lloc", "edifici", "llar"]},
@@ -471,6 +498,7 @@
     "nom": "Llocs Públics",
     "descripcio": "Fàbrica, castell, mesquita",
     "preu": 180,
+    "icona_pack": "🏰",
     "emojis": [
       {"emoji": "🏭", "nom_cat": "fàbrica", "categoria": "lloc", "para_frases": ["fàbrica", "lloc", "edifici"]},
       {"emoji": "🏯", "nom_cat": "castell japonès", "categoria": "lloc", "para_frases": ["castell japonès", "lloc", "edifici"]},
@@ -491,6 +519,7 @@
     "nom": "Paisatges",
     "descripcio": "Platja, desert, ciutat",
     "preu": 180,
+    "icona_pack": "🏖️",
     "emojis": [
       {"emoji": "🌁", "nom_cat": "boira", "categoria": "clima", "para_frases": ["boira", "lloc", "clima"]},
       {"emoji": "🌃", "nom_cat": "nit ciutat", "categoria": "lloc", "para_frases": ["nit ciutat", "lloc"]},
@@ -507,6 +536,7 @@
     "nom": "Arbres i Plantes",
     "descripcio": "Arbres, cactus, herba",
     "preu": 180,
+    "icona_pack": "🌳",
     "emojis": [
       {"emoji": "🌲", "nom_cat": "avet", "categoria": "natura", "para_frases": ["avet", "arbre", "natura", "planta"]},
       {"emoji": "🌳", "nom_cat": "arbre", "categoria": "natura", "para_frases": ["arbre", "natura", "planta"]},
@@ -526,6 +556,7 @@
     "nom": "Flors i Natura",
     "descripcio": "Flors i plantes",
     "preu": 180,
+    "icona_pack": "🌹",
     "emojis": [
       {"emoji": "🍃", "nom_cat": "fulla vent", "categoria": "natura", "para_frases": ["fulla vent", "natura", "planta"]},
       {"emoji": "🌱", "nom_cat": "planta jove", "categoria": "natura", "para_frases": ["planta jove", "natura", "planta"]},
@@ -546,6 +577,7 @@
     "nom": "Muntanya i Espai",
     "descripcio": "Muntanya, volcà, espai",
     "preu": 180,
+    "icona_pack": "⛰️",
     "emojis": [
       {"emoji": "🌋", "nom_cat": "volcà", "categoria": "natura", "para_frases": ["volcà", "natura", "muntanya"]},
       {"emoji": "🗻", "nom_cat": "Fuji", "categoria": "natura", "para_frases": ["Fuji", "natura", "muntanya"]},
@@ -562,6 +594,7 @@
     "nom": "Clima",
     "descripcio": "Sol, pluja, neu",
     "preu": 180,
+    "icona_pack": "☀️",
     "emojis": [
       {"emoji": "☀️", "nom_cat": "sol", "categoria": "clima", "para_frases": ["sol", "clima", "natura"]},
       {"emoji": "🌤️", "nom_cat": "sol amb núvol", "categoria": "clima", "para_frases": ["sol amb núvol", "clima", "natura"]},
@@ -582,6 +615,7 @@
     "nom": "Fenòmens Naturals",
     "descripcio": "Arc de Sant Martí, tornado",
     "preu": 120,
+    "icona_pack": "🌈",
     "emojis": [
       {"emoji": "💨", "nom_cat": "ràfega vent", "categoria": "clima", "para_frases": ["ràfega vent", "clima", "natura"]},
       {"emoji": "🌪️", "nom_cat": "tornado", "categoria": "clima", "para_frases": ["tornado", "clima", "natura"]},
@@ -601,6 +635,7 @@
     "nom": "Accions",
     "descripcio": "Córrer, caminar, ballar",
     "preu": 250,
+    "icona_pack": "🏃",
     "emojis": [
       {"emoji": "🏃", "nom_cat": "córrer", "categoria": "accio", "para_frases": ["córrer", "acció", "esport"]},
       {"emoji": "🚶", "nom_cat": "caminar", "categoria": "accio", "para_frases": ["caminar", "acció"]},
@@ -619,6 +654,7 @@
     "nom": "Accions Esportives",
     "descripcio": "Nedar, surf, escalada",
     "preu": 250,
+    "icona_pack": "🏊",
     "emojis": [
       {"emoji": "🤽", "nom_cat": "waterpolo", "categoria": "accio", "para_frases": ["waterpolo", "esport", "acció"]},
       {"emoji": "🤾", "nom_cat": "handbol", "categoria": "accio", "para_frases": ["handbol", "esport", "acció"]},
@@ -638,6 +674,7 @@
     "nom": "Emocions",
     "descripcio": "Somriure, riure, plorar",
     "preu": 180,
+    "icona_pack": "😀",
     "emojis": [
       {"emoji": "😀", "nom_cat": "content", "categoria": "emocio", "para_frases": ["content", "emoció", "cara"]},
       {"emoji": "😃", "nom_cat": "feliç", "categoria": "emocio", "para_frases": ["feliç", "emoció", "cara"]},
@@ -662,6 +699,7 @@
     "nom": "Cares",
     "descripcio": "Petó, llengua, ullada",
     "preu": 180,
+    "icona_pack": "😘",
     "emojis": [
       {"emoji": "😘", "nom_cat": "petó", "categoria": "emocio", "para_frases": ["petó", "emoció", "cara"]},
       {"emoji": "😗", "nom_cat": "petó cara", "categoria": "emocio", "para_frases": ["petó cara", "emoció", "cara"]},
@@ -686,6 +724,7 @@
     "nom": "Tecnologia",
     "descripcio": "Mòbil, ordinador, càmera",
     "preu": 180,
+    "icona_pack": "📱",
     "emojis": [
       {"emoji": "📱", "nom_cat": "mòbil", "categoria": "objecte", "para_frases": ["mòbil", "objecte", "tecnologia"]},
       {"emoji": "💻", "nom_cat": "ordinador", "categoria": "objecte", "para_frases": ["ordinador", "objecte", "tecnologia"]},
@@ -708,6 +747,7 @@
     "nom": "Eines i Objectes",
     "descripcio": "Eines i objectes",
     "preu": 180,
+    "icona_pack": "💡",
     "emojis": [
       {"emoji": "🎙️", "nom_cat": "micròfon estudi", "categoria": "objecte", "para_frases": ["micròfon", "objecte", "música"]},
       {"emoji": "🧭", "nom_cat": "brúixola", "categoria": "objecte", "para_frases": ["brúixola", "objecte"]},
@@ -730,6 +770,7 @@
     "nom": "Festa",
     "descripcio": "Festa, regal, trofeu",
     "preu": 180,
+    "icona_pack": "🎉",
     "emojis": [
       {"emoji": "🎉", "nom_cat": "festa", "categoria": "festa", "para_frases": ["festa", "celebració"]},
       {"emoji": "🎊", "nom_cat": "confeti", "categoria": "festa", "para_frases": ["confeti", "festa", "celebració"]},
@@ -750,6 +791,7 @@
     "nom": "Música",
     "descripcio": "Instruments musicals",
     "preu": 180,
+    "icona_pack": "🎸",
     "emojis": [
       {"emoji": "🎸", "nom_cat": "guitarra", "categoria": "musica", "para_frases": ["guitarra", "música", "instrument"]},
       {"emoji": "🎻", "nom_cat": "violí", "categoria": "musica", "para_frases": ["violí", "música", "instrument"]},
@@ -766,6 +808,7 @@
     "nom": "Roba",
     "descripcio": "Samarreta, pantalons, abric",
     "preu": 180,
+    "icona_pack": "👕",
     "emojis": [
       {"emoji": "👕", "nom_cat": "samarreta", "categoria": "roba", "para_frases": ["samarreta", "roba"]},
       {"emoji": "👚", "nom_cat": "brusa", "categoria": "roba", "para_frases": ["brusa", "roba"]},
@@ -790,6 +833,7 @@
     "nom": "Símbols, So, Temps i Números",
     "descripcio": "Perquè el Minijoc no deixi mai {claus} buides",
     "preu": 120,
+    "icona_pack": "✅",
     "emojis": [
       {"emoji": "✅", "nom_cat": "correcte", "categoria": "simbol", "para_frases": ["correcte"]},
       {"emoji": "❌", "nom_cat": "incorrecte", "categoria": "simbol", "para_frases": ["incorrecte"]},
