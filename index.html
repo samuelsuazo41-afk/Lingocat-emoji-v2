@@ -61,7 +61,6 @@ header h1{font-size:20px;line-height:1.1}
 <h1>🐱 Cat Lingo<br>Emoji</h1>
 <div class="header-stats"><span>🪙 <span id="monedes">0</span></span><span id="header-personatge">👨</span><div id="barra-progres"><div></div></div><span id="nivell">1</span><span>⚡ <span id="energia">100</span></span></div>
 </header>
-
 <div id="intro">
 <div id="intro-emoji">🙀</div>
 <h2 id="intro-titol" style="margin:12px 0;">Benvingut</h2>
@@ -70,14 +69,8 @@ header h1{font-size:20px;line-height:1.1}
 <button id="intro-btn" class="btn btn-primari" style="width:100%;max-width:320px;">Següent</button>
 <button onclick="saltarIntro()" style="background:none;border:none;color:#aaa;margin-top:12px;cursor:pointer;">Saltar</button>
 </div>
-
-<!-- MAPA -->
 <div id="tab-mapa" class="tab-content active"><div id="mapa-contenidor"></div></div>
-
-<!-- MISSIONS -->
 <div id="tab-missio" class="tab-content"><div id="missio-contenidor"></div></div>
-
-<!-- GREMI -->
 <div id="tab-gremi" class="tab-content">
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
 <button class="sub-tab-btn" onclick="mostrarSubTab('biblioteca')">📚 Biblioteca</button>
@@ -101,10 +94,8 @@ header h1{font-size:20px;line-height:1.1}
 </div>
 </div>
 </div>
-
-<!-- LECTURA -->
 <div id="tab-lectura" class="tab-content">
-<div style="background:#2a1a00;border:1px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;text-align:center;">🔒 <b>Lliçó enlazada</b> · Cada lectura costa <b>30 ⚡</b> · Has de completar <b>4/4</b> per desbloquejar la següent: 📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema<br>Cada dia comences amb <b>100 ⚡</b></div>
+<div style="background:#2a1a00;border:1px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;text-align:center;">🔒 <b>Lliçó enlazada</b> · 1ª Lectura <b>GRATIS</b> · 2ª en adelante <b>30 ⚡</b> · Has de completar <b>4/4</b> per desbloquejar la següent: 📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema<br>Cada dia comences amb <b>100 ⚡</b></div>
 <div style="display:flex;gap:8px;margin-bottom:14px;">
 <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">📚 Lectura</button>
 <button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">🃏 Vocabulari</button>
@@ -113,10 +104,8 @@ header h1{font-size:20px;line-height:1.1}
 <div id="lectura-texto" class="sub-tab-content"></div>
 <div id="lectura-vocab-inner" class="sub-tab-content" style="display:none;"></div>
 <div id="lectura-gramatica-inner" class="sub-tab-content" style="display:none;"></div>
-<div style="text-align:center;margin-top:16px;"><button class="btn btn-primari" onclick="intentarNovaLectura()">🔄 Nova lectura · 30 ⚡</button></div>
+<div style="text-align:center;margin-top:16px;"><button class="btn btn-primari" onclick="intentarNovaLectura()">🔄 Nova lectura</button></div>
 </div>
-
-<!-- TIPS -->
 <div id="tab-tips" class="tab-content">
 <div style="background:#0f2a1a;border:1px solid #22c55e;border-radius:16px;padding:20px;text-align:center;">
 <span id="tip-nivell" class="tip-badge" style="background:#22c55e;color:#000;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800;">A1</span>
@@ -129,20 +118,15 @@ header h1{font-size:20px;line-height:1.1}
 <button class="btn btn-primari" onclick="mostrarTipRandom()" style="margin-top:16px;width:100%;">Següent tip ➡</button>
 </div>
 </div>
-
-<!-- PRODUCTE - PER A ESTUDIS -->
 <div id="tab-producte" class="tab-content">
 <div class="producte-card"><h3>🐱 Cat Lingo Emoji - El Producte</h3><p>App educativa de català A1, A2, B1. Sense registre, sense anuncis, sense backend. Tot es guarda al dispositiu. Codi + JSON, escalable.</p></div>
-<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells · 220 Tips · 44 packs · 579 emojis · 419 conceptes únics · Sense anuncis · Sense registre</b></p><p>579 emojis a la biblioteca, no 454. Tots els números de l'app són 579.</p></div>
-<div class="producte-card"><h3>🪙 Sistema de monedes</h3><ul><li>Minijoc: 5-15 🪙</li><li>Lectura: costa 30 ⚡ · +5 🪙 per pregunta · +15 🪙 bonus</li><li>Gramàtica: +3 🪙 per quiz · +10 🪙 bonus si fas 3/3</li><li>Ratxa 5: +10 🪙 bonus</li><li>Bonus diari: +10 🪙</li></ul></div>
-<div class="producte-card"><h3>⚡ Energia</h3><p>Cada dia comences amb <b>100 ⚡</b>. Lectura costa 30 ⚡. Minijoc costa 5 ⚡. Recarrega per 50 🪙. Regen +30 ⚡ cada 5 min.</p></div>
+<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells · 220 Tips · 44 packs · 579 emojis · 419 conceptes únics · Sense anuncis · Sense registre</b></p><p>579 emojis a la biblioteca, no 454.</p></div>
+<div class="producte-card"><h3>🪙 Sistema de monedes</h3><ul><li>Minijoc: 5-15 🪙 · Costa 5 ⚡ per frase</li><li>1ª Lectura: GRATIS · 2ª en adelante: 30 ⚡ · +5 🪙 per pregunta · +15 🪙 bonus</li><li>Gramàtica: +3 🪙 per quiz · +10 🪙 bonus si fas 3/3</li><li>Ratxa 5: +10 🪙 bonus</li><li>Bonus diari: +10 🪙</li></ul></div>
+<div class="producte-card"><h3>⚡ Energia</h3><p>Cada dia comences amb <b>100 ⚡</b>. 1ª Lectura gratis. 2ª en adelante 30 ⚡. Minijoc 5 ⚡. Recarrega per 50 🪙.</p></div>
 <div class="producte-card"><h3>🎯 Missions - 8</h3><p>1. Pujar de nivell · 2. Llegir una lectura · 3. Fer gramàtica · 4. Ratxa de 5 · 5. Bonus diari · 6. Desbloqueja un pack · 7. Completar la lliçó 4/4 · 8. Energia al màxim</p></div>
 <div class="producte-card"><h3>🔒 Seguretat i escala</h3><p>Sense registre, sense anuncis, tot al dispositiu. Codi + JSON sense backend. Escalable a A2 / B1, a altres idiomes i a nous packs.</p></div>
 </div>
-
-<!-- BOTIGA -->
 <div id="tab-botiga" class="tab-content"><div id="botiga-contenidor"></div></div>
-
 <nav class="bottom-nav">
 <button class="nav-item" onclick="canviarTab('mapa',event)"><span>🗺️</span>Mapa</button>
 <button class="nav-item" onclick="canviarTab('missio',event)"><span>🎯</span>Missions</button>
@@ -152,6 +136,6 @@ header h1{font-size:20px;line-height:1.1}
 <button class="nav-item" onclick="canviarTab('producte',event)"><span>🏠</span>Producte</button>
 <button class="nav-item" onclick="canviarTab('botiga',event)"><span>🛒</span>Botiga</button>
 </nav>
-<script src="./main.js?v=29"></script>
+<script src="./main.js?v=30"></script>
 </body>
 </html>
