@@ -2,128 +2,153 @@
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cat Lingo Emoji</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cat Lingo Emoji - Aprèn català jugant</title>
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#000">
+<meta name="theme-color" content="#121212">
 <style>
-:root{--bg:#000;--bg-elevated:#121212;--card:#1A1A1A;--text:#FFFFFF;--text-muted:#A0A0A0;--accent:#2ECC71;--accent-soft:#00D4AA;--success:#2ECC71;--error:#ff6b6b;--border:#2A2A2A;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:80px;}
-header{background:#1A1A1A;padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
-.header-stats{display:flex;gap:16px;font-size:14px;align-items:center;}
-.stat-progress{display:flex;align-items:center;gap:6px;}
-.progress-bar{width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-soft));width:0%;transition:width 0.4s ease;}
-.stat-level{font-weight:700;font-size:13px;color:var(--accent);}
-.tab-content{display:none;padding:16px;}
-.tab-content.active{display:block;}
-.nivells-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:8px;max-width:600px;margin:0 auto;}
-.nivell-card{aspect-ratio:1;background:var(--card);border:2px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;}
-.missio-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;}
-.missio-item b{font-size:15px;}
-.missio-item:active{border-color:#22c55e;}
-.llio-banner{background:rgba(251,191,36,.12);border:1px solid #fbbf24;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.5;color:#fde68a;text-align:center;max-width:600px;margin-left:auto;margin-right:auto;}
-.llio-banner b{color:#fff;}
-.llio-banner span{color:#fff;font-weight:800;}
-.sub-tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px;overflow-x:auto;scrollbar-width:none;}
-.sub-tab-btn{flex-shrink:0;padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);cursor:pointer;font-size:14px;white-space:nowrap;}
-.sub-tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent-soft));border-color:transparent;color:#000;font-weight:700;}
-.emoji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;}
-.emoji-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;user-select:none;}
-.emoji-item.seleccionat{opacity:0.35!important;border-color:#2ECC71!important;pointer-events:none;}
-.emoji-large{font-size:32px;margin-bottom:4px;}
-.emoji-name{font-size:12px;color:var(--text-muted);}
-.capitol-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;}
-.capitol-icona{font-size:48px;margin-bottom:8px;}
-.btn{padding:10px 20px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:12px;}
-.btn-primari{background:linear-gradient(135deg,var(--accent),var(--accent-soft));color:#000;}
-.btn-sec{background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);}
-.btn:disabled{opacity:0.5;cursor:not-allowed;}
-.lectura-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:600px;margin:0 auto;}
-.lectura-text{line-height:1.7;margin:16px 0;font-size:17px;}
-.lectura-preguntes button{display:block;width:100%;margin:5px 0;text-align:left;}
-.tip-card{background:linear-gradient(180deg,#14532d,#052e16);border-radius:16px;padding:28px 20px;max-width:600px;margin:0 auto;text-align:center;}
-.tip-top{display:flex;justify-content:center;align-items:center;margin-bottom:14px;}
-.tip-badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:#22c55e;color:#000;}
-.tip-badge.a1{background:#22c55e;color:#000;}
-.tip-badge.a2{background:#f59e0b;color:#000;}
-.tip-badge.b1{background:#3b82f6;color:#fff;}
-.tip-text{font-size:22px;line-height:1.35;margin:16px 0;color:#fff;font-weight:800;text-align:center;}
-.tip-exemple{font-size:18px;line-height:1.5;color:#e5e7eb;font-style:italic;margin:8px 0;text-align:center;}
-.tip-tema{font-size:12px;color:#00D4AA;margin-top:10px;font-weight:700;}
-.minijoc-container{max-width:600px;margin:0 auto;}
-.minijoc-frase{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;font-size:20px;text-align:center;margin-bottom:20px;}
-.minijoc-triats{min-height:50px;background:var(--bg-elevated);border:2px dashed var(--border);border-radius:8px;padding:12px;margin-bottom:20px;text-align:center;}
-.minijoc-feedback{text-align:center;min-height:30px;margin-top:16px;}
-.vocab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;}
-.vocab-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
-.vocab-word{font-weight:700;font-size:16px;margin-bottom:4px;}
-.vocab-pron{font-size:12px;color:var(--text-muted);}
-.grammar-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin:12px 0;}
-.grammar-title{font-size:18px;font-weight:700;color:var(--accent);margin-bottom:8px;}
-.grammar-explanation{color:var(--text-muted);font-size:14px;line-height:1.5;margin-bottom:12px;}
-.grammar-que-aprens{background:#1e293b;padding:10px;border-radius:8px;margin:10px 0;font-size:14px;line-height:1.5;}
-.grammar-ortografia{background:#3b2f0b;border:1px solid #a07c00;padding:12px;border-radius:8px;margin-top:12px;font-size:14px;line-height:1.6;}
-.grammar-pronuncia{background:#0b2f3b;border:1px solid #0ea5e9;padding:12px;border-radius:8px;margin-top:10px;font-size:14px;line-height:1.6;}
-.grammar-error{background:#3f1d1d;border:1px solid #f44336;padding:10px;border-radius:8px;margin-top:12px;font-size:14px;line-height:1.5;}
-.grammar-practica{background:#1e293b;border:1px solid #3b82f6;padding:10px;border-radius:8px;margin-top:10px;font-size:14px;line-height:1.5;}
-.intro-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:1000;}
-.intro-content{background:var(--card);border-radius:16px;padding:32px;max-width:400px;text-align:center;}
-.intro-emoji{font-size:80px;margin-bottom:16px;}
-.intro-titol{font-size:24px;margin-bottom:12px;}
-.intro-text{color:var(--text-muted);margin-bottom:24px;}
-.intro-dots{margin-bottom:24px;font-size:20px;}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1A1A1A;border-top:1px solid var(--border);display:flex;gap:0;overflow-x:auto;scrollbar-width:none;padding:8px 6px;justify-content:flex-start;gap:2px;}
-.nav-item{flex-shrink:0;width:52px;min-width:52px;background:transparent;border:none;color:var(--text-muted);padding:8px 2px;cursor:pointer;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;}
-.nav-item.active{color:var(--accent);}
-.nav-icon{font-size:20px;}
-.botiga-header-luxe{padding:16px;background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid #22c55e;border-radius:16px;margin-bottom:14px;text-align:center;}
-.botiga-seccio-titol{font-size:16px;font-weight:800;margin:18px 0 10px;padding-left:4px;border-left:4px solid #fbbf24;}
-.botiga-grid-luxe{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
-.botiga-card-luxe{position:relative;padding-top:28px!important;border-radius:16px!important;}
-.card-recomanat{border:2px solid #fbbf24!important;background:linear-gradient(180deg,rgba(251,191,36,.15),rgba(0,0,0,.2))!important;}
-.card-comprat{opacity:.85;border-color:#22c55e!important;}
-.badge-botiga{position:absolute;top:10px;left:10px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;color:#000;}
-.badge-recomanat{background:#fbbf24;}
-.badge-premium{background:#a855f7;color:#fff;}
-.badge-genial{background:#3b82f6;color:#fff;}
-.badge-cosmetic{background:#64748b;color:#fff;}
-.btn-comprar-luxe{width:100%;margin-top:10px;padding:12px!important;font-size:15px!important;font-weight:800!important;border-radius:12px!important;}
-.escoles-card{background:#1A1A1A;border:1px solid #2A2A2A;border-radius:12px;padding:16px;margin:12px 0;line-height:1.7;font-size:14px;}
-.escoles-card h3{margin-bottom:8px;color:#2ECC71;font-size:16px;}
-.cerca-biblioteca{width:100%;padding:12px;border-radius:12px;border:1px solid #333;background:#121212;color:#fff;font-size:15px;margin-bottom:6px;outline:none;}
-#tab-gremi{padding:8px 12px 8px!important;}
-#tab-gremi.minijoc-actiu .sub-tabs{display:none!important;}
-#minijoc-nivell{font-size:11px!important;color:#888!important;text-align:center;margin-bottom:8px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#minijoc-triats{font-size:13px!important;line-height:1.4!important;opacity:1!important;}
-#minijoc-frase{padding:10px 12px!important;font-size:17px!important;margin-bottom:8px!important;border-radius:10px!important;line-height:1.35!important;}
-#minijoc-emojis{gap:8px!important;grid-template-columns:repeat(2,1fr)!important;}
-#minijoc-emojis .emoji-item{padding:7px 4px!important;border-radius:8px!important;}
-#minijoc-emojis .emoji-large{font-size:26px!important;margin-bottom:2px!important;}
-#minijoc-emojis .emoji-name{font-size:11px!important;line-height:1.2!important;}
-#minijoc-feedback{min-height:22px!important;margin-top:8px!important;font-size:14px!important;}
-#minijoc-professor{font-size:11px!important;color:#888!important;text-align:center;margin-bottom:6px!important;line-height:1.3!important;}
-#minijoc-instruccio{font-size:11px!important;color:#888!important;text-align:center;margin-bottom:8px!important;line-height:1.3!important;}
-#minijoc-triats-wrap{display:flex!important;gap:6px!important;align-items:stretch!important;margin-bottom:8px!important;}
-#minijoc-triats{flex:1!important;margin-bottom:0!important;cursor:pointer!important;}
-#minijoc-desfer{flex-shrink:0!important;width:44px!important;background:#1A1A1A!important;border:1px solid #333!important;border-radius:8px!important;color:#fff!important;font-size:18px!important;cursor:pointer!important;padding:0!important;margin:0!important;}
-#minijoc-desfer:disabled{opacity:0.3!important;}
-#tab-tips{padding:12px!important;}
-#tab-tips .tip-card{max-width:600px!important;width:100%!important;text-align:center!important;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#121212;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:80px}
+header{position:sticky;top:0;z-index:100;background:#121212;border-bottom:1px solid #333;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:20px;line-height:1.1}
+.header-stats{display:flex;gap:12px;align-items:center;font-weight:800;font-size:14px}
+#barra-progres{height:6px;background:#333;border-radius:4px;width:80px;overflow:hidden}
+#barra-progres div{height:100%;background:#22c55e}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:14px}
+.btn-primari{background:#22c55e;color:#000}
+.btn-sec{background:#222;color:#fff;border:1px solid #333}
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:100}
+.nav-item{background:none;border:none;color:#aaa;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-item.active{color:#22c55e}
+.nav-item span:first-child{font-size:22px}
+.nivells-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.nivell-card{aspect-ratio:1;border:2px solid #333;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.emoji-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.emoji-item{background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:10px;text-align:center}
+.emoji-item.seleccionat{border-color:#22c55e;background:#1a3a1a}
+.emoji-large{font-size:28px}
+.emoji-name{font-size:11px;color:#aaa;margin-top:4px}
+.missio-item{background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:14px;margin-bottom:10px}
+.botiga-header-luxe{background:#0f1f3a;border:1px solid #1e3a5f;border-radius:16px;padding:18px;margin-bottom:14px}
+.botiga-grid-luxe{display:grid;grid-template-columns:1fr;gap:12px}
+.botiga-seccio-titol{font-weight:800;font-size:16px;margin:18px 0 10px}
+.capitol-card{background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:16px;position:relative}
+.card-recomanat{border-color:#f59e0b}
+.card-comprat{border-color:#22c55e}
+.badge-botiga{position:absolute;top:10px;right:10px;font-size:11px;font-weight:800;padding:4px 8px;border-radius:20px}
+.badge-recomanat{background:#f59e0b;color:#000}
+.badge-cosmetic{background:#a855f7;color:#fff}
+.badge-premium{background:#22c55e;color:#000}
+.badge-genial{background:#3b82f6;color:#fff}
+.sub-tab-btn{background:#222;border:1px solid #333;color:#fff;border-radius:20px;padding:8px 14px;cursor:pointer;font-size:13px}
+.sub-tab-btn.active{background:#22c55e;color:#000;border-color:#22c55e}
+.vocab-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.vocab-card{background:#222;border:1px solid #333;border-radius:10px;padding:10px;text-align:center}
+.vocab-word{font-weight:800}
+.grammar-card{background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:14px}
+#intro{position:fixed;inset:0;background:#121212;z-index:10000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+#intro-emoji{font-size:80px}
+.producte-card{background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:16px;margin-bottom:12px}
+.producte-card h3{color:#22c55e;margin-bottom:8px}
+.producte-card p,.producte-card li{font-size:14px;line-height:1.6;color:#ddd}
+@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}}
 </style>
 </head>
 <body>
-<header><div style="font-weight:bold;font-size:18px;">🐱 Cat Lingo Emoji</div><div class="header-stats"><span>🪙 <span id="monedes">0</span></span><div class="stat-progress"><span id="header-personatge">👨</span><div class="progress-bar"><div id="barra-progres" class="progress-fill"></div></div><span class="stat-level"><span id="nivell">1</span></span></div><span>⚡ <span id="energia">100</span></span></div></header>
-<div id="intro" class="intro-overlay" style="display:none;"><div class="intro-content"><div id="intro-emoji" class="intro-emoji">👋</div><h2 id="intro-titol" class="intro-titol">Benvingut</h2><p id="intro-text" class="intro-text">Text</p><div id="intro-dots" class="intro-dots">●</div><button id="intro-btn" class="btn btn-primari">Següent</button><button class="btn btn-sec" onclick="saltarIntro()" style="margin-top:8px;">Saltar</button></div></div>
-<div id="tab-mapa" class="tab-content"><div id="mapa-contenidor"></div></div>
+<header>
+<h1>🐱 Cat Lingo<br>Emoji</h1>
+<div class="header-stats"><span>🪙 <span id="monedes">0</span></span><span id="header-personatge">👨</span><div id="barra-progres"><div></div></div><span id="nivell">1</span><span>⚡ <span id="energia">100</span></span></div>
+</header>
+
+<div id="intro">
+<div id="intro-emoji">🙀</div>
+<h2 id="intro-titol" style="margin:12px 0;">Benvingut</h2>
+<p id="intro-text" style="color:#aaa;max-width:320px;">Aprèn català</p>
+<div id="intro-dots" style="margin:16px 0;">● ● ● ● ●</div>
+<button id="intro-btn" class="btn btn-primari" style="width:100%;max-width:320px;">Següent</button>
+<button onclick="saltarIntro()" style="background:none;border:none;color:#aaa;margin-top:12px;cursor:pointer;">Saltar</button>
+</div>
+
+<!-- MAPA -->
+<div id="tab-mapa" class="tab-content active"><div id="mapa-contenidor"></div></div>
+<!-- MISSIONS -->
 <div id="tab-missio" class="tab-content"><div id="missio-contenidor"></div></div>
-<div id="tab-gremi" class="tab-content"><div class="sub-tabs"><button class="sub-tab-btn active" onclick="mostrarSubTab('personatges')">Personatges</button><button class="sub-tab-btn" onclick="mostrarSubTab('biblioteca')">Biblioteca</button><button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">Minijoc</button></div><div id="gremi-contenidor"><div id="gremi-personatges" class="sub-tab-content" style="display:block;"></div><div id="gremi-biblioteca" class="sub-tab-content" style="display:none;"></div><div id="gremi-minijoc" class="sub-tab-content" style="display:none;"><div class="minijoc-container"><div id="minijoc-nivell" style="text-align:center;margin-bottom:12px;color:#888;"></div><div id="minijoc-frase" class="minijoc-frase">Carregant...</div><div id="minijoc-professor">👩‍🏫 A classe: llegeix en veu alta, després tria els emojis</div><div id="minijoc-triats-wrap"><div id="minijoc-triats" class="minijoc-triats" onclick="desferUltimEmoji()" title="Toca per desfer l'últim"></div><button id="minijoc-desfer" onclick="desferUltimEmoji()" disabled>↩</button></div><div id="minijoc-instruccio">👆 Toca els emojis en ordre per completar la frase</div><div id="minijoc-emojis" class="emoji-grid"></div><div id="minijoc-feedback" class="minijoc-feedback"></div></div></div></div></div>
-<div id="tab-lectura" class="tab-content"><div class="llio-banner">🔒 <b>Lliçó enlazada</b> · Cada lectura costa <span>65 ⚡</span> · Has de completar <span>4/4</span> per desbloquejar la següent: <b>📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema</b> · Pots anar a Tips o Botiga, però la lliçó queda pendent fins que la tanquis.</div><div class="sub-tabs"><button class="sub-tab-btn active" onclick="mostrarSubTab('lectura')">Lectura</button><button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">Vocabulari</button><button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">Gramàtica</button></div><div id="lectura-contenidor"><div id="lectura-lectura" class="sub-tab-content" style="display:block;"><div id="lectura-texto"></div></div><div id="lectura-vocab" class="sub-tab-content" style="display:none;"><div id="lectura-vocab-inner"></div></div><div id="lectura-gramatica" class="sub-tab-content" style="display:none;"><div id="lectura-gramatica-inner"></div></div></div><div style="display:none;"><div id="gremi-lectura"></div><div id="gremi-vocab"></div><div id="gremi-gramatica"></div><div id="lectura-vocab-content"></div><div id="lectura-gramatica-content"></div></div></div>
-<div id="tab-tips" class="tab-content"><div class="tip-card"><div class="tip-top"><span id="tip-nivell" class="tip-badge a1">A1</span></div><h3 style="color:#fff;text-align:center;font-size:22px;">💡 Truc del dia</h3><p id="tip-text" class="tip-text">Carregant...</p><p id="tip-exemple" class="tip-exemple"></p><p id="tip-exemple2" class="tip-exemple"></p><p id="tip-exemple3" class="tip-exemple"></p><p id="tip-lectura" class="tip-tema"></p><button class="btn btn-primari" onclick="mostrarTipRandom()" style="background:#052e16;color:#fff;padding:12px 28px;border-radius:10px;width:100%;">Següent tip</button></div></div>
-<div id="tab-escoles" class="tab-content"><div style="max-width:600px;margin:0 auto;"><div style="background:linear-gradient(135deg,#22c55e,#00D4AA);border-radius:16px;padding:24px;text-align:center;color:#000;"><div style="font-size:48px;">🏫</div><h2 style="font-size:24px;margin:8px 0;">Cat Lingo - El producte</h2><p style="font-weight:700;">Aprendre català jugant. 100 nivells · 220 Tips · 44 packs · Sense anuncis · Sense registre.</p></div><div class="escoles-card"><h3>📚 Què inclou el producte?</h3><p>✅ <b>100 nivells</b> - A1 (1-33) · A2 (34-66) · B1 (67-100)</p><p>✅ <b>Minijoc</b> - 68 plantilles de frases amb emojis</p><p>✅ <b>Lectura enlazada</b> - Cada lectura costa <b>65 ⚡</b> i cal completar <b>4/4</b>: Lectura + Vocabulari + Gramàtica + Mini-joc del mateix tema per desbloquejar la següent</p><p>✅ <b>220 Tips</b> - Truc del dia amb 3 exemples diferents per aprendre català</p><p>✅ <b>44 packs - 454 emojis</b> - 419 conceptes únics + 35 variants cosmètiques de pell</p><p>✅ <b>5 minuts al dia</b> - Ideal per a aula o casa</p></div><div class="escoles-card"><h3>🪙 Sistema de monedes del joc</h3><p>🎯 Minijoc: <b>5-15 🪙</b> per frase correcta · <b>5 ⚡</b> per frase</p><p>📚 Lectura: <b>65 ⚡</b> · <b>+5 🪙</b> per pregunta + <b>+15 🪙</b> bonus</p><p>📖 Gramàtica: <b>+3 🪙</b> per quiz + <b>+10 🪙</b> si fa 3/3</p><p>🔥 Ratxa 5: <b>+10 🪙</b> bonus</p><p>🎁 Bonus diari: <b>+10 🪙</b> per tornar</p><p style="font-size:12px;color:#aaa;margin-top:8px;">Tot amb monedes del joc. Sense diners reals dins l'app.</p></div><div class="escoles-card"><h3>🎯 Missions - 8 missions</h3><p>1. Pujar de nivell · 2. Llegir una lectura · 3. Fer gramàtica · 4. Ratxa de 5 · 5. Bonus diari · 6. Desbloqueja un pack · 7. Completar la lliçó completa 4/4 · 8. Energia al màxim</p></div><div class="escoles-card"><h3>🛡️ Seguretat i tecnologia</h3><p>🔒 Sense registre, sense correu, sense dades personals</p><p>🚫 Sense anuncis</p><p>📱 Funciona a mòbil, tauleta i ordinador</p><p>💾 Tot es guarda al dispositiu - Codi + JSON, sense backend</p><p>🔁 Escalable: afegir nivells, tips o packs = afegir JSON, sense tocar el codi</p></div></div></div>
+<!-- GREMI -->
+<div id="tab-gremi" class="tab-content">
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+<button class="sub-tab-btn" onclick="mostrarSubTab('biblioteca')">📚 Biblioteca</button>
+<button class="sub-tab-btn" onclick="mostrarSubTab('personatges')">👤 Avatar</button>
+<button class="sub-tab-btn" onclick="mostrarSubTab('minijoc')">🎯 Mini-joc</button>
+</div>
+<div id="gremi-biblioteca" class="sub-tab-content"></div>
+<div id="gremi-personatges" class="sub-tab-content" style="display:none;"></div>
+<div id="gremi-minijoc" class="sub-tab-content" style="display:none;">
+<div style="text-align:center;">
+<p id="minijoc-nivell" style="color:#aaa;font-size:13px;"></p>
+<h2 id="minijoc-frase" style="margin:16px 0;line-height:1.4;">Carregant...</h2>
+<div id="minijoc-professor" style="font-size:32px;">👩‍🏫</div>
+<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👆 Toca els emojis en ordre</p>
+<div id="minijoc-triats" style="font-size:28px;margin:14px 0;min-height:40px;">○ ○ ○</div>
+<div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
+<button class="btn btn-sec" id="minijoc-desfer" onclick="desferUltimEmoji()">↩ Desfer</button>
+<button class="btn btn-primari" onclick="novaFraseMinijoc()">🔄 Nova frase</button>
+</div>
+<div id="minijoc-feedback"></div>
+<div id="minijoc-emojis" class="emoji-grid" style="margin-top:14px;"></div>
+</div>
+</div>
+</div>
+<!-- LECTURA -->
+<div id="tab-lectura" class="tab-content">
+<div style="background:#2a1a00;border:1px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;text-align:center;">🔒 <b>Lliçó enlazada</b> · Cada lectura costa <b>30 ⚡</b> · Has de completar <b>4/4</b> per desbloquejar la següent: 📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema</div>
+<div style="display:flex;gap:8px;margin-bottom:14px;">
+<button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">📚 Lectura</button>
+<button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">🃏 Vocabulari</button>
+<button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">📝 Gramàtica</button>
+</div>
+<div id="lectura-texto" class="sub-tab-content"></div>
+<div id="lectura-vocab-inner" class="sub-tab-content" style="display:none;"></div>
+<div id="lectura-gramatica-inner" class="sub-tab-content" style="display:none;"></div>
+<div style="text-align:center;margin-top:16px;"><button class="btn btn-primari" onclick="intentarNovaLectura()">🔄 Nova lectura · 30 ⚡</button></div>
+</div>
+<!-- TIPS -->
+<div id="tab-tips" class="tab-content">
+<div style="background:#0f2a1a;border:1px solid #22c55e;border-radius:16px;padding:20px;text-align:center;">
+<span id="tip-nivell" class="tip-badge" style="background:#22c55e;color:#000;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800;">A1</span>
+<h2 style="margin:12px 0;">💡 Truc del dia</h2>
+<h3 id="tip-text" style="font-size:22px;line-height:1.4;">Carregant...</h3>
+<p id="tip-exemple" style="margin-top:14px;font-style:italic;color:#ddd;"></p>
+<p id="tip-exemple2" style="font-style:italic;color:#ddd;"></p>
+<p id="tip-exemple3" style="font-style:italic;color:#ddd;"></p>
+<p id="tip-lectura" style="color:#22c55e;margin-top:10px;font-size:13px;"></p>
+<button class="btn btn-primari" onclick="mostrarTipRandom()" style="width:100%;margin-top:16px;">Següent tip</button>
+</div>
+</div>
+<!-- PRODUCTE -->
+<div id="tab-producte" class="tab-content">
+<h2 style="text-align:center;margin-bottom:6px;">🏫 Cat Lingo Emoji</h2>
+<p style="text-align:center;color:#aaa;font-size:13px;margin-bottom:16px;">Aprèn català en 5 minuts al dia · A1 · A2 · B1</p>
+<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells</b> · <b>44 packs</b> · <b>579 emojis a la biblioteca</b> · <b>419 conceptes únics</b> · <b>220 Tips</b> · <b>15 lectures A1</b> amb vocabulari, gramàtica i mini-joc enlazat.</p><p style="margin-top:8px;color:#aaa;font-size:12px;">Tots els números són els mateixos a Botiga, Missions i Producte: 44 packs · 579 emojis.</p></div>
+<div class="producte-card"><h3>📚 Lliçó enlazada 4/4</h3><p>1. Lectura · 2. Vocabulari · 3. Gramàtica · 4. Mini-joc del tema. No hi ha següent lectura fins que tanques la lliçó. Això és retenció real, no contingut solt.</p></div>
+<div class="producte-card"><h3>🪙 Sistema de monedes del joc</h3><p>🎯 Minijoc: <b>5-15 🪙</b> per frase correcta · <b>5 ⚡</b> per frase<br>📚 Lectura: <b>30 ⚡</b> · <b>+5 🪙</b> per pregunta + <b>+15 🪙</b> bonus<br>📝 Gramàtica: <b>+3 🪙</b> per quiz + <b>+10 🪙</b> si fas 3/3<br>🔥 Ratxa 5: <b>+10 🪙</b> bonus<br>🎁 Bonus diari: <b>+10 🪙</b> per tornar</p><p style="margin-top:8px;color:#aaa;">Tot amb monedes del joc. Sense diners reals dins l'app.</p></div>
+<div class="producte-card"><h3>🎯 Missions - 8 missions</h3><p>1. Pujar de nivell · 2. Llegir una lectura · 3. Fer gramàtica · 4. Ratxa de 5 · 5. Bonus diari · 6. Desbloqueja un pack · 7. Completar la lliçó completa 4/4 · 8. Energia al màxim</p></div>
+<div class="producte-card"><h3>🛡️ Seguretat i tecnologia</h3><p>🔒 Sense registre, sense correu, sense dades personals<br>🚫 Sense anuncis<br>📱 Funciona a mòbil, tauleta i ordinador<br>💾 Tot es guarda al dispositiu - Codi + JSON, sense backend<br>🔁 Escalable: afegir nivells, tips o packs = afegir JSON, sense tocar el codi</p></div>
+<div class="producte-card"><h3>👤 Avatar</h3><p>Tria el teu avatar: Joven, Jova, Noi, Noia, Home, Dona. El protagonista de les lectures (La Laia, En Pau, etc.) és un personatge de la història, no el teu avatar.</p></div>
+</div>
+<!-- BOTIGA -->
 <div id="tab-botiga" class="tab-content"><div id="botiga-contenidor"></div></div>
-<nav class="bottom-nav"><button class="nav-item active" onclick="canviarTab('mapa',event)"><span class="nav-icon">🗺️</span>Mapa</button><button class="nav-item" onclick="canviarTab('missio',event)"><span class="nav-icon">🎯</span>Missions</button><button class="nav-item" onclick="canviarTab('gremi',event)"><span class="nav-icon">👥</span>Gremi</button><button class="nav-item" onclick="canviarTab('lectura',event)"><span class="nav-icon">📚</span>Lectura</button><button class="nav-item" onclick="canviarTab('tips',event)"><span class="nav-icon">💡</span>Tips</button><button class="nav-item" onclick="canviarTab('escoles',event)"><span class="nav-icon">🏫</span>Producte</button><button class="nav-item" onclick="canviarTab('botiga',event)"><span class="nav-icon">🛒</span>Botiga</button></nav>
-<script src="./main.js"></script>
+
+<nav class="bottom-nav">
+<button class="nav-item active" onclick="canviarTab('mapa',event)"><span>🗺️</span>Mapa</button>
+<button class="nav-item" onclick="canviarTab('missio',event)"><span>🎯</span>Missions</button>
+<button class="nav-item" onclick="canviarTab('gremi',event)"><span>👥</span>Gremi</button>
+<button class="nav-item" onclick="canviarTab('lectura',event)"><span>📚</span>Lectura</button>
+<button class="nav-item" onclick="canviarTab('tips',event)"><span>💡</span>Tips</button>
+<button class="nav-item" onclick="canviarTab('producte',event)"><span>🏫</span>Producte</button>
+<button class="nav-item" onclick="canviarTab('botiga',event)"><span>🛒</span>Botiga</button>
+</nav>
+<script src="./main.js?v=28"></script>
 </body>
-</html> 
+</html>
