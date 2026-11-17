@@ -73,8 +73,10 @@ header h1{font-size:20px;line-height:1.1}
 
 <!-- MAPA -->
 <div id="tab-mapa" class="tab-content active"><div id="mapa-contenidor"></div></div>
+
 <!-- MISSIONS -->
 <div id="tab-missio" class="tab-content"><div id="missio-contenidor"></div></div>
+
 <!-- GREMI -->
 <div id="tab-gremi" class="tab-content">
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -88,8 +90,7 @@ header h1{font-size:20px;line-height:1.1}
 <div style="text-align:center;">
 <p id="minijoc-nivell" style="color:#aaa;font-size:13px;"></p>
 <h2 id="minijoc-frase" style="margin:16px 0;line-height:1.4;">Carregant...</h2>
-<div id="minijoc-professor" style="font-size:32px;">👩‍🏫</div>
-<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👆 Toca els emojis en ordre</p>
+<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👆 Toca els emojis en ordre per completar la frase</p>
 <div id="minijoc-triats" style="font-size:28px;margin:14px 0;min-height:40px;">○ ○ ○</div>
 <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
 <button class="btn btn-sec" id="minijoc-desfer" onclick="desferUltimEmoji()">↩ Desfer</button>
@@ -100,9 +101,10 @@ header h1{font-size:20px;line-height:1.1}
 </div>
 </div>
 </div>
+
 <!-- LECTURA -->
 <div id="tab-lectura" class="tab-content">
-<div style="background:#2a1a00;border:1px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;text-align:center;">🔒 <b>Lliçó enlazada</b> · Cada lectura costa <b>30 ⚡</b> · Has de completar <b>4/4</b> per desbloquejar la següent: 📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema</div>
+<div style="background:#2a1a00;border:1px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;text-align:center;">🔒 <b>Lliçó enlazada</b> · Cada lectura costa <b>30 ⚡</b> · Has de completar <b>4/4</b> per desbloquejar la següent: 📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema<br>Cada dia comences amb <b>100 ⚡</b></div>
 <div style="display:flex;gap:8px;margin-bottom:14px;">
 <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">📚 Lectura</button>
 <button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">🃏 Vocabulari</button>
@@ -113,6 +115,7 @@ header h1{font-size:20px;line-height:1.1}
 <div id="lectura-gramatica-inner" class="sub-tab-content" style="display:none;"></div>
 <div style="text-align:center;margin-top:16px;"><button class="btn btn-primari" onclick="intentarNovaLectura()">🔄 Nova lectura · 30 ⚡</button></div>
 </div>
+
 <!-- TIPS -->
 <div id="tab-tips" class="tab-content">
 <div style="background:#0f2a1a;border:1px solid #22c55e;border-radius:16px;padding:20px;text-align:center;">
@@ -122,33 +125,33 @@ header h1{font-size:20px;line-height:1.1}
 <p id="tip-exemple" style="margin-top:14px;font-style:italic;color:#ddd;"></p>
 <p id="tip-exemple2" style="font-style:italic;color:#ddd;"></p>
 <p id="tip-exemple3" style="font-style:italic;color:#ddd;"></p>
-<p id="tip-lectura" style="color:#22c55e;margin-top:10px;font-size:13px;"></p>
-<button class="btn btn-primari" onclick="mostrarTipRandom()" style="width:100%;margin-top:16px;">Següent tip</button>
+<p id="tip-lectura" style="margin-top:12px;color:#22c55e;font-size:13px;"></p>
+<button class="btn btn-primari" onclick="mostrarTipRandom()" style="margin-top:16px;width:100%;">Següent tip ➡</button>
 </div>
 </div>
-<!-- PRODUCTE -->
+
+<!-- PRODUCTE - PER A ESTUDIS -->
 <div id="tab-producte" class="tab-content">
-<h2 style="text-align:center;margin-bottom:6px;">🏫 Cat Lingo Emoji</h2>
-<p style="text-align:center;color:#aaa;font-size:13px;margin-bottom:16px;">Aprèn català en 5 minuts al dia · A1 · A2 · B1</p>
-<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells</b> · <b>44 packs</b> · <b>579 emojis a la biblioteca</b> · <b>419 conceptes únics</b> · <b>220 Tips</b> · <b>15 lectures A1</b> amb vocabulari, gramàtica i mini-joc enlazat.</p><p style="margin-top:8px;color:#aaa;font-size:12px;">Tots els números són els mateixos a Botiga, Missions i Producte: 44 packs · 579 emojis.</p></div>
-<div class="producte-card"><h3>📚 Lliçó enlazada 4/4</h3><p>1. Lectura · 2. Vocabulari · 3. Gramàtica · 4. Mini-joc del tema. No hi ha següent lectura fins que tanques la lliçó. Això és retenció real, no contingut solt.</p></div>
-<div class="producte-card"><h3>🪙 Sistema de monedes del joc</h3><p>🎯 Minijoc: <b>5-15 🪙</b> per frase correcta · <b>5 ⚡</b> per frase<br>📚 Lectura: <b>30 ⚡</b> · <b>+5 🪙</b> per pregunta + <b>+15 🪙</b> bonus<br>📝 Gramàtica: <b>+3 🪙</b> per quiz + <b>+10 🪙</b> si fas 3/3<br>🔥 Ratxa 5: <b>+10 🪙</b> bonus<br>🎁 Bonus diari: <b>+10 🪙</b> per tornar</p><p style="margin-top:8px;color:#aaa;">Tot amb monedes del joc. Sense diners reals dins l'app.</p></div>
-<div class="producte-card"><h3>🎯 Missions - 8 missions</h3><p>1. Pujar de nivell · 2. Llegir una lectura · 3. Fer gramàtica · 4. Ratxa de 5 · 5. Bonus diari · 6. Desbloqueja un pack · 7. Completar la lliçó completa 4/4 · 8. Energia al màxim</p></div>
-<div class="producte-card"><h3>🛡️ Seguretat i tecnologia</h3><p>🔒 Sense registre, sense correu, sense dades personals<br>🚫 Sense anuncis<br>📱 Funciona a mòbil, tauleta i ordinador<br>💾 Tot es guarda al dispositiu - Codi + JSON, sense backend<br>🔁 Escalable: afegir nivells, tips o packs = afegir JSON, sense tocar el codi</p></div>
-<div class="producte-card"><h3>👤 Avatar</h3><p>Tria el teu avatar: Joven, Jova, Noi, Noia, Home, Dona. El protagonista de les lectures (La Laia, En Pau, etc.) és un personatge de la història, no el teu avatar.</p></div>
+<div class="producte-card"><h3>🐱 Cat Lingo Emoji - El Producte</h3><p>App educativa de català A1, A2, B1. Sense registre, sense anuncis, sense backend. Tot es guarda al dispositiu. Codi + JSON, escalable.</p></div>
+<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells · 220 Tips · 44 packs · 579 emojis · 419 conceptes únics · Sense anuncis · Sense registre</b></p><p>579 emojis a la biblioteca, no 454. Tots els números de l'app són 579.</p></div>
+<div class="producte-card"><h3>🪙 Sistema de monedes</h3><ul><li>Minijoc: 5-15 🪙</li><li>Lectura: costa 30 ⚡ · +5 🪙 per pregunta · +15 🪙 bonus</li><li>Gramàtica: +3 🪙 per quiz · +10 🪙 bonus si fas 3/3</li><li>Ratxa 5: +10 🪙 bonus</li><li>Bonus diari: +10 🪙</li></ul></div>
+<div class="producte-card"><h3>⚡ Energia</h3><p>Cada dia comences amb <b>100 ⚡</b>. Lectura costa 30 ⚡. Minijoc costa 5 ⚡. Recarrega per 50 🪙. Regen +30 ⚡ cada 5 min.</p></div>
+<div class="producte-card"><h3>🎯 Missions - 8</h3><p>1. Pujar de nivell · 2. Llegir una lectura · 3. Fer gramàtica · 4. Ratxa de 5 · 5. Bonus diari · 6. Desbloqueja un pack · 7. Completar la lliçó 4/4 · 8. Energia al màxim</p></div>
+<div class="producte-card"><h3>🔒 Seguretat i escala</h3><p>Sense registre, sense anuncis, tot al dispositiu. Codi + JSON sense backend. Escalable a A2 / B1, a altres idiomes i a nous packs.</p></div>
 </div>
+
 <!-- BOTIGA -->
 <div id="tab-botiga" class="tab-content"><div id="botiga-contenidor"></div></div>
 
 <nav class="bottom-nav">
-<button class="nav-item active" onclick="canviarTab('mapa',event)"><span>🗺️</span>Mapa</button>
+<button class="nav-item" onclick="canviarTab('mapa',event)"><span>🗺️</span>Mapa</button>
 <button class="nav-item" onclick="canviarTab('missio',event)"><span>🎯</span>Missions</button>
 <button class="nav-item" onclick="canviarTab('gremi',event)"><span>👥</span>Gremi</button>
 <button class="nav-item" onclick="canviarTab('lectura',event)"><span>📚</span>Lectura</button>
 <button class="nav-item" onclick="canviarTab('tips',event)"><span>💡</span>Tips</button>
-<button class="nav-item" onclick="canviarTab('producte',event)"><span>🏫</span>Producte</button>
+<button class="nav-item" onclick="canviarTab('producte',event)"><span>🏠</span>Producte</button>
 <button class="nav-item" onclick="canviarTab('botiga',event)"><span>🛒</span>Botiga</button>
 </nav>
-<script src="./main.js?v=28"></script>
+<script src="./main.js?v=29"></script>
 </body>
 </html>
