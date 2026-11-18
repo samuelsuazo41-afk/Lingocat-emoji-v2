@@ -66,10 +66,28 @@ header h1{font-size:20px;line-height:1.1}
 .tips-card .btn{padding:16px;font-size:17px}
 .tip-badge{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:800}
 .tip-badge.a1{background:#22c55e;color:#000}.tip-badge.a2{background:#f59e0b;color:#000}.tip-badge.b1{background:#3b82f6;color:#fff}
+/* BENVINGUDA - SIEMPRE AL ABRIR, TAPA EL NEGRO MIENTRAS CARGA */
+#benvinguda{position:fixed;inset:0;background:#121212;z-index:20000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;gap:14px;cursor:pointer;transition:opacity .35s}
+#benvinguda.amagada{opacity:0;pointer-events:none}
+.benv-emoji{font-size:90px;line-height:1}
+.benv-titol{font-size:32px;line-height:1.1}
+.benv-sub{color:#aaa;font-size:15px;line-height:1.5;max-width:320px}
+.benv-barra{width:180px;height:6px;background:#333;border-radius:99px;overflow:hidden;margin-top:6px}
+.benv-barra div{height:100%;width:40%;background:#22c55e;border-radius:99px;animation:benvCarrega 1s infinite}
+@keyframes benvCarrega{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}
+.benv-entrar{margin-top:8px;color:#22c55e;font-size:13px;font-weight:800}
 @media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}}
 </style>
 </head>
 <body>
+<!-- CARTA DE BENVINGUDA - SALE SIEMPRE, SE QUITA SOLA -->
+<div id="benvinguda" onclick="tancarBenvinguda()">
+<div class="benv-emoji">🐱</div>
+<h1 class="benv-titol">Benvingut a<br>Cat Lingo Emoji</h1>
+<p class="benv-sub">Aprèn català jugant amb emojis.<br>A1 · A2 · B1 · 100 nivells</p>
+<div class="benv-barra"><div></div></div>
+<p class="benv-entrar">Toca per entrar ➡</p>
+</div>
 <header>
 <h1>🐱 Cat Lingo<br>Emoji</h1>
 <div class="header-stats"><span>🪙 <span id="monedes">0</span></span><span id="header-personatge">👨</span><div id="barra-progres"><div></div></div><span id="nivell">1</span><span>⚡ <span id="energia">100</span></span></div>
@@ -147,6 +165,11 @@ header h1{font-size:20px;line-height:1.1}
 <button class="nav-item" onclick="canviarTab('producte',event)"><span>🏠</span>Producte</button>
 <button class="nav-item" onclick="canviarTab('botiga',event)"><span>🛒</span>Botiga</button>
 </nav>
+<script>
+function tancarBenvinguda(){var b=document.getElementById('benvinguda');if(!b||b.classList.contains('amagada'))return;b.classList.add('amagada');setTimeout(function(){b.style.display='none'},400);}
+window.addEventListener('load',function(){setTimeout(tancarBenvinguda,900);});
+setTimeout(tancarBenvinguda,3000);
+</script>
 <script src="./main.js?v=32"></script>
 </body>
 </html>
