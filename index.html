@@ -53,7 +53,20 @@ header h1{font-size:20px;line-height:1.1}
 .producte-card{background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:16px;margin-bottom:12px}
 .producte-card h3{color:#22c55e;margin-bottom:8px}
 .producte-card p,.producte-card li{font-size:14px;line-height:1.6;color:#ddd}
-@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}}
+/* TIPS - CENTRADO Y GRANDE */
+#tab-tips{padding:12px}
+.tips-wrap{min-height:calc(100vh - 150px);display:flex;align-items:center;justify-content:center}
+.tips-card{width:100%;max-width:560px;background:#0f2a1a;border:1px solid #22c55e;border-radius:20px;padding:28px 20px;text-align:center;display:flex;flex-direction:column;gap:18px}
+.tips-card h2{font-size:28px}
+#tip-text{font-size:26px;line-height:1.35;font-weight:800}
+.tip-exemples{display:flex;flex-direction:column;gap:12px;text-align:left}
+.tip-exemple{background:#121212;border:1px solid #333;border-radius:14px;padding:16px 14px;font-size:17px;line-height:1.5;font-style:italic;color:#eee;min-height:58px;display:flex;align-items:center}
+.tip-exemple:empty{display:none}
+#tip-lectura{color:#22c55e;font-size:14px;font-weight:700}
+.tips-card .btn{padding:16px;font-size:17px}
+.tip-badge{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:800}
+.tip-badge.a1{background:#22c55e;color:#000}.tip-badge.a2{background:#f59e0b;color:#000}.tip-badge.b1{background:#3b82f6;color:#fff}
+@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}}
 </style>
 </head>
 <body>
@@ -107,16 +120,14 @@ header h1{font-size:20px;line-height:1.1}
 <div style="text-align:center;margin-top:16px;"><button class="btn btn-primari" onclick="intentarNovaLectura()">🔄 Nova lectura</button></div>
 </div>
 <div id="tab-tips" class="tab-content">
-<div style="background:#0f2a1a;border:1px solid #22c55e;border-radius:16px;padding:20px;text-align:center;">
-<span id="tip-nivell" class="tip-badge" style="background:#22c55e;color:#000;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800;">A1</span>
-<h2 style="margin:12px 0;">💡 Truc del dia</h2>
-<h3 id="tip-text" style="font-size:22px;line-height:1.4;">Carregant...</h3>
-<p id="tip-exemple" style="margin-top:14px;font-style:italic;color:#ddd;"></p>
-<p id="tip-exemple2" style="font-style:italic;color:#ddd;"></p>
-<p id="tip-exemple3" style="font-style:italic;color:#ddd;"></p>
-<p id="tip-lectura" style="margin-top:12px;color:#22c55e;font-size:13px;"></p>
-<button class="btn btn-primari" onclick="mostrarTipRandom()" style="margin-top:16px;width:100%;">Següent tip ➡</button>
-</div>
+<div class="tips-wrap"><div class="tips-card">
+<div><span id="tip-nivell" class="tip-badge a1">A1</span></div>
+<h2>💡 Truc del dia</h2>
+<h3 id="tip-text">Carregant...</h3>
+<div class="tip-exemples"><p id="tip-exemple" class="tip-exemple"></p><p id="tip-exemple2" class="tip-exemple"></p><p id="tip-exemple3" class="tip-exemple"></p></div>
+<p id="tip-lectura"></p>
+<button class="btn btn-primari" onclick="mostrarTipRandom()" style="width:100%;">Següent tip ➡</button>
+</div></div>
 </div>
 <div id="tab-producte" class="tab-content">
 <div class="producte-card"><h3>🐱 Cat Lingo Emoji - El Producte</h3><p>App educativa de català A1, A2, B1. Sense registre, sense anuncis, sense backend. Tot es guarda al dispositiu. Codi + JSON, escalable.</p></div>
@@ -136,6 +147,6 @@ header h1{font-size:20px;line-height:1.1}
 <button class="nav-item" onclick="canviarTab('producte',event)"><span>🏠</span>Producte</button>
 <button class="nav-item" onclick="canviarTab('botiga',event)"><span>🛒</span>Botiga</button>
 </nav>
-<script src="./main.js?v=31"></script>
+<script src="./main.js?v=32"></script>
 </body>
 </html>
