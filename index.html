@@ -9,7 +9,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#121212;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:80px}
-header{position:sticky;top:0;z-index:100;background:#121212;border-bottom:1px solid #333;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+header{position:sticky;top:0;z-index:100;background:#121212;border-bottom:1px solid #333;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;width:100%}
 header h1{font-size:20px;line-height:1.1}
 .header-stats{display:flex;gap:12px;align-items:center;font-weight:800;font-size:14px}
 #barra-progres{height:6px;background:#333;border-radius:4px;width:80px;overflow:hidden}
@@ -17,9 +17,9 @@ header h1{font-size:20px;line-height:1.1}
 .btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:14px}
 .btn-primari{background:#22c55e;color:#000}
 .btn-sec{background:#222;color:#fff;border:1px solid #333}
-.tab-content{display:none;padding:16px}
+.tab-content{display:none;padding:16px;max-width:1100px;margin:0 auto;width:100%}
 .tab-content.active{display:block}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:100}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:100;max-width:1100px;margin:0 auto}
 .nav-item{background:none;border:none;color:#aaa;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
 .nav-item.active{color:#22c55e}
 .nav-item span:first-child{font-size:22px}
@@ -76,7 +76,12 @@ header h1{font-size:20px;line-height:1.1}
 .benv-barra div{height:100%;width:40%;background:#22c55e;border-radius:99px;animation:benvCarrega 1s infinite}
 @keyframes benvCarrega{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}
 .benv-entrar{margin-top:8px;color:#22c55e;font-size:13px;font-weight:800}
-@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}}
+/* v33 - APROFITAR ESPAI HORITZONTAL */
+#gremi-minijoc{max-width:900px;margin:0 auto}
+#minijoc-emojis{max-width:900px;margin:14px auto 0}
+@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}.vocab-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.botiga-grid-luxe{grid-template-columns:repeat(3,1fr)}.emoji-grid{grid-template-columns:repeat(8,1fr)}.tab-content{padding:20px 24px}.producte-card{max-width:900px;margin:0 auto 12px}}
+@media(min-width:1100px){.emoji-grid{grid-template-columns:repeat(10,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}}
 </style>
 </head>
 <body>
@@ -114,11 +119,12 @@ header h1{font-size:20px;line-height:1.1}
 <div style="text-align:center;">
 <p id="minijoc-nivell" style="color:#aaa;font-size:13px;"></p>
 <h2 id="minijoc-frase" style="margin:16px 0;line-height:1.4;">Carregant...</h2>
-<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👆 Toca els emojis en ordre per completar la frase</p>
+<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👀 Mira, tapa i construeix</p>
 <div id="minijoc-triats" style="font-size:28px;margin:14px 0;min-height:40px;">○ ○ ○</div>
-<div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
+<div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;">
 <button class="btn btn-sec" id="minijoc-desfer" onclick="desferUltimEmoji()">↩ Desfer</button>
-<button class="btn btn-primari" onclick="novaFraseMinijoc()">🔄 Nova frase</button>
+<button class="btn btn-sec" onclick="minijocAvancarFase()">⏭ Següent fase</button>
+<button class="btn btn-primari" onclick="minijocFase=0;novaFraseMinijoc()">🔄 Nova frase</button>
 </div>
 <div id="minijoc-feedback"></div>
 <div id="minijoc-emojis" class="emoji-grid" style="margin-top:14px;"></div>
@@ -170,6 +176,6 @@ function tancarBenvinguda(){var b=document.getElementById('benvinguda');if(!b||b
 window.addEventListener('load',function(){setTimeout(tancarBenvinguda,900);});
 setTimeout(tancarBenvinguda,3000);
 </script>
-<script src="./main.js?v=32"></script>
+<script src="./main.js?v=33"></script>
 </body>
 </html>
