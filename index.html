@@ -53,6 +53,7 @@ header h1{font-size:20px;line-height:1.1}
 .producte-card{background:#1e1e1e;border:1px solid #333;border-radius:16px;padding:16px;margin-bottom:12px}
 .producte-card h3{color:#22c55e;margin-bottom:8px}
 .producte-card p,.producte-card li{font-size:14px;line-height:1.6;color:#ddd}
+/* TIPS - CENTRADO Y GRANDE */
 #tab-tips{padding:12px}
 .tips-wrap{min-height:calc(100vh - 150px);display:flex;align-items:center;justify-content:center}
 .tips-card{width:100%;max-width:560px;background:#0f2a1a;border:1px solid #22c55e;border-radius:20px;padding:28px 20px;text-align:center;display:flex;flex-direction:column;gap:18px}
@@ -65,6 +66,7 @@ header h1{font-size:20px;line-height:1.1}
 .tips-card .btn{padding:16px;font-size:17px}
 .tip-badge{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:800}
 .tip-badge.a1{background:#22c55e;color:#000}.tip-badge.a2{background:#f59e0b;color:#000}.tip-badge.b1{background:#3b82f6;color:#fff}
+/* BENVINGUDA - SIEMPRE AL ABRIR, TAPA EL NEGRO MIENTRAS CARGA */
 #benvinguda{position:fixed;inset:0;background:#121212;z-index:20000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;gap:14px;cursor:pointer;transition:opacity .35s}
 #benvinguda.amagada{opacity:0;pointer-events:none}
 .benv-emoji{font-size:90px;line-height:1}
@@ -74,6 +76,7 @@ header h1{font-size:20px;line-height:1.1}
 .benv-barra div{height:100%;width:40%;background:#22c55e;border-radius:99px;animation:benvCarrega 1s infinite}
 @keyframes benvCarrega{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}
 .benv-entrar{margin-top:8px;color:#22c55e;font-size:13px;font-weight:800}
+/* v33 - APROFITAR ESPAI HORITZONTAL */
 #gremi-minijoc{max-width:900px;margin:0 auto}
 #minijoc-emojis{max-width:900px;margin:14px auto 0}
 @media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}.vocab-grid{grid-template-columns:repeat(3,1fr)}}
@@ -82,6 +85,7 @@ header h1{font-size:20px;line-height:1.1}
 </style>
 </head>
 <body>
+<!-- CARTA DE BENVINGUDA - SALE SIEMPRE, SE QUITA SOLA -->
 <div id="benvinguda" onclick="tancarBenvinguda()">
 <div class="benv-emoji">🐱</div>
 <h1 class="benv-titol">Benvingut a<br>Cat Lingo Emoji</h1>
@@ -172,6 +176,6 @@ function tancarBenvinguda(){var b=document.getElementById('benvinguda');if(!b||b
 window.addEventListener('load',function(){setTimeout(tancarBenvinguda,900);});
 setTimeout(tancarBenvinguda,3000);
 </script>
-<script src="./main.js?v=35"></script>
+<script src="./main.js?v=34"></script>
 </body>
 </html>
