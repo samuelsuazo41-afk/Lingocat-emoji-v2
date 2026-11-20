@@ -1,6 +1,6 @@
 // sw.js v88 - Cat Lingo Emoji
 // Canvis v88: + data/temes.json (90 temes) + CACHE_NAME pujat a v88 per forçar neteja
-const CACHE_NAME = 'lingocat-v88';
+const CACHE_NAME = 'lingocat-v89';
 const URLS_TO_CACHE = [
   './',
   './index.html',
