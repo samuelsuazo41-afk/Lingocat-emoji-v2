@@ -8,25 +8,29 @@
 <meta name="theme-color" content="#121212">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#121212;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:80px}
+body{background:#121212;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:90px}
 header{position:sticky;top:0;z-index:100;background:#121212;border-bottom:1px solid #333;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto;width:100%}
 header h1{font-size:20px;line-height:1.1}
 .header-stats{display:flex;gap:12px;align-items:center;font-weight:800;font-size:14px}
 #barra-progres{height:6px;background:#333;border-radius:4px;width:80px;overflow:hidden}
 #barra-progres div{height:100%;background:#22c55e}
-.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:14px}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:14px;transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
 .btn-primari{background:#22c55e;color:#000}
 .btn-sec{background:#222;color:#fff;border:1px solid #333}
+.btn-perill{background:#f44336;color:#fff}
 .tab-content{display:none;padding:16px;max-width:1100px;margin:0 auto;width:100%}
 .tab-content.active{display:block}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:100;max-width:1100px;margin:0 auto}
-.nav-item{background:none;border:none;color:#aaa;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
-.nav-item.active{color:#22c55e}
+.nav-item{background:none;border:none;color:#aaa;cursor:pointer;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;border-radius:10px}
+.nav-item.active{color:#22c55e;background:rgba(34,197,94,.12)}
 .nav-item span:first-child{font-size:22px}
 .nivells-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.nivell-card{aspect-ratio:1;border:2px solid #333;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.nivell-card{aspect-ratio:1;border:2px solid #333;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:18px;cursor:pointer}
 .emoji-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.emoji-item{background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:10px;text-align:center}
+.emoji-item{background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:10px;text-align:center;cursor:pointer}
+.emoji-item:hover{border-color:#555}
 .emoji-item.seleccionat{border-color:#22c55e;background:#1a3a1a}
 .emoji-large{font-size:28px}
 .emoji-name{font-size:11px;color:#aaa;margin-top:4px}
@@ -66,7 +70,7 @@ header h1{font-size:20px;line-height:1.1}
 .tips-card .btn{padding:16px;font-size:17px}
 .tip-badge{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:800}
 .tip-badge.a1{background:#22c55e;color:#000}.tip-badge.a2{background:#f59e0b;color:#000}.tip-badge.b1{background:#3b82f6;color:#fff}
-/* BENVINGUDA - SIEMPRE AL ABRIR, TAPA EL NEGRO MIENTRAS CARGA */
+/* BENVINGUDA */
 #benvinguda{position:fixed;inset:0;background:#121212;z-index:20000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;gap:14px;cursor:pointer;transition:opacity .35s}
 #benvinguda.amagada{opacity:0;pointer-events:none}
 .benv-emoji{font-size:90px;line-height:1}
@@ -76,16 +80,38 @@ header h1{font-size:20px;line-height:1.1}
 .benv-barra div{height:100%;width:40%;background:#22c55e;border-radius:99px;animation:benvCarrega 1s infinite}
 @keyframes benvCarrega{0%{transform:translateX(-100%)}100%{transform:translateX(450%)}}
 .benv-entrar{margin-top:8px;color:#22c55e;font-size:13px;font-weight:800}
-/* v33 - APROFITAR ESPAI HORITZONTAL */
+/* v36 - MINI-JOC 5 FASES + ESPAI HORITZONTAL */
 #gremi-minijoc{max-width:900px;margin:0 auto}
+.minijoc-card{background:#1a1a1a;border:1px solid #333;border-radius:20px;padding:20px}
+#minijoc-frase{font-size:26px;line-height:1.35}
+#minijoc-triats{font-size:32px;margin:14px 0;min-height:44px;word-break:break-word}
+#minijoc-triats.llarg{font-size:26px}
+#minijoc-triats.complet{color:#22c55e}
+#minijoc-instruccio{font-size:14px}
+#minijoc-instruccio.complet{color:#22c55e}
+#minijoc-feedback{font-size:15px;line-height:1.5;min-height:28px}
+.minijoc-fases{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
+.minijoc-fase{border:1px solid #333;background:#222;color:#aaa;border-radius:20px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.minijoc-fase.activa{background:#22c55e;color:#000;border-color:#22c55e}
+.minijoc-fase.feta{background:rgba(34,197,94,.15);color:#22c55e;border-color:#22c55e}
+.minijoc-botons{display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.minijoc-botons .btn{flex:1;min-width:110px;max-width:220px}
 #minijoc-emojis{max-width:900px;margin:14px auto 0}
-@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}.vocab-grid{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:900px){.botiga-grid-luxe{grid-template-columns:repeat(3,1fr)}.emoji-grid{grid-template-columns:repeat(8,1fr)}.tab-content{padding:20px 24px}.producte-card{max-width:900px;margin:0 auto 12px}}
+#gremi-minijoc.minijoc-llarg #minijoc-emojis{grid-template-columns:repeat(6,1fr)}
+#gremi-minijoc.minijoc-molt-llarg #minijoc-emojis{grid-template-columns:repeat(7,1fr)}
+/* v36 - LECTURA / GRAMATICA / VOCAB */
+.lectura-card{max-width:900px;margin:0 auto}
+.lectura-text{font-size:17px;line-height:1.7}
+.grammar-quiz-btn{cursor:pointer}
+.grammar-quiz-btn:hover{border-color:#22c55e}
+/* v36 - RESPONSIVE AMPLE */
+@media(min-width:600px){.botiga-grid-luxe{grid-template-columns:repeat(2,1fr)}.emoji-grid{grid-template-columns:repeat(6,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}.tips-card{padding:32px 28px}#tip-text{font-size:28px}.tip-exemple{font-size:18px;padding:18px 16px}.vocab-grid{grid-template-columns:repeat(3,1fr)}.minijoc-card{padding:24px}#minijoc-frase{font-size:28px}}
+@media(min-width:900px){.botiga-grid-luxe{grid-template-columns:repeat(3,1fr)}.emoji-grid{grid-template-columns:repeat(8,1fr)}.tab-content{padding:20px 24px}.producte-card{max-width:900px;margin:0 auto 12px}.minijoc-card{padding:28px}}
 @media(min-width:1100px){.emoji-grid{grid-template-columns:repeat(10,1fr)}.nivells-grid{grid-template-columns:repeat(10,1fr)}}
+@media(max-width:480px){#minijoc-frase{font-size:22px}#minijoc-triats{font-size:26px}.minijoc-botons .btn{font-size:13px;padding:10px 8px}.bottom-nav{padding:6px 0}.nav-item{font-size:10px}}
 </style>
 </head>
 <body>
-<!-- CARTA DE BENVINGUDA - SALE SIEMPRE, SE QUITA SOLA -->
 <div id="benvinguda" onclick="tancarBenvinguda()">
 <div class="benv-emoji">🐱</div>
 <h1 class="benv-titol">Benvingut a<br>Cat Lingo Emoji</h1>
@@ -116,24 +142,33 @@ header h1{font-size:20px;line-height:1.1}
 <div id="gremi-biblioteca" class="sub-tab-content"></div>
 <div id="gremi-personatges" class="sub-tab-content" style="display:none;"></div>
 <div id="gremi-minijoc" class="sub-tab-content" style="display:none;">
-<div style="text-align:center;">
+<div class="minijoc-card" style="text-align:center;">
 <p id="minijoc-nivell" style="color:#aaa;font-size:13px;"></p>
 <h2 id="minijoc-frase" style="margin:16px 0;line-height:1.4;">Carregant...</h2>
-<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👀 Mira, tapa i construeix</p>
+<p id="minijoc-instruccio" style="color:#aaa;font-size:13px;">👀 Mira, tapa, construeix, escolta i ordena</p>
+<div class="minijoc-fases">
+<button class="minijoc-fase" onclick="minijocFase=0;minijocMostrarFaseActual()">1 👀 Veure</button>
+<button class="minijoc-fase" onclick="minijocFase=1;minijocMostrarFaseActual()">2 🕵️ Tapar</button>
+<button class="minijoc-fase" onclick="minijocFase=2;minijocMostrarFaseActual()">3 🧩 Construir</button>
+<button class="minijoc-fase" onclick="minijocFase=3;minijocMostrarFaseActual()">4 🔊 Escoltar</button>
+<button class="minijoc-fase" onclick="minijocFase=4;minijocMostrarFaseActual()">5 🔤 Ordenar</button>
+</div>
 <div id="minijoc-triats" style="font-size:28px;margin:14px 0;min-height:40px;">○ ○ ○</div>
-<div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;">
+<div class="minijoc-botons">
 <button class="btn btn-sec" id="minijoc-desfer" onclick="desferUltimEmoji()">↩ Desfer</button>
+<button class="btn btn-sec" onclick="parlarFraseMinijoc()">🔊 Escoltar</button>
 <button class="btn btn-sec" onclick="minijocAvancarFase()">⏭ Següent fase</button>
 <button class="btn btn-primari" onclick="minijocFase=0;novaFraseMinijoc()">🔄 Nova frase</button>
 </div>
 <div id="minijoc-feedback"></div>
 <div id="minijoc-emojis" class="emoji-grid" style="margin-top:14px;"></div>
+<p style="color:#666;font-size:12px;margin-top:14px;">Cada frase passa per 5 fases · 5-15 🪙 · Costa 5 ⚡ · Ratxa de 5 = +10 🪙</p>
 </div>
 </div>
 </div>
 <div id="tab-lectura" class="tab-content">
 <div style="background:#2a1a00;border:1px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.6;text-align:center;">🔒 <b>Lliçó enlazada</b> · 1ª Lectura <b>GRATIS</b> · 2ª en adelante <b>30 ⚡</b> · Has de completar <b>4/4</b> per desbloquejar la següent: 📚 Lectura + 🃏 Vocab + 📝 Gramàtica + 🎯 Mini-joc del tema<br>Cada dia comences amb <b>100 ⚡</b></div>
-<div style="display:flex;gap:8px;margin-bottom:14px;">
+<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
 <button class="sub-tab-btn" onclick="mostrarSubTab('lectura')">📚 Lectura</button>
 <button class="sub-tab-btn" onclick="mostrarSubTab('vocab')">🃏 Vocabulari</button>
 <button class="sub-tab-btn" onclick="mostrarSubTab('gramatica')">📝 Gramàtica</button>
@@ -155,7 +190,8 @@ header h1{font-size:20px;line-height:1.1}
 </div>
 <div id="tab-producte" class="tab-content">
 <div class="producte-card"><h3>🐱 Cat Lingo Emoji - El Producte</h3><p>App educativa de català A1, A2, B1. Sense registre, sense anuncis, sense backend. Tot es guarda al dispositiu. Codi + JSON, escalable.</p></div>
-<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells · 220 Tips · 44 packs · 579 emojis · 419 conceptes únics · Sense anuncis · Sense registre</b></p><p>579 emojis a la biblioteca, no 454.</p></div>
+<div class="producte-card"><h3>📊 Contingut real</h3><p><b>100 nivells · 90 temes · 5 mini-jocs · 220 Tips · 44 packs · 579 emojis · 419 conceptes únics · Sense anuncis · Sense registre</b></p><p>579 emojis a la biblioteca, no 454.</p></div>
+<div class="producte-card"><h3>🎯 Els 5 Mini-jocs</h3><p>1. 👀 <b>Veure</b> - Mira la frase i aprèn · 2. 🕵️ <b>Tapar</b> - Tria l'emoji que falta · 3. 🧩 <b>Construir</b> - Monta la frase amb emojis · 4. 🔊 <b>Escoltar</b> - Escolta i tria el que has sentit · 5. 🔤 <b>Ordenar</b> - Ordena les paraules per fer la frase</p></div>
 <div class="producte-card"><h3>🪙 Sistema de monedes</h3><ul><li>Minijoc: 5-15 🪙 · Costa 5 ⚡ per frase</li><li>1ª Lectura: GRATIS · 2ª en adelante: 30 ⚡ · +5 🪙 per pregunta · +15 🪙 bonus</li><li>Gramàtica: +3 🪙 per quiz · +10 🪙 bonus si fas 3/3</li><li>Ratxa 5: +10 🪙 bonus</li><li>Bonus diari: +10 🪙</li></ul></div>
 <div class="producte-card"><h3>⚡ Energia</h3><p>Cada dia comences amb <b>100 ⚡</b> al header. 1ª Lectura gratis. 2ª en adelante 30 ⚡. Minijoc 5 ⚡. Recarrega per 50 🪙.</p></div>
 <div class="producte-card"><h3>🎯 Missions - 8</h3><p>1. Pujar de nivell · 2. Llegir una lectura · 3. Fer gramàtica · 4. Ratxa de 5 · 5. Bonus diari · 6. Desbloqueja un pack · 7. Completar la lliçó 4/4 · 8. Energia al màxim</p></div>
@@ -176,6 +212,6 @@ function tancarBenvinguda(){var b=document.getElementById('benvinguda');if(!b||b
 window.addEventListener('load',function(){setTimeout(tancarBenvinguda,900);});
 setTimeout(tancarBenvinguda,3000);
 </script>
-<script src="./main.js?v=35"></script>
+<script src="./main.js?v=36"></script>
 </body>
 </html>
